@@ -7,7 +7,10 @@ interface MundialAuthContextType {
     signUp: (email: string, password: string, username: string) => Promise<void>;
     signIn: (email: string, password: string) => Promise<void>;
     signOut: () => Promise<void>;
+    resetPassword: (email: string) => Promise<void>;
+    updatePassword: (newPassword: string) => Promise<void>;
     error: string | null;
+    isRecoveryMode: boolean;
 }
 
 const MundialAuthContext = createContext<MundialAuthContextType | undefined>(undefined);
@@ -16,6 +19,7 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const [user, setUser] = useState<MundialUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
     // Verificar sesión al montar
     useEffect(() => {
@@ -58,6 +62,10 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
         // Escuchar cambios de autenticación
         const { data: { subscription } } = mundialSupabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                setIsRecoveryMode(true);
+            }
+
             if (session?.user) {
                 const { data } = await mundialSupabase
                     .from('mundial_users')
@@ -180,8 +188,38 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
     };
 
+    const resetPassword = async (email: string) => {
+        try {
+            setError(null);
+            const { error: resetError } = await mundialSupabase.auth.resetPasswordForEmail(email);
+            if (resetError) {
+                console.error("Supabase Reset Password Error:", resetError);
+                throw resetError;
+            }
+        } catch (err: any) {
+            setError(err.message || 'Error al solicitar el restablecimiento de contraseña');
+            throw err;
+        }
+    };
+
+    const updatePassword = async (newPassword: string) => {
+        try {
+            setError(null);
+            const { error: updateError } = await mundialSupabase.auth.updateUser({
+                password: newPassword
+            });
+            if (updateError) throw updateError;
+            
+            // Una vez actualizada, salimos del modo recuperación
+            setIsRecoveryMode(false);
+        } catch (err: any) {
+            setError(err.message || 'Error al actualizar la contraseña');
+            throw err;
+        }
+    };
+
     return (
-        <MundialAuthContext.Provider value={{ user, loading, signUp, signIn, signOut, error }}>
+        <MundialAuthContext.Provider value={{ user, loading, signUp, signIn, signOut, resetPassword, updatePassword, error, isRecoveryMode }}>
             {children}
         </MundialAuthContext.Provider>
     );

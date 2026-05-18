@@ -82,7 +82,7 @@ export const SecurityAlert: React.FC<SecurityAlertProps> = ({
   };
 
   return (
-    <div className={`${config.bgColor} border ${config.borderColor} rounded-lg p-4 mb-4 backdrop-blur`}>
+    <div className={`${config.bgColor} border ${config.borderColor} rounded-xl p-4 mb-4 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.2)]`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-3 flex-1">
@@ -243,7 +243,7 @@ export const ValidationAlert: React.FC<ValidationAlertProps> = ({ errors, onDism
   }
 
   return (
-    <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-4 backdrop-blur">
+    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4 backdrop-blur-md shadow-[0_0_15px_rgba(239,68,68,0.1)]">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />

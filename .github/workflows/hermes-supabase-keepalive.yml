@@ -1,0 +1,32 @@
+name: Hermes Supabase Keep-Alive
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 10:00 AM UTC (7:00 AM ARG)
+    - cron: '0 10 * * *'
+  workflow_dispatch: # Permite ejecución manual desde GitHub
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hermes Agent - Keep Alive Ping
+        run: |
+          echo "🤖 Agente Hermes iniciando ping a Supabase..."
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ] || [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+            echo "⚠️ ADVERTENCIA: Faltan los secretos VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY en GitHub."
+            echo "Debes configurarlos en Settings > Secrets and variables > Actions."
+            exit 0 # Salimos sin error para que no falle la action permanentemente
+          fi
+
+          # Realiza una petición simple al endpoint REST para marcar actividad
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY }}")
+          
+          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 404 ]; then
+            echo "✅ Ping exitoso. Supabase ha registrado actividad (Estado: $HTTP_STATUS)."
+          else
+            echo "❌ El ping devolvió un estado inesperado: $HTTP_STATUS"
+          fi
