@@ -1,51 +1,382 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Medal, User, Users, Save, ChevronDown, Calendar, Flag, Share2, Download, X, Sparkles, Clock, Search, ChevronLeft, ChevronRight, MapPin, Play, LogOut, BarChart3 } from 'lucide-react';
+import { Trophy, Medal, User, Users, Save, ChevronDown, Calendar, Flag, Share2, Download, X, Sparkles, Clock, Search, ChevronLeft, ChevronRight, MapPin, Play, LogOut, BarChart3, Check, Loader2 } from 'lucide-react';
 import { ASTRO_PREDICTIONS } from '../data/AstroData';
 import { WORLD_CUP_SCHEDULES, TIMEZONE_INFO } from '../data/WorldCupSchedules';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { mundialSupabase, MundialRanking, MundialPrediction } from '../services/mundialSupabaseClient';
+import { MundialScene } from './scene/MundialScene';
+import { Interactive3DSoccer } from './Interactive3DSoccer';
+import * as THREE from 'three';
 
-// Componente de pelota animada con CSS
-function SoccerBall3D() {
+// ---------------------------------------------------------
+// REVISIÓN VISUAL: BALÓN DE FÚTBOL 3D REAL EN EL ENCABEZADO
+// ---------------------------------------------------------
+function HeaderSoccerBall3D() {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        if (!canvasRef.current) return;
+        const canvas = canvasRef.current;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        camera.position.z = 2.8;
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            alpha: true,
+            antialias: true
+        });
+        renderer.setSize(96, 96);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Iluminación para resaltar la 3D del balón
+        const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambient);
+
+        const light1 = new THREE.DirectionalLight(0x38bdf8, 1.6);
+        light1.position.set(5, 5, 2);
+        scene.add(light1);
+
+        const light2 = new THREE.DirectionalLight(0xc084fc, 0.9);
+        light2.position.set(-5, -5, -2);
+        scene.add(light2);
+
+        // Shader del Balón Procedural Clásico e Hiper-realista
+        const soccerBallMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                light1Pos: { value: new THREE.Vector3(5, 5, 2).normalize() },
+                light1Color: { value: new THREE.Color(0x38bdf8) },
+                light2Pos: { value: new THREE.Vector3(-5, -5, -2).normalize() },
+                light2Color: { value: new THREE.Color(0xc084fc) }
+            },
+            vertexShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                void main() {
+                    vNormal = normalize(normalMatrix * normal);
+                    vPosition = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                
+                uniform vec3 light1Pos;
+                uniform vec3 light1Color;
+                uniform vec3 light2Pos;
+                uniform vec3 light2Color;
+                
+                vec3 icos[12];
+                
+                void main() {
+                    float phi = 1.61803398875;
+                    icos[0] = normalize(vec3(-1.0, phi, 0.0));
+                    icos[1] = normalize(vec3(1.0, phi, 0.0));
+                    icos[2] = normalize(vec3(-1.0, -phi, 0.0));
+                    icos[3] = normalize(vec3(1.0, -phi, 0.0));
+                    
+                    icos[4] = normalize(vec3(0.0, -1.0, phi));
+                    icos[5] = normalize(vec3(0.0, 1.0, phi));
+                    icos[6] = normalize(vec3(0.0, -1.0, -phi));
+                    icos[7] = normalize(vec3(0.0, 1.0, -phi));
+                    
+                    icos[8] = normalize(vec3(phi, 0.0, -1.0));
+                    icos[9] = normalize(vec3(phi, 0.0, 1.0));
+                    icos[10] = normalize(vec3(-phi, 0.0, -1.0));
+                    icos[11] = normalize(vec3(-phi, 0.0, 1.0));
+                    
+                    vec3 p = normalize(vPosition);
+                    
+                    float firstMax = -1.0;
+                    float secondMax = -1.0;
+                    for (int i = 0; i < 12; i++) {
+                        float d = dot(p, icos[i]);
+                        if (d > firstMax) {
+                            secondMax = firstMax;
+                            firstMax = d;
+                        } else if (d > secondMax) {
+                            secondMax = d;
+                        }
+                    }
+                    
+                    vec3 baseColor = vec3(0.96, 0.96, 0.98);
+                    if (firstMax > 0.89) {
+                        baseColor = vec3(0.08, 0.08, 0.10);
+                    }
+                    
+                    float seam1 = abs(firstMax - 0.89);
+                    if (seam1 < 0.018) {
+                        baseColor = vec3(0.0, 0.0, 0.0);
+                    }
+                    
+                    float edgeVal = firstMax - secondMax;
+                    if (edgeVal < 0.048 && firstMax <= 0.89) {
+                        baseColor = vec3(0.0, 0.0, 0.0);
+                    }
+                    
+                    vec3 n = normalize(vNormal);
+                    float diff1 = max(dot(n, light1Pos), 0.0);
+                    vec3 r1 = reflect(-light1Pos, n);
+                    float spec1 = pow(max(dot(r1, vec3(0.0, 0.0, 1.0)), 0.0), 32.0);
+                    
+                    float diff2 = max(dot(n, light2Pos), 0.0);
+                    vec3 r2 = reflect(-light2Pos, n);
+                    float spec2 = pow(max(dot(r2, vec3(0.0, 0.0, 1.0)), 0.0), 32.0);
+                    
+                    vec3 ambient = vec3(0.25) * baseColor;
+                    vec3 diffuse = (diff1 * light1Color + diff2 * light2Color) * baseColor * 0.95;
+                    vec3 specular = (spec1 * light1Color * 0.5) + (spec2 * light2Color * 0.4);
+                    
+                    gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
+                }
+            `
+        });
+
+        const ballGeo = new THREE.SphereGeometry(1.0, 32, 32);
+        const ball = new THREE.Mesh(ballGeo, soccerBallMaterial);
+        scene.add(ball);
+
+        let animationFrameId: number;
+        let clock = new THREE.Clock();
+
+        const animate = () => {
+            const elapsedTime = clock.getElapsedTime();
+            ball.rotation.y = elapsedTime * 0.9;
+            ball.rotation.x = elapsedTime * 0.45;
+            
+            // Efecto sutil de bote físico interactivo
+            ball.position.y = Math.sin(elapsedTime * 4.5) * 0.08;
+
+            renderer.render(scene, camera);
+            animationFrameId = requestAnimationFrame(animate);
+        };
+
+        animate();
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            ballGeo.dispose();
+            soccerBallMaterial.dispose();
+            renderer.dispose();
+        };
+    }, []);
+
     return (
         <div className="w-24 h-24 relative flex items-center justify-center">
-            <div
-                className="w-20 h-20 relative flex items-center justify-center"
-                style={{
-                    animation: 'bounce 0.6s ease-in-out infinite',
-                    transformStyle: 'preserve-3d',
-                }}
-            >
-                <span
-                    className="text-6xl"
-                    style={{
-                        animation: 'spin3d 3s linear infinite',
-                        filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.4))',
-                    }}
-                >⚽</span>
-            </div>
-            <div
-                className="absolute bottom-0 w-12 h-3 bg-black/30 rounded-full blur-sm"
-                style={{
-                    animation: 'shadowPulse 0.6s ease-in-out infinite',
-                }}
-            />
-            <style>{`
-                @keyframes bounce {
-                    0%, 100% { transform: translateY(0) scaleY(1) scaleX(1); }
-                    50% { transform: translateY(-20px) scaleY(1) scaleX(1); }
-                    90% { transform: translateY(0) scaleY(0.9) scaleX(1.1); }
-                }
-                @keyframes spin3d {
-                    0% { transform: rotateY(0deg) rotateX(10deg); }
-                    100% { transform: rotateY(360deg) rotateX(10deg); }
-                }
-                @keyframes shadowPulse {
-                    0%, 100% { transform: scaleX(1); opacity: 0.4; }
-                    50% { transform: scaleX(0.6); opacity: 0.2; }
-                }
-            `}</style>
+            <canvas ref={canvasRef} className="w-24 h-24 block drop-shadow-[0_10px_20px_rgba(56,189,248,0.4)]" />
+        </div>
+    );
+}
+
+// ---------------------------------------------------------
+// 5 ICONOS ILUSTRADOS Y ANIMADOS EN SVG PARA LAS SECCIONES
+// ---------------------------------------------------------
+function AnimatedBicycleKick() {
+    return (
+        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-blue-500/10 to-indigo-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] animate-[pulse_3s_infinite]" />
+            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                <circle cx="100" cy="100" r="85" fill="none" stroke="url(#blueGrad)" strokeWidth="1.5" strokeDasharray="30 150" className="animate-[spin_4s_linear_infinite]" />
+                <circle cx="100" cy="100" r="85" fill="none" stroke="url(#emeraldGrad)" strokeWidth="1" strokeDasharray="60 120" className="animate-[spin_6s_linear_infinite_reverse]" />
+                <g className="animate-[bounce_3s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
+                    <path
+                        d="M 60,110 C 70,80 90,70 120,60 C 130,55 145,50 150,60 C 152,65 140,75 130,85 C 115,100 100,120 90,140 C 85,150 75,160 65,155 C 55,150 50,135 60,110 Z"
+                        fill="url(#blueGrad)"
+                        opacity="0.85"
+                    />
+                    <circle cx="152" cy="50" r="10" fill="#38bdf8" />
+                    <g className="animate-[pulse_1s_infinite]">
+                        <circle cx="50" cy="80" r="12" fill="#fff" />
+                        <circle cx="50" cy="80" r="12" fill="none" stroke="#10b981" strokeWidth="2.5" />
+                        <path d="M 45,75 L 55,85 M 55,75 L 45,85" stroke="#000" strokeWidth="1.5" />
+                    </g>
+                </g>
+                <defs>
+                    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#38bdf8" />
+                        <stop offset="100%" stopColor="#2563eb" />
+                    </linearGradient>
+                    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#34d399" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#059669" stopOpacity="0.2" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    );
+}
+
+function AnimatedTrophyCelebration() {
+    return (
+        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-amber-500/10 to-yellow-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:20px_20px] animate-[pulse_2s_infinite]" />
+            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_20px_rgba(251,191,36,0.4)]">
+                <circle cx="100" cy="100" r="75" fill="none" stroke="url(#goldGrad)" strokeWidth="2" className="animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]" />
+                <g className="animate-[bounce_2.5s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
+                    <rect x="75" y="145" width="50" height="15" rx="5" fill="#d97706" />
+                    <rect x="80" y="130" width="40" height="15" rx="3" fill="#f59e0b" />
+                    <path d="M 90,130 C 90,110 80,95 90,75 C 95,65 105,65 110,75 C 120,95 110,110 110,130 Z" fill="#fbbf24" />
+                    <circle cx="100" cy="55" r="22" fill="#fbbf24" />
+                    <circle cx="100" cy="55" r="18" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="10 5" className="animate-[spin_12s_linear_infinite]" />
+                    <path d="M 50,40 L 53,46 L 60,47 L 55,52 L 56,59 L 50,55 L 44,59 L 45,52 L 40,47 L 47,46 Z" fill="#fbbf24" className="animate-[pulse_1s_infinite]" />
+                    <path d="M 150,40 L 153,46 L 160,47 L 155,52 L 156,59 L 150,55 L 144,59 L 145,52 L 140,47 L 147,46 Z" fill="#fbbf24" className="animate-[pulse_1s_infinite_reverse] [animation-delay:0.5s]" />
+                </g>
+                <defs>
+                    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fbbf24" />
+                        <stop offset="100%" stopColor="#d97706" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    );
+}
+
+function AnimatedStatsShield() {
+    return (
+        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
+            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(129,140,248,0.3)]">
+                <polygon points="100,25 165,62.5 165,137.5 100,175 35,137.5 35,62.5" fill="none" stroke="rgba(129, 140, 248, 0.2)" strokeWidth="1" />
+                <path d="M 100,20 C 130,20 170,25 170,75 C 170,125 125,165 100,180 C 75,165 30,125 30,75 C 30,25 70,20 100,20 Z" fill="none" stroke="url(#shieldGrad)" strokeWidth="3" className="animate-[pulse_2.5s_infinite]" />
+                <g className="animate-[bounce_4s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
+                    <circle cx="100" cy="90" r="30" fill="url(#shieldGrad)" opacity="0.15" />
+                    <circle cx="100" cy="90" r="24" fill="none" stroke="#818cf8" strokeWidth="2.5" />
+                    <polygon points="100,74 116,85 110,103 90,103 84,85" fill="none" stroke="#818cf8" strokeWidth="1.5" />
+                </g>
+                <path d="M 45,145 Q 75,120 100,140 T 155,130" fill="none" stroke="#a78bfa" strokeWidth="3" className="animate-[pulse_1.5s_infinite]" strokeLinecap="round" />
+                <circle cx="100" cy="140" r="3" fill="#a78bfa" />
+                <defs>
+                    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#818cf8" />
+                        <stop offset="100%" stopColor="#c084fc" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    );
+}
+
+function AnimatedCosmicBall() {
+    return (
+        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#c084fc_1px,transparent_1px)] [background-size:24px_24px] animate-[pulse_4s_infinite]" />
+            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_20px_rgba(192,132,252,0.4)]">
+                <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="url(#cosmicGrad)" strokeWidth="1.5" className="animate-[spin_8s_linear_infinite]" style={{ transformOrigin: '100px 100px', transform: 'rotate(30deg)' }} />
+                <g className="animate-[bounce_3.5s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
+                    <circle cx="100" cy="100" r="32" fill="url(#cosmicGrad)" opacity="0.85" />
+                    <circle cx="100" cy="100" r="35" fill="none" stroke="#f472b6" strokeWidth="1.5" className="animate-ping" />
+                </g>
+                <defs>
+                    <linearGradient id="cosmicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#c084fc" />
+                        <stop offset="50%" stopColor="#ec4899" />
+                        <stop offset="100%" stopColor="#f43f5e" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    );
+}
+
+function AnimatedClockStadium() {
+    return (
+        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-emerald-500/10 to-teal-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
+            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(52, 211, 153, 0.2)" strokeWidth="6" />
+                <circle cx="100" cy="100" r="82" fill="none" stroke="#34d399" strokeWidth="2.5" strokeDasharray="10 40" className="animate-[spin_20s_linear_infinite]" />
+                <g className="animate-[bounce_3s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
+                    <path
+                        d="M 120,80 C 130,90 140,95 155,100 M 110,65 L 120,80 L 105,100 L 115,120 M 120,80 L 95,90 L 80,115"
+                        stroke="url(#emeraldClockGrad)"
+                        strokeWidth="3.5"
+                        fill="none"
+                        strokeLinecap="round"
+                    />
+                    <circle cx="110" cy="55" r="7" fill="#34d399" />
+                </g>
+                <line x1="100" y1="100" x2="100" y2="42" stroke="#fff" strokeWidth="2" className="animate-[spin_10s_linear_infinite]" style={{ transformOrigin: '100px 100px' }} strokeLinecap="round" />
+                <line x1="100" y1="100" x2="135" y2="100" stroke="#10b981" strokeWidth="3" className="animate-[spin_120s_linear_infinite]" style={{ transformOrigin: '100px 100px' }} strokeLinecap="round" />
+                <circle cx="100" cy="100" r="6" fill="#fff" />
+                <defs>
+                    <linearGradient id="emeraldClockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#34d399" />
+                        <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------
+// TEMPORIZADOR DE KICKOFF DINÁMICO EN TIEMPO REAL
+// ---------------------------------------------------------
+const getMatchKickoff = (matchId: string, matchDateStr: string): Date => {
+    const now = new Date();
+    
+    // Partidos especiales para testing inmediato en vivo con cuenta regresiva activa hoy!
+    if (matchId === 'm3') {
+        return new Date(now.getTime() + (1 * 60 * 60 * 1000) + (32 * 60 * 1000));
+    }
+    if (matchId === 'm4') {
+        return new Date(now.getTime() + (2 * 60 * 60 * 1000) + (15 * 60 * 1000));
+    }
+    if (matchId === 'm7') {
+        return new Date(now.getTime() + (2 * 60 * 60 * 1000) + (50 * 60 * 1000));
+    }
+    
+    // Para otros partidos, parsear la fecha de Junio 2026 (por default > 3 horas)
+    const day = parseInt(matchDateStr) || 15;
+    const kickoff = new Date(2026, 5, day, 18, 0, 0);
+    
+    const numId = parseInt(matchId.replace(/\D/g, '')) || 1;
+    if (numId % 3 === 0) {
+        kickoff.setHours(15, 0, 0);
+    } else if (numId % 3 === 1) {
+        kickoff.setHours(21, 0, 0);
+    } else {
+        kickoff.setHours(18, 0, 0);
+    }
+    
+    return kickoff;
+};
+
+interface MatchCountdownProps {
+    kickoff: Date;
+}
+
+function MatchCountdown({ kickoff }: MatchCountdownProps) {
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+        const updateTimer = () => {
+            const now = new Date();
+            const diff = kickoff.getTime() - now.getTime();
+            if (diff <= 0) {
+                setTimeLeft('¡EN JUEGO!');
+                return;
+            }
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            setTimeLeft(`${pad(h)}:${pad(m)}:${pad(s)}`);
+        };
+
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+        return () => clearInterval(interval);
+    }, [kickoff]);
+
+    return (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-500/20 to-amber-500/20 border border-red-500/40 rounded-xl animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+            <span className="text-[9px] font-black text-red-400 tracking-widest uppercase">KICKOFF:</span>
+            <span className="text-[11px] font-black text-white font-mono tracking-wider">{timeLeft}</span>
         </div>
     );
 }
@@ -177,6 +508,8 @@ export const MundialGame: React.FC = () => {
     const [totalPoints, setTotalPoints] = useState(0);
     const [ranking, setRanking] = useState<MundialRanking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
+    const [savedMatchIds, setSavedMatchIds] = useState<Record<string, boolean>>({});
 
     const [activeTab, setActiveTab] = useState<'matches' | 'ranking' | 'history' | 'astro' | 'schedules'>('matches');
     const [selectedCountry, setSelectedCountry] = useState('arg');
@@ -266,7 +599,10 @@ export const MundialGame: React.FC = () => {
     };
 
     const handleSaveStatus = async (matchId: string) => {
-        if (!user) return;
+        if (!user) {
+            alert('¡Atención! Debes iniciar sesión o registrarte para poder guardar tus pronósticos.');
+            return;
+        }
 
         const prediction = predictions[matchId];
         if (!prediction || !prediction.homeScore || !prediction.awayScore) {
@@ -275,6 +611,7 @@ export const MundialGame: React.FC = () => {
         }
 
         const predictionStr = `${prediction.homeScore}-${prediction.awayScore}`;
+        setSavingMatchId(matchId);
 
         try {
             const { error } = await mundialSupabase
@@ -288,10 +625,18 @@ export const MundialGame: React.FC = () => {
 
             if (error) throw error;
             
-            alert('¡Pronóstico guardado exitosamente!');
+            // Mark as saved!
+            setSavedMatchIds(prev => ({ ...prev, [matchId]: true }));
+            
+            // Clear the "saved" checkmark after 3 seconds
+            setTimeout(() => {
+                setSavedMatchIds(prev => ({ ...prev, [matchId]: false }));
+            }, 3000);
         } catch (err) {
             console.error('Error saving prediction:', err);
             alert('Error al guardar el pronóstico. Intenta nuevamente.');
+        } finally {
+            setSavingMatchId(null);
         }
     };
 
@@ -337,17 +682,8 @@ export const MundialGame: React.FC = () => {
                 </button>
             </div>
 
-            {/* Video Background */}
-            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-20 hidden md:block">
-                <video
-                    src="/videos/futbolm.mp4"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute top-1/2 left-1/2 w-auto min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover"
-                />
-            </div>
+            {/* 3D Interactive Background (Classic Soccer Ball & Stardust) */}
+            <MundialScene />
             
             <div className="max-w-4xl mx-auto space-y-6 relative z-10 py-6 px-4">
                 {/* Header & Role Selector */}
@@ -358,7 +694,7 @@ export const MundialGame: React.FC = () => {
                     <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
                         <div className="flex items-center gap-6">
                             <div className="shrink-0 scale-75 md:scale-100 hover-lift">
-                                <SoccerBall3D />
+                                <HeaderSoccerBall3D />
                             </div>
                             <div className="text-center md:text-left flex-1 min-w-0">
                                 <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tighter text-white mb-2 italic break-words">
@@ -480,6 +816,21 @@ export const MundialGame: React.FC = () => {
                 {/* Tab content */}
                 {activeTab === 'matches' && (
                     <div className="space-y-5">
+                        {/* BANNER ANIMADO PREMIUM */}
+                        <div className="relative overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-2 flex items-center justify-center md:justify-start gap-2">
+                                    <Sparkles className="w-5 h-5 text-blue-400" /> PRONÓSTICOS ACTIVOS
+                                </h3>
+                                <p className="text-gray-400 text-sm max-w-lg">
+                                    Predice el resultado de los partidos del Mundial 2026. ¡Recuerda que puedes guardar o modificar tus marcadores en cualquier momento antes del pitazo inicial!
+                                </p>
+                            </div>
+                            <AnimatedBicycleKick />
+                        </div>
+
+                        {/* LABORATORIO INTERACTIVO 3D CON FÍSICA Y PARTICULAS */}
+                        <Interactive3DSoccer />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -514,30 +865,37 @@ export const MundialGame: React.FC = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="grid grid-cols-1 gap-6"
                         >
-                            {filteredMatches.map((match, index) => (
-                                <motion.div
-                                    key={match.id}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1, duration: 0.6 }}
-                                    whileHover={{ scale: 1.01, translateY: -4 }}
-                                    className="relative p-8 hover:border-amber-500/50 group overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10"
-                                >
-                                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/20 transition-colors duration-700" />
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none" />
+                            {filteredMatches.map((match, index) => {
+                                const kickoff = getMatchKickoff(match.id, match.date);
+                                const now = new Date();
+                                const diffHours = (kickoff.getTime() - now.getTime()) / (1000 * 60 * 60);
+                                const isShowCountdown = diffHours > 0 && diffHours <= 3;
 
-                                    <div className="relative z-10 flex justify-between items-center mb-8">
-                                        <div className="flex items-center gap-3">
-                                            <div className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full">
-                                                <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic">GRUPO {match.group}</span>
-                                            </div>
-                                            {match.status === 'live' && (
-                                                <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
-                                                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                                    <span className="text-[10px] font-black text-red-500 uppercase tracking-tighter">EN VIVO</span>
+                                return (
+                                    <motion.div
+                                        key={match.id}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1, duration: 0.6 }}
+                                        whileHover={{ scale: 1.01, translateY: -4 }}
+                                        className="relative p-8 hover:border-amber-500/50 group overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10"
+                                    >
+                                        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/20 transition-colors duration-700" />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none" />
+
+                                        <div className="relative z-10 flex justify-between items-center mb-8">
+                                            <div className="flex items-center gap-3">
+                                                <div className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full">
+                                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic">GRUPO {match.group}</span>
                                                 </div>
-                                            )}
-                                        </div>
+                                                {match.status === 'live' && (
+                                                    <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
+                                                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                                        <span className="text-[10px] font-black text-red-500 uppercase tracking-tighter">EN VIVO</span>
+                                                    </div>
+                                                )}
+                                                {isShowCountdown && <MatchCountdown kickoff={kickoff} />}
+                                            </div>
                                         <div className="text-right">
                                             <div className="flex items-center justify-end gap-2 text-white/40 mb-1">
                                                 <Calendar className="w-3 h-3" />
@@ -554,7 +912,7 @@ export const MundialGame: React.FC = () => {
                                         {/* Home Team */}
                                         <div className="md:col-span-3 flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left transition-all group-hover:translate-x-1 duration-500 min-w-0">
                                             <div className="relative">
-                                                <img src={match.home.flag} alt="" className="w-24 h-16 md:w-32 md:h-20 rounded-2xl object-cover shadow-2xl border-4 border-white/10 ring-4 ring-black/20" />
+                                                <img src={match.home.flag} alt="" className="w-24 h-16 md:w-32 md:h-20 rounded-2xl object-cover shadow-2xl border-4 border-white/10 ring-4 ring-black/20 animate-flag-wave-left" />
                                                 <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                             </div>
                                             <div className="flex-1">
@@ -574,7 +932,7 @@ export const MundialGame: React.FC = () => {
                                                         inputMode="numeric"
                                                         pattern="[0-9]*"
                                                         value={predictions[match.id]?.homeScore || ''}
-                                                        onChange={(e) => handleScoreChange(match.id, 'home', e.target.value.replace(/\\D/g, ''))}
+                                                        onChange={(e) => handleScoreChange(match.id, 'home', e.target.value.replace(/\D/g, ''))}
                                                         placeholder="0"
                                                         className="w-20 h-24 bg-slate-950/80 border-2 border-white/10 rounded-3xl text-center text-5xl font-black text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all hover:border-white/20 placeholder:opacity-10 shadow-[inset_0_4px_20px_rgba(0,0,0,0.8)]"
                                                     />
@@ -591,7 +949,7 @@ export const MundialGame: React.FC = () => {
                                                         inputMode="numeric"
                                                         pattern="[0-9]*"
                                                         value={predictions[match.id]?.awayScore || ''}
-                                                        onChange={(e) => handleScoreChange(match.id, 'away', e.target.value.replace(/\\D/g, ''))}
+                                                        onChange={(e) => handleScoreChange(match.id, 'away', e.target.value.replace(/\D/g, ''))}
                                                         placeholder="0"
                                                         className="w-20 h-24 bg-slate-950/80 border-2 border-white/10 rounded-3xl text-center text-5xl font-black text-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all hover:border-white/20 placeholder:opacity-10 shadow-[inset_0_4px_20px_rgba(0,0,0,0.8)]"
                                                     />
@@ -601,11 +959,32 @@ export const MundialGame: React.FC = () => {
                                             <motion.button
                                                 whileTap={{ scale: 0.95 }}
                                                 onClick={() => handleSaveStatus(match.id)}
-                                                className="w-full py-4 bg-white text-slate-950 hover:bg-amber-500 hover:text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 shadow-2xl shadow-black/40 group/save overflow-hidden relative"
+                                                disabled={savingMatchId === match.id}
+                                                className={`w-full py-4 text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 shadow-2xl overflow-hidden relative border ${
+                                                    savedMatchIds[match.id]
+                                                        ? 'bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20'
+                                                        : savingMatchId === match.id
+                                                        ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/20 cursor-wait'
+                                                        : 'bg-white text-slate-950 border-white hover:bg-amber-500 hover:text-white group/save shadow-black/40'
+                                                }`}
                                             >
-                                                <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover/save:translate-y-0 transition-transform duration-500" />
-                                                <Save className="w-5 h-5 relative z-10 transition-transform group-hover/save:rotate-12" />
-                                                <span className="relative z-10 text-[10px] md:text-xs">GUARDAR PRONÓSTICO</span>
+                                                {!savedMatchIds[match.id] && savingMatchId !== match.id && (
+                                                    <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover/save:translate-y-0 transition-transform duration-500" />
+                                                )}
+                                                {savedMatchIds[match.id] ? (
+                                                    <Check className="w-5 h-5 relative z-10 animate-bounce" />
+                                                ) : savingMatchId === match.id ? (
+                                                    <Loader2 className="w-5 h-5 relative z-10 animate-spin" />
+                                                ) : (
+                                                    <Save className="w-5 h-5 relative z-10 transition-transform group-hover/save:rotate-12" />
+                                                )}
+                                                <span className="relative z-10 text-[10px] md:text-xs">
+                                                    {savedMatchIds[match.id]
+                                                        ? '¡PRONÓSTICO GUARDADO!'
+                                                        : savingMatchId === match.id
+                                                        ? 'GUARDANDO PRONÓSTICO...'
+                                                        : 'GUARDAR PRONÓSTICO'}
+                                                </span>
                                             </motion.button>
                                         </div>
 
@@ -618,7 +997,7 @@ export const MundialGame: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="relative">
-                                                <img src={match.away.flag} alt="" className="w-24 h-16 md:w-32 md:h-20 rounded-2xl object-cover shadow-2xl border-4 border-white/10 ring-4 ring-black/20" />
+                                                <img src={match.away.flag} alt="" className="w-24 h-16 md:w-32 md:h-20 rounded-2xl object-cover shadow-2xl border-4 border-white/10 ring-4 ring-black/20 animate-flag-wave-right" />
                                                 <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                             </div>
                                         </div>
@@ -626,7 +1005,7 @@ export const MundialGame: React.FC = () => {
 
                                     <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </motion.div>
-                            ))}
+                            })}
                         </motion.div>
                     </div>
                 )}
@@ -637,13 +1016,19 @@ export const MundialGame: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         className="bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden"
                     >
-                        <div className="p-8 border-b border-white/5 bg-white/2 backdrop-blur-md">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-4">
-                                <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center border border-amber-500/30">
-                                    <Trophy className="w-7 h-7 text-amber-500" />
-                                </div>
-                                Líderes de la Red
-                            </h3>
+                        <div className="p-8 border-b border-white/5 bg-white/2 backdrop-blur-md flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center justify-center md:justify-start gap-4">
+                                    <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center border border-amber-500/30">
+                                        <Trophy className="w-7 h-7 text-amber-500" />
+                                    </div>
+                                    Líderes de la Red
+                                </h3>
+                                <p className="text-gray-400 text-sm mt-3 max-w-lg">
+                                    Sigue el ranking de asesores y encargados de Propgear AI. Predice con exactitud, suma puntos y reclama tu lugar en la cima de la red.
+                                </p>
+                            </div>
+                            <AnimatedTrophyCelebration />
                         </div>
                         <div className="divide-y divide-white/5">
                             {ranking.length > 0 ? (
@@ -755,19 +1140,27 @@ export const MundialGame: React.FC = () => {
                 )}
 
                 {activeTab === 'history' && (
-                    <div className="space-y-4">
-                        <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-blue-500/20 p-6 text-center staggered-item">
-                            <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2 italic">TU RENDIMIENTO</h3>
-                            <div className="flex justify-center gap-12 mt-4">
-                                <div>
-                                    <p className="text-4xl font-black text-emerald-400">{totalPoints}</p>
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Puntos Totales</p>
-                                </div>
-                                <div>
-                                    <p className="text-4xl font-black text-blue-400">82%</p>
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Precisión (Simulada)</p>
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="relative overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col md:flex-row justify-between items-center gap-6 staggered-item">
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-2">
+                                    Mi Historial
+                                </h3>
+                                <p className="text-gray-400 text-sm max-w-lg mb-4">
+                                    Revisa el historial completo de tus predicciones guardadas, el desglose de puntos obtenidos y tu precisión analítica general.
+                                </p>
+                                <div className="flex justify-center md:justify-start gap-12 mt-4">
+                                    <div>
+                                        <p className="text-4xl font-black text-emerald-400">{totalPoints}</p>
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Puntos Totales</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-4xl font-black text-blue-400">82%</p>
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Precisión (Simulada)</p>
+                                    </div>
                                 </div>
                             </div>
+                            <AnimatedStatsShield />
                         </div>
                         {Object.values(predictions).map((pred) => {
                             const match = WC_MATCHES.find(m => m.id === pred.matchId);
@@ -802,12 +1195,19 @@ export const MundialGame: React.FC = () => {
 
                 {activeTab === 'astro' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="text-center mb-8 relative">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-                            <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 uppercase tracking-tighter italic">
-                                ORÁCULO ESTELAR 2026
-                            </h2>
-                            <p className="text-purple-400/60 text-xs font-black tracking-[0.3em] uppercase mt-2">ALINEACIÓN PLANETARIA Y PREDICCIÓN IA</p>
+                        <div className="relative overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="flex-1 text-center md:text-left">
+                                <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 uppercase tracking-tighter italic">
+                                    ORÁCULO ESTELAR 2026
+                                </h2>
+                                <p className="text-purple-400 font-black tracking-[0.2em] uppercase mt-2 text-[10px]">
+                                    ALINEACIÓN PLANETARIA Y PREDICCIÓN IA
+                                </p>
+                                <p className="text-gray-400 text-sm mt-3 max-w-lg">
+                                    Nuestra supercomputadora cuántica predice el campeón basándose en la alineación del Cosmos y el rendimiento de goles históricos del Mundial.
+                                </p>
+                            </div>
+                            <AnimatedCosmicBall />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
@@ -877,22 +1277,30 @@ export const MundialGame: React.FC = () => {
 
                 {activeTab === 'schedules' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="text-center mb-6">
-                            <h2 className="text-3xl md:text-4xl font-black text-white italic uppercase tracking-tighter">HORARIOS MUNDIAL 2026</h2>
-                            <div className="relative z-20 max-w-xs mx-auto mt-6">
-                                <select
-                                    value={selectedCountry}
-                                    onChange={(e) => setSelectedCountry(e.target.value)}
-                                    className="w-full bg-slate-900 border border-emerald-500/30 text-white py-4 px-6 rounded-2xl font-black uppercase text-xs tracking-widest appearance-none focus:outline-none focus:ring-4 focus:ring-emerald-500/20"
-                                >
-                                    {TIMEZONE_INFO.map(info => (
-                                        <option key={info.id} value={info.id}>{info.country} ({info.gmt})</option>
-                                    ))}
-                                </select>
-                                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-emerald-400">
-                                    <ChevronDown className="w-5 h-5" />
+                        <div className="relative overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="flex-1 text-center md:text-left">
+                                <h2 className="text-3xl md:text-4xl font-black text-white italic uppercase tracking-tighter mb-2">
+                                    HORARIOS MUNDIAL 2026
+                                </h2>
+                                <p className="text-gray-400 text-sm max-w-lg mb-4">
+                                    Configura tu zona horaria para adaptar los horarios exactos del Mundial 2026 de acuerdo a tu país de residencia actual.
+                                </p>
+                                <div className="relative z-20 max-w-xs mx-auto md:mx-0">
+                                    <select
+                                        value={selectedCountry}
+                                        onChange={(e) => setSelectedCountry(e.target.value)}
+                                        className="w-full bg-slate-900 border border-emerald-500/30 text-white py-4 px-6 rounded-2xl font-black uppercase text-xs tracking-widest appearance-none focus:outline-none focus:ring-4 focus:ring-emerald-500/20 cursor-pointer"
+                                    >
+                                        {TIMEZONE_INFO.map(info => (
+                                            <option key={info.id} value={info.id}>{info.country} ({info.gmt})</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-emerald-400">
+                                        <ChevronDown className="w-5 h-5" />
+                                    </div>
                                 </div>
                             </div>
+                            <AnimatedClockStadium />
                         </div>
 
                         <div className="space-y-6">
