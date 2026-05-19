@@ -1016,10 +1016,10 @@ export const MundialGame: React.FC = () => {
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="flex border-b border-white/10 overflow-x-auto no-scrollbar gap-4 px-2">
+                <div className="flex flex-wrap justify-center sm:justify-start border-b border-white/10 gap-x-1 sm:gap-x-4 gap-y-2 px-1 sm:px-2 pt-2">
                     <button
                         onClick={() => setActiveTab('matches')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'matches' ? 'text-blue-400 drop-shadow-[0_0_10px_rgba(56,189,248,0.6)]' : 'text-gray-400 hover:text-gray-200'
+                        className={`pb-2 sm:pb-3 px-2 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'matches' ? 'text-blue-400 drop-shadow-[0_0_10px_rgba(56,189,248,0.6)]' : 'text-gray-400 hover:text-gray-200'
                             }`}
                     >
                         Partidos
@@ -1027,7 +1027,7 @@ export const MundialGame: React.FC = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('ranking')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'ranking' ? 'text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]' : 'text-gray-400 hover:text-gray-200'
+                        className={`pb-2 sm:pb-3 px-2 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'ranking' ? 'text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]' : 'text-gray-400 hover:text-gray-200'
                             }`}
                     >
                         Ranking
@@ -1035,7 +1035,7 @@ export const MundialGame: React.FC = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'history' ? 'text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.6)]' : 'text-gray-400 hover:text-gray-200'
+                        className={`pb-2 sm:pb-3 px-2 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'history' ? 'text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.6)]' : 'text-gray-400 hover:text-gray-200'
                             }`}
                     >
                         Mi Historial
@@ -1043,7 +1043,7 @@ export const MundialGame: React.FC = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('astro')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'astro' ? 'text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.7)]' : 'text-gray-400 hover:text-purple-300'
+                        className={`pb-2 sm:pb-3 px-2 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'astro' ? 'text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.7)]' : 'text-gray-400 hover:text-purple-300'
                             }`}
                     >
                         <span className="flex items-center gap-1.5">
@@ -1054,7 +1054,7 @@ export const MundialGame: React.FC = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('schedules')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'schedules' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]' : 'text-gray-400 hover:text-emerald-300'
+                        className={`pb-2 sm:pb-3 px-2 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'schedules' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]' : 'text-gray-400 hover:text-emerald-300'
                             }`}
                     >
                         <span className="flex items-center gap-1.5">
