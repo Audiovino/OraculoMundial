@@ -80,68 +80,31 @@ function HeaderSoccerBall3D() {
                 uniform vec3 light2Pos;
                 uniform vec3 light2Color;
                 
-                vec3 icos[12];
-                
                 void main() {
-                    float phi = 1.61803398875;
-                    icos[0] = normalize(vec3(-1.0, phi, 0.0));
-                    icos[1] = normalize(vec3(1.0, phi, 0.0));
-                    icos[2] = normalize(vec3(-1.0, -phi, 0.0));
-                    icos[3] = normalize(vec3(1.0, -phi, 0.0));
-                    
-                    icos[4] = normalize(vec3(0.0, -1.0, phi));
-                    icos[5] = normalize(vec3(0.0, 1.0, phi));
-                    icos[6] = normalize(vec3(0.0, -1.0, -phi));
-                    icos[7] = normalize(vec3(0.0, 1.0, -phi));
-                    
-                    icos[8] = normalize(vec3(phi, 0.0, -1.0));
-                    icos[9] = normalize(vec3(phi, 0.0, 1.0));
-                    icos[10] = normalize(vec3(-phi, 0.0, -1.0));
-                    icos[11] = normalize(vec3(-phi, 0.0, 1.0));
-                    
+                    // Simplified soccer ball pattern using modulo instead of icosahedron
                     vec3 p = normalize(vPosition);
                     
-                    float firstMax = -1.0;
-                    float secondMax = -1.0;
-                    for (int i = 0; i < 12; i++) {
-                        float d = dot(p, icos[i]);
-                        if (d > firstMax) {
-                            secondMax = firstMax;
-                            firstMax = d;
-                        } else if (d > secondMax) {
-                            secondMax = d;
-                        }
-                    }
+                    // Create pentagon pattern using spherical coordinates
+                    float theta = atan(p.y, p.x);
+                    float phi = acos(p.z);
+                    
+                    // Pentagon tiling pattern
+                    float pattern = mod(theta * 2.5 + phi * 1.5, 1.0);
                     
                     vec3 baseColor = vec3(0.96, 0.96, 0.98);
-                    if (firstMax > 0.89) {
+                    if (pattern < 0.15) {
                         baseColor = vec3(0.08, 0.08, 0.10);
                     }
                     
-                    float seam1 = abs(firstMax - 0.89);
-                    if (seam1 < 0.018) {
-                        baseColor = vec3(0.0, 0.0, 0.0);
-                    }
-                    
-                    float edgeVal = firstMax - secondMax;
-                    if (edgeVal < 0.048 && firstMax <= 0.89) {
-                        baseColor = vec3(0.0, 0.0, 0.0);
-                    }
-                    
+                    // Simplified lighting (removed expensive specular calculation)
                     vec3 n = normalize(vNormal);
                     float diff1 = max(dot(n, light1Pos), 0.0);
-                    vec3 r1 = reflect(-light1Pos, n);
-                    float spec1 = pow(max(dot(r1, vec3(0.0, 0.0, 1.0)), 0.0), 32.0);
-                    
                     float diff2 = max(dot(n, light2Pos), 0.0);
-                    vec3 r2 = reflect(-light2Pos, n);
-                    float spec2 = pow(max(dot(r2, vec3(0.0, 0.0, 1.0)), 0.0), 32.0);
                     
                     vec3 ambient = vec3(0.25) * baseColor;
                     vec3 diffuse = (diff1 * light1Color + diff2 * light2Color) * baseColor * 0.95;
-                    vec3 specular = (spec1 * light1Color * 0.5) + (spec2 * light2Color * 0.4);
                     
-                    gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
+                    gl_FragColor = vec4(ambient + diffuse, 1.0);
                 }
             `
         });
