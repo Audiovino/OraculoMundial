@@ -1367,6 +1367,32 @@ export const MundialGame: React.FC = () => {
                                         </div>
 
                                         <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                        {/* Final Result Section - if match is finished */}
+                                        {match.result && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="relative z-10 mt-6 pt-6 border-t border-white/10"
+                                            >
+                                                <div className="text-center">
+                                                    <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">Resultado Final</p>
+                                                    <div className="flex items-center justify-center gap-4">
+                                                        <div className="text-center">
+                                                            <p className="text-2xl font-black text-white">{(match.result as any).home || (match.result as any).homeGoals}</p>
+                                                            <p className="text-xs text-white/60 mt-1">{match.home.name}</p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-xs font-bold text-white/40 uppercase">Final</p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-2xl font-black text-white">{(match.result as any).away || (match.result as any).awayGoals}</p>
+                                                            <p className="text-xs text-white/60 mt-1">{match.away.name}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
                                     </motion.div>
                                 );
                             })}
