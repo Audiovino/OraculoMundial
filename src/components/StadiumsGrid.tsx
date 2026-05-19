@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   RotateCw, 
@@ -18,7 +18,10 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { WORLD_CUP_2026_STADIUMS, Stadium } from '../data/StadiumsData';
-import RealisticStadium3D from './scene/RealisticStadium3D';
+import { useVisibleElement } from '../hooks/useVisibleElement';
+
+// Lazy load RealisticStadium3D para optimización en móvil
+const RealisticStadium3D = React.lazy(() => import('./scene/RealisticStadium3D'));
 
 interface StadiumCardProps {
   stadium: Stadium;
@@ -108,6 +111,9 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
   const [weather] = useState<'clear' | 'cloudy' | 'rainy' | 'stormy'>(
     getWeatherForStadium(stadium)
   );
+  
+  // Intersection Observer para lazy load del modelo 3D
+  const { ref: containerRef, isVisible } = useVisibleElement({ threshold: 0.1, rootMargin: '100px' });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -150,7 +156,7 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
   };
 
   return (
-    <div className="w-full aspect-[16/10.5] relative group" style={{ perspective: '1200px' }}>
+    <div ref={containerRef} className="w-full aspect-[16/10.5] relative group" style={{ perspective: '1200px' }}>
       <style>{`
         .backface-hidden {
           backface-visibility: hidden;
@@ -193,12 +199,28 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
                 />
                 <div className="absolute inset-0 bg-black/10" />
               </div>
+            ) : isVisible ? (
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-8 h-8 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin" />
+                    <span className="text-xs text-slate-500">Cargando modelo 3D...</span>
+                  </div>
+                </div>
+              }>
+                <RealisticStadium3D
+                  stadium={stadium}
+                  currentTime={localTime}
+                  interactive={true}
+                />
+              </Suspense>
             ) : (
-              <RealisticStadium3D
-                stadium={stadium}
-                currentTime={localTime}
-                interactive={true}
-              />
+              <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                <div className="text-center">
+                  <div className="text-xs text-slate-500 mb-2">Modelo 3D</div>
+                  <div className="text-[10px] text-slate-600">Desplázate para cargar</div>
+                </div>
+              </div>
             )}
 
             {/* Badges Overlay */}
