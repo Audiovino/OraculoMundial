@@ -85,12 +85,36 @@ const getTimeOfDay = (hour: number): TimeOfDay => {
   }
 };
 
-const createStadiumGeometry = (color: string): THREE.Group => {
+// Detectar si es móvil
+const isMobileDevice = (): boolean => {
+  return /mobile|android|iphone|ipad|tablet/i.test(navigator.userAgent) || 
+         (typeof window !== 'undefined' && window.innerWidth < 768);
+};
+
+// Detectar LOD (Level of Detail) según dispositivo
+const getLOD = (): 'high' | 'medium' | 'low' => {
+  if (isMobileDevice()) {
+    return 'low'; // Móvil: geometría simplificada
+  }
+  if (window.devicePixelRatio > 2) {
+    return 'high'; // Retina/High-end
+  }
+  return 'medium'; // Desktop normal
+};
+
+const createStadiumGeometry = (color: string, lod: 'high' | 'medium' | 'low' = 'medium'): THREE.Group => {
   const group = new THREE.Group();
   const stadiumColor = new THREE.Color(color);
 
+  // LOD: Reducir segmentos según dispositivo
+  const segments = {
+    high: 32,
+    medium: 16,
+    low: 8
+  }[lod];
+
   // Base del estadio
-  const baseGeometry = new THREE.CylinderGeometry(3, 3.5, 0.3, 32);
+  const baseGeometry = new THREE.CylinderGeometry(3, 3.5, 0.3, segments);
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0x2d5016,
     roughness: 0.7,
@@ -101,7 +125,8 @@ const createStadiumGeometry = (color: string): THREE.Group => {
   group.add(base);
 
   // Estructura del estadio (anillo)
-  const stadiumGeometry = new THREE.TorusGeometry(2.5, 0.4, 16, 100);
+  const torusSegments = lod === 'low' ? 8 : (lod === 'medium' ? 12 : 16);
+  const stadiumGeometry = new THREE.TorusGeometry(2.5, 0.4, torusSegments, 50);
   const stadiumMaterial = new THREE.MeshStandardMaterial({
     color: stadiumColor,
     roughness: 0.5,
@@ -113,7 +138,7 @@ const createStadiumGeometry = (color: string): THREE.Group => {
   group.add(stadium);
 
   // Gradas (cilindro interior)
-  const gradesGeometry = new THREE.CylinderGeometry(2.2, 2.0, 0.8, 32);
+  const gradesGeometry = new THREE.CylinderGeometry(2.2, 2.0, 0.8, segments);
   const gradesMaterial = new THREE.MeshStandardMaterial({
     color: stadiumColor,
     roughness: 0.6,
@@ -124,7 +149,7 @@ const createStadiumGeometry = (color: string): THREE.Group => {
   group.add(grades);
 
   // Cancha
-  const fieldGeometry = new THREE.CylinderGeometry(1.8, 1.8, 0.05, 32);
+  const fieldGeometry = new THREE.CylinderGeometry(1.8, 1.8, 0.05, segments);
   const fieldMaterial = new THREE.MeshStandardMaterial({
     color: 0x2d5016,
     roughness: 0.8,
@@ -146,13 +171,14 @@ const createStadiumGeometry = (color: string): THREE.Group => {
   line.rotation.x = -Math.PI / 2;
   group.add(line);
 
-  // Luces del estadio
-  for (let i = 0; i < 4; i++) {
-    const angle = (i / 4) * Math.PI * 2;
+  // Luces del estadio (reducir en móvil)
+  const lightCount = lod === 'low' ? 2 : 4;
+  for (let i = 0; i < lightCount; i++) {
+    const angle = (i / lightCount) * Math.PI * 2;
     const lightPole = new THREE.Group();
 
     // Poste
-    const poleGeometry = new THREE.CylinderGeometry(0.08, 0.08, 2, 8);
+    const poleGeometry = new THREE.CylinderGeometry(0.08, 0.08, 2, 6);
     const poleMaterial = new THREE.MeshStandardMaterial({
       color: 0x333333,
       roughness: 0.7,
@@ -162,8 +188,9 @@ const createStadiumGeometry = (color: string): THREE.Group => {
     pole.position.y = 1.2;
     lightPole.add(pole);
 
-    // Foco
-    const spotGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+    // Foco (reducir complejidad en móvil)
+    const spotSegments = lod === 'low' ? 4 : 8;
+    const spotGeometry = new THREE.SphereGeometry(0.15, spotSegments, spotSegments);
     const spotMaterial = new THREE.MeshStandardMaterial({
       color: 0xffff99,
       emissive: 0xffff99,
@@ -222,8 +249,16 @@ const MiniStadium3D: React.FC<MiniStadium3DProps> = ({
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    
+    // Optimizar para móvil: deshabilitar sombras
+    const lod = getLOD();
+    if (lod !== 'low') {
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+    } else {
+      renderer.shadowMap.enabled = false;
+    }
+    
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -233,13 +268,20 @@ const MiniStadium3D: React.FC<MiniStadium3DProps> = ({
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, timeOfDay.lightIntensity);
     directionalLight.position.set(timeOfDay.sunPosition.x, timeOfDay.sunPosition.y, timeOfDay.sunPosition.z);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
+    
+    // Optimizar sombras para móvil
+    if (lod !== 'low') {
+      directionalLight.castShadow = true;
+      directionalLight.shadow.mapSize.width = 2048;
+      directionalLight.shadow.mapSize.height = 2048;
+    } else {
+      directionalLight.castShadow = false;
+    }
+    
     scene.add(directionalLight);
 
     // Stadium
-    const stadiumGroup = createStadiumGeometry(stadium.color);
+    const stadiumGroup = createStadiumGeometry(stadium.color, lod);
     stadiumGroupRef.current = stadiumGroup;
     scene.add(stadiumGroup);
 

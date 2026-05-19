@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Medal, User, Users, Save, ChevronDown, Calendar, Flag, Share2, Download, X, Sparkles, Clock, Search, ChevronLeft, ChevronRight, MapPin, Play, LogOut, BarChart3, Check, Loader2, Zap } from 'lucide-react';
 import { ASTRO_PREDICTIONS } from '../data/AstroData';
@@ -9,6 +9,9 @@ import { MundialScene } from './scene/MundialScene';
 import { getStadiumByVenue } from '../data/StadiumsData';
 import RealisticStadium3D from './scene/RealisticStadium3D';
 import * as THREE from 'three';
+
+// Lazy load MiniStadium3D para optimización en móvil
+const MiniStadium3D = React.lazy(() => import('./scene/MiniStadium3D'));
 
 // ---------------------------------------------------------
 // REVISIÓN VISUAL: BALÓN DE FÚTBOL 3D REAL EN EL ENCABEZADO
