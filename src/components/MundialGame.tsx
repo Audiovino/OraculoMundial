@@ -826,24 +826,43 @@ export const MundialGame: React.FC = () => {
     }, []);
 
     const handleScoreChange = (matchId: string, type: 'home' | 'away', value: string) => {
+        // Sanitización Hermes: Solo números, máximo 2 dígitos, limpieza de ceros a la izquierda
+        let sanitized = value.replace(/\D/g, '').slice(0, 2);
+        
+        if (sanitized.length > 1 && sanitized.startsWith('0')) {
+            sanitized = sanitized.replace(/^0+/, '');
+            if (sanitized === '') sanitized = '0';
+        }
+
         setPredictions(prev => ({
             ...prev,
             [matchId]: {
+                ...prev[matchId],
                 matchId,
-                homeScore: type === 'home' ? value : prev[matchId]?.homeScore || '',
-                awayScore: type === 'away' ? value : prev[matchId]?.awayScore || ''
+                homeScore: type === 'home' ? sanitized : prev[matchId]?.homeScore || '',
+                awayScore: type === 'away' ? sanitized : prev[matchId]?.awayScore || ''
             }
         }));
     };
 
     const handleSaveStatus = async (matchId: string) => {
         const prediction = predictions[matchId];
-        if (!prediction || !prediction.homeScore || !prediction.awayScore) {
-            alert('Por favor, ingresa los resultados para ambos equipos antes de guardar.');
+        // 1. Verificación de campos completos
+        if (!prediction || prediction.homeScore === '' || prediction.awayScore === '' || prediction.homeScore === undefined || prediction.awayScore === undefined) {
+            alert('⚠️ Hermes: Por favor, ingresa los resultados para ambos equipos antes de guardar.');
             return;
         }
 
-        const predictionStr = `${prediction.homeScore}-${prediction.awayScore}`;
+        // 2. Validación de tipos y rangos lógicos
+        const homeNum = parseInt(prediction.homeScore, 10);
+        const awayNum = parseInt(prediction.awayScore, 10);
+
+        if (isNaN(homeNum) || isNaN(awayNum) || homeNum < 0 || awayNum < 0 || homeNum > 99 || awayNum > 99) {
+            alert('⚠️ Hermes: Formato inválido. Los goles deben ser números entre 0 y 99.');
+            return;
+        }
+
+        const predictionStr = `${homeNum}-${awayNum}`;
         
         // Save to localStorage immediately for instant feedback
         const updatedPredictions = {
@@ -1219,8 +1238,9 @@ export const MundialGame: React.FC = () => {
                                                                 type="text"
                                                                 inputMode="numeric"
                                                                 pattern="[0-9]*"
-                                                                value={predictions[match.id]?.homeScore || ''}
-                                                                onChange={(e) => handleScoreChange(match.id, 'home', e.target.value.replace(/\D/g, ''))}
+                                                                maxLength={2}
+                                                                value={predictions[match.id]?.homeScore ?? ''}
+                                                                onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                                 placeholder="0"
                                                                 className="w-28 h-32 bg-slate-950/90 border-2 border-white/20 rounded-[28px] text-center text-6xl font-black text-white focus:border-blue-500 focus:ring-8 focus:ring-blue-500/20 focus:outline-none transition-all hover:border-white/30 placeholder:opacity-5 shadow-[inset_0_4px_25px_rgba(0,0,0,0.9)]"
                                                             />
@@ -1236,8 +1256,9 @@ export const MundialGame: React.FC = () => {
                                                                 type="text"
                                                                 inputMode="numeric"
                                                                 pattern="[0-9]*"
-                                                                value={predictions[match.id]?.awayScore || ''}
-                                                                onChange={(e) => handleScoreChange(match.id, 'away', e.target.value.replace(/\D/g, ''))}
+                                                                maxLength={2}
+                                                                value={predictions[match.id]?.awayScore ?? ''}
+                                                                onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                                 placeholder="0"
                                                                 className="w-28 h-32 bg-slate-950/90 border-2 border-white/20 rounded-[28px] text-center text-6xl font-black text-white focus:border-emerald-500 focus:ring-8 focus:ring-emerald-500/20 focus:outline-none transition-all hover:border-white/30 placeholder:opacity-5 shadow-[inset_0_4px_25px_rgba(0,0,0,0.9)]"
                                                             />
