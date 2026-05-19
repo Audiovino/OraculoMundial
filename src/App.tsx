@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MundialAuthProvider, useMundialAuth } from './contexts/MundialAuthContext';
 import { MundialAuth } from './components/MundialAuth';
 import { MundialGame } from './components/MundialGame';
 import StadiumsGrid from './components/StadiumsGrid';
 import Navigation from './components/Navigation';
+import AdminPage from './components/AdminPage';
 import { motion } from 'framer-motion';
 import './App.css';
 
 const AppContent: React.FC = () => {
     const { user, loading, isRecoveryMode } = useMundialAuth();
-    const [currentView, setCurrentView] = useState<'game' | 'stadiums'>('game');
+    const [currentView, setCurrentView] = useState<'game' | 'stadiums' | 'admin'>('game');
+    const [isAdminRoute, setIsAdminRoute] = useState(false);
+
+    // Detectar si estamos en ruta /admin
+    useEffect(() => {
+        const handleRouteChange = () => {
+            const path = window.location.pathname;
+            setIsAdminRoute(path === '/admin');
+            if (path === '/admin') {
+                setCurrentView('admin');
+            } else {
+                setCurrentView('game');
+            }
+        };
+
+        handleRouteChange();
+        window.addEventListener('popstate', handleRouteChange);
+        return () => window.removeEventListener('popstate', handleRouteChange);
+    }, []);
 
     if (loading) {
         return (
@@ -38,6 +57,11 @@ const AppContent: React.FC = () => {
 
     if (!user) {
         return <MundialAuth />;
+    }
+
+    // Mostrar AdminPage si estamos en ruta /admin
+    if (isAdminRoute || currentView === 'admin') {
+        return <AdminPage />;
     }
 
     return (

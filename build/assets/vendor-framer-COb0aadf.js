@@ -1,4 +1,4 @@
-import{r as v}from"./vendor-lucide-BLcDKnGi.js";var Ms={exports:{}},Ht={};/**
+import{u as v}from"./vendor-lucide-CrCAQzEg.js";var Ms={exports:{}},Ht={};/**
  * @license React
  * react-jsx-runtime.production.min.js
  *
