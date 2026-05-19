@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MundialAuthProvider, useMundialAuth } from './contexts/MundialAuthContext';
 import { MundialAuth } from './components/MundialAuth';
 import { MundialGame } from './components/MundialGame';
+import StadiumsGrid from './components/StadiumsGrid';
+import Navigation from './components/Navigation';
 import { motion } from 'framer-motion';
 import './App.css';
 
 const AppContent: React.FC = () => {
     const { user, loading, isRecoveryMode } = useMundialAuth();
+    const [currentView, setCurrentView] = useState<'game' | 'stadiums'>('game');
 
     if (loading) {
         return (
@@ -33,7 +36,22 @@ const AppContent: React.FC = () => {
         return <MundialAuth isRecovery={true} />;
     }
 
-    return user ? <MundialGame /> : <MundialAuth />;
+    if (!user) {
+        return <MundialAuth />;
+    }
+
+    return (
+        <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
+            <Navigation currentView={currentView} onViewChange={setCurrentView} />
+            <div style={{ paddingTop: '70px' }}>
+                {currentView === 'game' ? (
+                    <MundialGame />
+                ) : (
+                    <StadiumsGrid filter="all" />
+                )}
+            </div>
+        </div>
+    );
 };
 
 function App() {

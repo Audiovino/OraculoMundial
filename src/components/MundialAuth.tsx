@@ -218,6 +218,12 @@ export const MundialAuth: React.FC<{ isRecovery?: boolean }> = ({ isRecovery }) 
                                                 required
                                             />
                                         </div>
+                                        {/* Privacy Notice */}
+                                        <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                                            <p className="text-xs text-blue-300 leading-relaxed">
+                                                💡 <strong>Privacidad:</strong> Si prefieres no mostrar tu edificio real por razones de privacidad, puedes usar un nombre de usuario de fantasía. Todos los datos se mantienen confidenciales.
+                                            </p>
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}

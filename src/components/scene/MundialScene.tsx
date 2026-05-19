@@ -47,8 +47,8 @@ export const MundialScene: React.FC = () => {
         dirLight1.position.set(10, 10, 5);
         scene.add(dirLight1);
 
-        // Luz morada de contraste
-        const dirLight2 = new THREE.DirectionalLight(0xc084fc, 0.8);
+        // Luz índigo de contraste para estética Slate/Azul
+        const dirLight2 = new THREE.DirectionalLight(0x818cf8, 0.8);
         dirLight2.position.set(-10, -10, -5);
         scene.add(dirLight2);
 
@@ -69,8 +69,8 @@ export const MundialScene: React.FC = () => {
         starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
 
         const starsMaterial = new THREE.PointsMaterial({
-            color: 0xffffff,
-            size: 0.15,
+            color: 0xfcd34d, // Chispas doradas/celestes estilo estadio
+            size: 0.25, // Un poco más grandes para que parezcan flares o confeti
             transparent: true,
             opacity: 0.8,
             sizeAttenuation: true
@@ -88,7 +88,7 @@ export const MundialScene: React.FC = () => {
                 light1Pos: { value: new THREE.Vector3(10, 10, 5).normalize() },
                 light1Color: { value: new THREE.Color(0x38bdf8) },
                 light2Pos: { value: new THREE.Vector3(-10, -10, -5).normalize() },
-                light2Color: { value: new THREE.Color(0xc084fc) }
+                light2Color: { value: new THREE.Color(0x818cf8) }
             },
             vertexShader: `
                 varying vec3 vNormal;
@@ -291,7 +291,7 @@ export const MundialScene: React.FC = () => {
             className="fixed inset-0 pointer-events-none" 
             style={{ 
                 zIndex: 0,
-                background: 'radial-gradient(circle at center, #020617 0%, #090d16 100%)' 
+                background: 'radial-gradient(circle at center, #1e293b 0%, #0f172a 100%)' 
             }}
         >
             <canvas 

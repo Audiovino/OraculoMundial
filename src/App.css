@@ -68,3 +68,206 @@ code {
 .animate-slide-in {
   animation: slideIn 0.3s ease-out;
 }
+
+/* Elegant 3D Flag Waving Animation */
+@keyframes flagWave {
+  0% {
+    transform: perspective(600px) rotateY(-4deg) rotateX(1deg) rotateZ(-1deg) skewY(0.8deg);
+    filter: brightness(0.95) contrast(1.05);
+  }
+  25% {
+    transform: perspective(600px) rotateY(6deg) rotateX(-1.5deg) rotateZ(0.5deg) skewY(-1.2deg);
+    filter: brightness(1.08) contrast(1.02);
+  }
+  50% {
+    transform: perspective(600px) rotateY(-6deg) rotateX(1.5deg) rotateZ(-1.2deg) skewY(1.2deg);
+    filter: brightness(0.92) contrast(1.08);
+  }
+  75% {
+    transform: perspective(600px) rotateY(3deg) rotateX(-0.8deg) rotateZ(0.3deg) skewY(-0.6deg);
+    filter: brightness(1.04) contrast(0.98);
+  }
+  100% {
+    transform: perspective(600px) rotateY(-4deg) rotateX(1deg) rotateZ(-1deg) skewY(0.8deg);
+    filter: brightness(0.95) contrast(1.05);
+  }
+}
+
+.animate-flag-wave-left {
+  animation: flagWave 3.5s ease-in-out infinite;
+  transform-origin: left center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+.animate-flag-wave-right {
+  animation: flagWave 3.8s ease-in-out infinite;
+  transform-origin: right center;
+  animation-delay: -1.7s;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Premium Visual Design System by Antigravity */
+
+/* 1. Nebula Floating Ambient Animations */
+@keyframes floatSlow {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -40px) scale(1.1);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes floatSlower {
+  0% {
+    transform: translate(0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate(-40px, 30px) scale(0.95);
+  }
+  100% {
+    transform: translate(0, 0) scale(1.05);
+  }
+}
+
+@keyframes floatMedium {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(20px, 20px) rotate(180deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 20s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: floatSlower 25s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: floatMedium 15s ease-in-out infinite;
+}
+
+/* 2. Glassmorphism Premium Card with Glowing High Contrast Borders */
+.glass-premium {
+  background: rgba(10, 15, 30, 0.65) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.glass-premium:hover {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(96, 165, 250, 0.4) !important; /* Beautiful Blue border on hover */
+  box-shadow: 0 30px 60px -15px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* 3. Gold, Silver, Bronze Luxury Podium Gradients for Ranking */
+.podium-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%) !important;
+  border: 2px solid rgba(245, 158, 11, 0.5) !important;
+  box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.3) !important;
+}
+
+.podium-silver {
+  background: linear-gradient(135deg, rgba(203, 213, 225, 0.15) 0%, rgba(241, 245, 249, 0.05) 100%) !important;
+  border: 2px solid rgba(148, 163, 184, 0.5) !important;
+  box-shadow: 0 10px 30px -10px rgba(148, 163, 184, 0.25) !important;
+}
+
+.podium-bronze {
+  background: linear-gradient(135deg, rgba(194, 65, 12, 0.15) 0%, rgba(234, 88, 12, 0.05) 100%) !important;
+  border: 2px solid rgba(194, 65, 12, 0.5) !important;
+  box-shadow: 0 10px 30px -10px rgba(194, 65, 12, 0.2) !important;
+}
+
+/* 4. Luxury Card Shiny Gloss Sweep Effect */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-30deg);
+  transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.card-shine:hover::after {
+  left: 180%;
+}
+
+/* 5. Stunning Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(10, 15, 30, 0.4);
+  border-radius: 99px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 99px;
+  transition: all 0.3s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.6);
+}
+
+/* 6. Dynamic High Contrast Buttons */
+.btn-cyber-cyan {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 132, 199, 0.2) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 20px -5px rgba(56, 189, 248, 0.2);
+}
+
+.btn-cyber-cyan:hover {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.4) 0%, rgba(2, 132, 199, 0.4) 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 6px 25px -3px rgba(56, 189, 248, 0.45);
+}
+
+.btn-cyber-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+  box-shadow: 0 4px 20px -5px rgba(251, 191, 36, 0.2);
+}
+
+.btn-cyber-gold:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.4) 0%, rgba(217, 119, 6) 100%);
+  border-color: #fbbf24;
+  box-shadow: 0 6px 25px -3px rgba(251, 191, 36, 0.45);
+}
+
+

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Medal, User, Users, Save, ChevronDown, Calendar, Flag, Share2, Download, X, Sparkles, Clock, Search, ChevronLeft, ChevronRight, MapPin, Play, LogOut, BarChart3, Check, Loader2 } from 'lucide-react';
+import { Trophy, Medal, User, Users, Save, ChevronDown, Calendar, Flag, Share2, Download, X, Sparkles, Clock, Search, ChevronLeft, ChevronRight, MapPin, Play, LogOut, BarChart3, Check, Loader2, Zap } from 'lucide-react';
 import { ASTRO_PREDICTIONS } from '../data/AstroData';
 import { WORLD_CUP_SCHEDULES, TIMEZONE_INFO } from '../data/WorldCupSchedules';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { mundialSupabase, MundialRanking, MundialPrediction } from '../services/mundialSupabaseClient';
 import { MundialScene } from './scene/MundialScene';
-import { Interactive3DSoccer } from './Interactive3DSoccer';
+import { getStadiumByVenue } from '../data/StadiumsData';
+import RealisticStadium3D from './scene/RealisticStadium3D';
 import * as THREE from 'three';
 
 // ---------------------------------------------------------
@@ -172,141 +173,306 @@ function HeaderSoccerBall3D() {
 }
 
 // ---------------------------------------------------------
-// 5 ICONOS ILUSTRADOS Y ANIMADOS EN SVG PARA LAS SECCIONES
+// 5 ILUSTRACIONES PREMIUM ULTRA MODERNAS EN CSS Y SVG
 // ---------------------------------------------------------
 function AnimatedBicycleKick() {
     return (
-        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-blue-500/10 to-indigo-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] animate-[pulse_3s_infinite]" />
-            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                <circle cx="100" cy="100" r="85" fill="none" stroke="url(#blueGrad)" strokeWidth="1.5" strokeDasharray="30 150" className="animate-[spin_4s_linear_infinite]" />
-                <circle cx="100" cy="100" r="85" fill="none" stroke="url(#emeraldGrad)" strokeWidth="1" strokeDasharray="60 120" className="animate-[spin_6s_linear_infinite_reverse]" />
-                <g className="animate-[bounce_3s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
-                    <path
-                        d="M 60,110 C 70,80 90,70 120,60 C 130,55 145,50 150,60 C 152,65 140,75 130,85 C 115,100 100,120 90,140 C 85,150 75,160 65,155 C 55,150 50,135 60,110 Z"
-                        fill="url(#blueGrad)"
-                        opacity="0.85"
-                    />
-                    <circle cx="152" cy="50" r="10" fill="#38bdf8" />
-                    <g className="animate-[pulse_1s_infinite]">
-                        <circle cx="50" cy="80" r="12" fill="#fff" />
-                        <circle cx="50" cy="80" r="12" fill="none" stroke="#10b981" strokeWidth="2.5" />
-                        <path d="M 45,75 L 55,85 M 55,75 L 45,85" stroke="#000" strokeWidth="1.5" />
-                    </g>
-                </g>
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-blue-900/40 via-indigo-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-blue-500/40">
+            {/* Background Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:16px_16px] opacity-30 pointer-events-none" />
+            
+            {/* Circular Glowing Lines */}
+            <div className="absolute w-32 h-32 rounded-full border border-blue-500/20 animate-[spin_20s_linear_infinite] pointer-events-none" />
+            <div className="absolute w-24 h-24 rounded-full border border-dashed border-indigo-500/30 animate-[spin_10s_linear_infinite_reverse] pointer-events-none" />
+            
+            {/* Radial Blur Glow */}
+            <div className="absolute w-16 h-16 bg-blue-500/30 rounded-full blur-[20px] group-hover:bg-blue-400/40 transition-colors duration-500 pointer-events-none" />
+            
+            {/* Real Visual SVG: Bicycle Kick Player with Neon Speed Trails */}
+            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_12px_rgba(59,130,246,0.6)] group-hover:scale-110 transition-transform duration-500">
                 <defs>
-                    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="kickGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#38bdf8" />
-                        <stop offset="100%" stopColor="#2563eb" />
+                        <stop offset="100%" stopColor="#818cf8" />
                     </linearGradient>
-                    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#34d399" stopOpacity="0.8" />
-                        <stop offset="100%" stopColor="#059669" stopOpacity="0.2" />
+                    <linearGradient id="ballGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#3b82f6" />
                     </linearGradient>
                 </defs>
+                
+                {/* Motion lines / Speed trails */}
+                <path d="M15,55 C30,55 45,45 60,35" stroke="url(#kickGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.4" strokeDasharray="3 3" />
+                <path d="M10,65 C28,63 45,50 65,30" stroke="url(#kickGradient)" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.8" />
+                <path d="M22,75 C38,70 52,58 70,38" stroke="url(#kickGradient)" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.5" />
+
+                {/* Soccer Player Silhouette in a perfect Chilena pose */}
+                <g fill="url(#kickGradient)">
+                    {/* Head */}
+                    <circle cx="50" cy="50" r="4.5" />
+                    {/* Torso & Hips */}
+                    <path d="M50,54.5 L36,64 L30,60 L42,52 Z" />
+                    {/* Back Leg bent */}
+                    <path d="M30,60 L20,55 L25,48 L32,56 Z" />
+                    {/* Kicking Leg fully extended high towards the ball */}
+                    <path d="M36,64 L48,78 L53,75 L40,61 Z" />
+                    {/* Arms balancing in mid-air */}
+                    <path d="M50,53 L58,45 L62,48 L52,55 Z" />
+                    <path d="M48,51 L38,42 L34,44 L44,52 Z" />
+                </g>
+                
+                {/* Kicked Ball leaving trail */}
+                <g>
+                    <circle cx="78" cy="25" r="7.5" fill="none" stroke="#60a5fa" strokeWidth="1" opacity="0.5" className="animate-ping" />
+                    <circle cx="78" cy="25" r="5" fill="url(#ballGradient)" />
+                </g>
             </svg>
+            
+            {/* Sparkles particle effects */}
+            <div className="absolute w-2 h-2 bg-blue-400 rounded-full animate-ping top-8 left-12 pointer-events-none" />
+            <div className="absolute w-1.5 h-1.5 bg-indigo-400 rounded-full animate-ping bottom-10 right-12 [animation-delay:0.7s] pointer-events-none" />
         </div>
     );
 }
 
 function AnimatedTrophyCelebration() {
     return (
-        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-amber-500/10 to-yellow-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:20px_20px] animate-[pulse_2s_infinite]" />
-            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_20px_rgba(251,191,36,0.4)]">
-                <circle cx="100" cy="100" r="75" fill="none" stroke="url(#goldGrad)" strokeWidth="2" className="animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]" />
-                <g className="animate-[bounce_2.5s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
-                    <rect x="75" y="145" width="50" height="15" rx="5" fill="#d97706" />
-                    <rect x="80" y="130" width="40" height="15" rx="3" fill="#f59e0b" />
-                    <path d="M 90,130 C 90,110 80,95 90,75 C 95,65 105,65 110,75 C 120,95 110,110 110,130 Z" fill="#fbbf24" />
-                    <circle cx="100" cy="55" r="22" fill="#fbbf24" />
-                    <circle cx="100" cy="55" r="18" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="10 5" className="animate-[spin_12s_linear_infinite]" />
-                    <path d="M 50,40 L 53,46 L 60,47 L 55,52 L 56,59 L 50,55 L 44,59 L 45,52 L 40,47 L 47,46 Z" fill="#fbbf24" className="animate-[pulse_1s_infinite]" />
-                    <path d="M 150,40 L 153,46 L 160,47 L 155,52 L 156,59 L 150,55 L 144,59 L 145,52 L 140,47 L 147,46 Z" fill="#fbbf24" className="animate-[pulse_1s_infinite_reverse] [animation-delay:0.5s]" />
-                </g>
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-amber-950/30 via-yellow-950/10 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-amber-500/40">
+            {/* Sparkle background stars */}
+            <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1.2px,transparent_1.2px)] [background-size:16px_16px] opacity-15 pointer-events-none" />
+            
+            {/* Glowing spotlight base */}
+            <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-amber-500/20 to-transparent blur-md pointer-events-none" />
+            
+            {/* Rotating 3D Golden Rings */}
+            <div className="absolute w-32 h-32 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-[spin_12s_linear_infinite] pointer-events-none" />
+            <div className="absolute w-24 h-24 rounded-full border border-dashed border-yellow-500/30 animate-[spin_6s_linear_infinite_reverse] pointer-events-none" />
+            
+            {/* Radial Gold Glow */}
+            <div className="absolute w-16 h-16 bg-amber-500/30 rounded-full blur-[20px] group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
+            
+            {/* Realistic Golden Cup SVG */}
+            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(245,158,11,0.7)] group-hover:scale-110 group-hover:rotate-2 transition-all duration-500">
                 <defs>
                     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#fbbf24" />
-                        <stop offset="100%" stopColor="#d97706" />
+                        <stop offset="0%" stopColor="#ffe066" />
+                        <stop offset="50%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#b45309" />
                     </linearGradient>
                 </defs>
+                
+                {/* Laurel Leaves around Trophy */}
+                <path d="M25,65 C15,50 20,30 30,22 M75,65 C85,50 80,30 70,22" stroke="url(#goldGrad)" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6" strokeDasharray="2 3" />
+                
+                {/* Crown Stars */}
+                <polygon points="50,6 52,11 57,11 53,14 55,19 50,16 45,19 47,14 43,11 48,11" fill="#fbbf24" className="animate-pulse" />
+                
+                {/* The Golden Trophy Body */}
+                <g fill="url(#goldGrad)">
+                    {/* Rim & Bowl */}
+                    <path d="M32,25 C32,25 32,55 50,55 C68,55 68,25 68,25 Z" />
+                    <ellipse cx="50" cy="25" rx="18" ry="4" fill="#fef08a" />
+                    
+                    {/* Handles Left & Right */}
+                    <path d="M32,28 C22,28 22,44 32,44 C26,44 26,32 32,32" />
+                    <path d="M68,28 C78,28 78,44 68,44 C74,44 74,32 68,32" />
+                    
+                    {/* Stem / Neck */}
+                    <path d="M46,55 L54,55 L52,68 L48,68 Z" />
+                    
+                    {/* Base */}
+                    <path d="M38,68 L62,68 L65,76 L35,76 Z" />
+                    <rect x="33" y="76" width="34" height="6" rx="2" fill="#78350f" />
+                </g>
+                
+                {/* Sparkle stars */}
+                <path d="M25,18 L26,21 L29,22 L26,23 L25,26 L24,23 L21,22 L24,21 Z" fill="#fef08a" className="animate-[ping_1.5s_infinite]" />
+                <path d="M72,15 L73,18 L76,19 L73,20 L72,23 L71,20 L68,19 L71,18 Z" fill="#fef08a" className="animate-[ping_2s_infinite_reverse]" />
             </svg>
+            
+            {/* floaters */}
+            <div className="absolute w-2 h-2 rounded-full bg-yellow-400 animate-ping top-8 left-8 pointer-events-none" />
+            <div className="absolute w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping bottom-10 right-10 [animation-delay:0.5s] pointer-events-none" />
         </div>
     );
 }
 
 function AnimatedStatsShield() {
     return (
-        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
-            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(129,140,248,0.3)]">
-                <polygon points="100,25 165,62.5 165,137.5 100,175 35,137.5 35,62.5" fill="none" stroke="rgba(129, 140, 248, 0.2)" strokeWidth="1" />
-                <path d="M 100,20 C 130,20 170,25 170,75 C 170,125 125,165 100,180 C 75,165 30,125 30,75 C 30,25 70,20 100,20 Z" fill="none" stroke="url(#shieldGrad)" strokeWidth="3" className="animate-[pulse_2.5s_infinite]" />
-                <g className="animate-[bounce_4s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
-                    <circle cx="100" cy="90" r="30" fill="url(#shieldGrad)" opacity="0.15" />
-                    <circle cx="100" cy="90" r="24" fill="none" stroke="#818cf8" strokeWidth="2.5" />
-                    <polygon points="100,74 116,85 110,103 90,103 84,85" fill="none" stroke="#818cf8" strokeWidth="1.5" />
-                </g>
-                <path d="M 45,145 Q 75,120 100,140 T 155,130" fill="none" stroke="#a78bfa" strokeWidth="3" className="animate-[pulse_1.5s_infinite]" strokeLinecap="round" />
-                <circle cx="100" cy="140" r="3" fill="#a78bfa" />
-                <defs>
-                    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#818cf8" />
-                        <stop offset="100%" stopColor="#c084fc" />
-                    </linearGradient>
-                </defs>
-            </svg>
+        <div className="w-full max-w-[120px] aspect-[3/4] relative flex flex-col items-center justify-between p-3 bg-gradient-to-br from-indigo-900/60 via-slate-950 to-[#0A0D1A] rounded-[24px] border-2 border-indigo-500/40 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.7)] shrink-0 transition-all duration-500 hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+            {/* Holographic glowing swipe */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2.5s_infinite] pointer-events-none" />
+            
+            {/* Neon glowing aura behind */}
+            <div className="absolute w-20 h-20 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full blur-[15px] opacity-35 group-hover:opacity-60 transition-opacity duration-700 top-2 pointer-events-none" />
+
+            {/* FUT Card Header */}
+            <div className="relative z-10 w-full flex justify-between items-center">
+                <span className="text-[7px] font-black text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">PRED CARD</span>
+                <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
+            </div>
+
+            {/* FUT Card Center Avatar Silhouette & Soccer Ball */}
+            <div className="relative z-10 w-full flex-1 flex items-center justify-center my-1.5">
+                <svg viewBox="0 0 100 100" className="w-16 h-16 drop-shadow-[0_0_12px_rgba(99,102,241,0.5)] group-hover:scale-105 transition-transform duration-500">
+                    <defs>
+                        <linearGradient id="cardPlayerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#10b981" />
+                            <stop offset="50%" stopColor="#6366f1" />
+                            <stop offset="100%" stopColor="#4f46e5" />
+                        </linearGradient>
+                    </defs>
+                    {/* Glowing outer ring */}
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="url(#cardPlayerGrad)" strokeWidth="1" strokeDasharray="3 3" className="animate-[spin_20s_linear_infinite]" />
+                    {/* Soccer jersey silhouette */}
+                    <path d="M30,85 C30,70 36,65 50,65 C64,65 70,70 70,85 Z" fill="url(#cardPlayerGrad)" opacity="0.9" />
+                    {/* Player Head */}
+                    <circle cx="50" cy="46" r="13" fill="url(#cardPlayerGrad)" />
+                    {/* Soccer ball inside head/mind glowing */}
+                    <path d="M50,42 L53,48 L47,48 Z" fill="#ffffff" opacity="0.8" />
+                </svg>
+                {/* Pulsing ball in corner */}
+                <div className="absolute bottom-0 right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg border border-white">
+                    <span className="text-[7px] font-black text-slate-950">82</span>
+                </div>
+            </div>
+
+            {/* FUT Card Stats Footer */}
+            <div className="relative z-10 w-full space-y-1 text-center bg-black/40 p-2 rounded-xl border border-white/5">
+                <div className="flex justify-between items-center text-[7px] font-black text-slate-400 uppercase tracking-wider">
+                    <span>PRECISIÓN</span>
+                    <span className="text-emerald-400 font-mono text-[8px]">82%</span>
+                </div>
+                {/* Sleek dynamic bar fill */}
+                <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full w-[82%]" />
+                </div>
+                <div className="flex justify-between items-center text-[6px] font-black text-slate-500 uppercase tracking-widest pt-0.5">
+                    <span>ESTABLE</span>
+                    <span>12 PRON</span>
+                </div>
+            </div>
         </div>
     );
 }
 
 function AnimatedCosmicBall() {
     return (
-        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#c084fc_1px,transparent_1px)] [background-size:24px_24px] animate-[pulse_4s_infinite]" />
-            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_20px_rgba(192,132,252,0.4)]">
-                <ellipse cx="100" cy="100" rx="80" ry="25" fill="none" stroke="url(#cosmicGrad)" strokeWidth="1.5" className="animate-[spin_8s_linear_infinite]" style={{ transformOrigin: '100px 100px', transform: 'rotate(30deg)' }} />
-                <g className="animate-[bounce_3.5s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
-                    <circle cx="100" cy="100" r="32" fill="url(#cosmicGrad)" opacity="0.85" />
-                    <circle cx="100" cy="100" r="35" fill="none" stroke="#f472b6" strokeWidth="1.5" className="animate-ping" />
-                </g>
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-purple-950/40 via-indigo-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-purple-500/40">
+            {/* Stars background */}
+            <div className="absolute inset-0 bg-[radial-gradient(#ec4899_1.2px,transparent_1.2px)] [background-size:14px_14px] opacity-20 pointer-events-none" />
+            
+            {/* Glowing Purple/Pink Nebulae */}
+            <div className="absolute w-20 h-20 bg-gradient-to-tr from-purple-500/30 to-pink-500/20 rounded-full blur-[15px] animate-pulse pointer-events-none" />
+            
+            {/* Orbit paths */}
+            <div className="absolute w-36 h-14 rounded-full border border-purple-500/20 border-t-purple-500/60 rotate-[-15deg] animate-[spin_10s_linear_infinite] pointer-events-none" />
+            <div className="absolute w-32 h-24 rounded-full border border-dashed border-indigo-500/20 border-b-pink-500/40 rotate-[35deg] animate-[spin_15s_linear_infinite_reverse] pointer-events-none" />
+            
+            {/* Cosmic Soccer Ball Oracle SVG */}
+            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(236,72,153,0.7)] group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
                 <defs>
-                    <linearGradient id="cosmicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#c084fc" />
-                        <stop offset="50%" stopColor="#ec4899" />
-                        <stop offset="100%" stopColor="#f43f5e" />
+                    <linearGradient id="cosmicBallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f472b6" />
+                        <stop offset="50%" stopColor="#a855f7" />
+                        <stop offset="100%" stopColor="#312e81" />
                     </linearGradient>
+                    <radialGradient id="nebulaGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
+                    </radialGradient>
                 </defs>
+                
+                {/* Glowing Core */}
+                <circle cx="50" cy="50" r="38" fill="url(#cosmicBallGrad)" />
+                <circle cx="50" cy="50" r="38" fill="url(#nebulaGlow)" opacity="0.3" />
+                
+                {/* Constellation Star Lines on Soccer Ball */}
+                <g stroke="#ffffff" strokeWidth="1" fill="none" opacity="0.8">
+                    {/* Central Star Pentagon */}
+                    <polygon points="50,30 65,41 59,58 41,58 35,41" strokeWidth="1.5" className="animate-pulse" />
+                    {/* Glowing Vertices (Constellation stars) */}
+                    <circle cx="50" cy="30" r="1.5" fill="#ffffff" />
+                    <circle cx="65" cy="41" r="1.5" fill="#ffffff" />
+                    <circle cx="59" cy="58" r="1.5" fill="#ffffff" />
+                    <circle cx="41" cy="58" r="1.5" fill="#ffffff" />
+                    <circle cx="35" cy="41" r="1.5" fill="#ffffff" />
+                    
+                    {/* Extension lines to the boundary */}
+                    <line x1="50" y1="30" x2="50" y2="12" strokeWidth="1" />
+                    <line x1="65" y1="41" x2="84" y2="35" strokeWidth="1" />
+                    <line x1="59" y1="58" x2="72" y2="80" strokeWidth="1" />
+                    <line x1="41" y1="58" x2="28" y2="80" strokeWidth="1" />
+                    <line x1="35" y1="41" x2="16" y2="35" strokeWidth="1" />
+                </g>
             </svg>
+            
+            {/* Dynamic floating sparkles */}
+            <div className="absolute w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24] animate-[ping_2s_infinite] top-6 left-10 pointer-events-none" />
+            <div className="absolute w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_#60a5fa] animate-[ping_3s_infinite_reverse] bottom-8 right-8 pointer-events-none" />
         </div>
     );
 }
 
 function AnimatedClockStadium() {
     return (
-        <div className="w-full max-w-[150px] h-[150px] relative flex items-center justify-center bg-gradient-to-br from-emerald-500/10 to-teal-500/5 rounded-3xl border border-white/5 overflow-hidden group shadow-2xl shrink-0">
-            <svg viewBox="0 0 200 200" className="w-32 h-32 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-                <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(52, 211, 153, 0.2)" strokeWidth="6" />
-                <circle cx="100" cy="100" r="82" fill="none" stroke="#34d399" strokeWidth="2.5" strokeDasharray="10 40" className="animate-[spin_20s_linear_infinite]" />
-                <g className="animate-[bounce_3s_ease-in-out_infinite]" style={{ transformOrigin: '100px 100px' }}>
-                    <path
-                        d="M 120,80 C 130,90 140,95 155,100 M 110,65 L 120,80 L 105,100 L 115,120 M 120,80 L 95,90 L 80,115"
-                        stroke="url(#emeraldClockGrad)"
-                        strokeWidth="3.5"
-                        fill="none"
-                        strokeLinecap="round"
-                    />
-                    <circle cx="110" cy="55" r="7" fill="#34d399" />
-                </g>
-                <line x1="100" y1="100" x2="100" y2="42" stroke="#fff" strokeWidth="2" className="animate-[spin_10s_linear_infinite]" style={{ transformOrigin: '100px 100px' }} strokeLinecap="round" />
-                <line x1="100" y1="100" x2="135" y2="100" stroke="#10b981" strokeWidth="3" className="animate-[spin_120s_linear_infinite]" style={{ transformOrigin: '100px 100px' }} strokeLinecap="round" />
-                <circle cx="100" cy="100" r="6" fill="#fff" />
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-emerald-950/40 via-teal-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-emerald-500/40">
+            {/* Glowing radar scan sweep */}
+            <div className="absolute w-32 h-32 rounded-full bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent origin-center animate-[spin_5s_linear_infinite] pointer-events-none" />
+            
+            {/* Stadium concentric tracks */}
+            <div className="absolute w-32 h-32 rounded-full border-2 border-emerald-500/20 pointer-events-none" />
+            <div className="absolute w-24 h-24 rounded-full border border-dashed border-emerald-500/30 animate-[spin_20s_linear_infinite_reverse] pointer-events-none" />
+            
+            {/* Clock Stadium SVG Design */}
+            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:scale-105 transition-transform duration-500">
                 <defs>
-                    <linearGradient id="emeraldClockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#34d399" />
-                        <stop offset="100%" stopColor="#059669" />
+                    <linearGradient id="stadiumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#047857" />
+                    </linearGradient>
+                    <linearGradient id="clockHandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#fbbf24" />
+                        <stop offset="100%" stopColor="#f59e0b" />
                     </linearGradient>
                 </defs>
+                
+                {/* Concentric Stadium Stand rings */}
+                <ellipse cx="50" cy="50" rx="42" ry="42" fill="none" stroke="url(#stadiumGrad)" strokeWidth="3" opacity="0.3" />
+                <ellipse cx="50" cy="50" rx="34" ry="34" fill="none" stroke="url(#stadiumGrad)" strokeWidth="1.5" />
+                
+                {/* Soccer Pitch Center Circle & Lines in Center */}
+                <ellipse cx="50" cy="50" rx="14" ry="14" fill="none" stroke="#10b981" strokeWidth="1" opacity="0.6" className="animate-pulse" />
+                <line x1="16" y1="50" x2="84" y2="50" stroke="#10b981" strokeWidth="0.8" opacity="0.5" />
+                
+                {/* Goal boxes left & right */}
+                <rect x="16" y="38" width="8" height="24" fill="none" stroke="#10b981" strokeWidth="1" opacity="0.5" />
+                <rect x="76" y="38" width="8" height="24" fill="none" stroke="#10b981" strokeWidth="1" opacity="0.5" />
+                
+                {/* Timezone Indicator Dots at 12, 3, 6, 9 */}
+                <circle cx="50" cy="14" r="2" fill="#fbbf24" className="animate-pulse" />
+                <circle cx="86" cy="50" r="2" fill="#fbbf24" />
+                <circle cx="50" cy="86" r="2" fill="#fbbf24" />
+                <circle cx="14" cy="50" r="2" fill="#fbbf24" />
+                
+                {/* Clock Hour & Minute hands rotating dynamically */}
+                <g transform="translate(50,50)">
+                    {/* Hour hand */}
+                    <g className="animate-[spin_60s_linear_infinite]">
+                        <line x1="0" y1="0" x2="0" y2="-18" stroke="url(#clockHandGrad)" strokeWidth="3" strokeLinecap="round" />
+                    </g>
+                    {/* Minute hand */}
+                    <g className="animate-[spin_8s_linear_infinite]">
+                        <line x1="0" y1="0" x2="0" y2="-28" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" />
+                    </g>
+                    {/* Center Cap */}
+                    <circle cx="0" cy="0" r="4.5" fill="#0f172a" stroke="#fbbf24" strokeWidth="2" />
+                </g>
             </svg>
+            
+            {/* Ambient glows */}
+            <div className="absolute w-2 h-2 rounded-full bg-emerald-400 animate-ping top-8 left-8 pointer-events-none" />
+            <div className="absolute w-1.5 h-1.5 rounded-full bg-teal-300 animate-ping bottom-10 right-10 [animation-delay:0.5s] pointer-events-none" />
         </div>
     );
 }
@@ -403,8 +569,8 @@ const getFlag = (code: string) => `https://flagcdn.com/w80/${code.toLowerCase()}
 
 const WC_MATCHES: Match[] = [
     // GRUPO A
-    { id: 'm1', home: { name: 'México', code: 'MEX', flag: getFlag('MX') }, away: { name: 'Sudáfrica', code: 'RSA', flag: getFlag('ZA') }, date: '11 Jun', venue: 'Estadio Ciudad de México', group: 'A', status: 'finished', result: { home: 2, away: 1 } },
-    { id: 'm2', home: { name: 'Corea del Sur', code: 'KOR', flag: getFlag('KR') }, away: { name: 'Ucrania', code: 'UKR', flag: getFlag('UA') }, date: '11 Jun', venue: 'Estadio Guadalajara', group: 'A', status: 'live', result: { home: 1, away: 1 } },
+    { id: 'm1', home: { name: 'México', code: 'MEX', flag: getFlag('MX') }, away: { name: 'Sudáfrica', code: 'RSA', flag: getFlag('ZA') }, date: '11 Jun', venue: 'Estadio Ciudad de México', group: 'A' },
+    { id: 'm2', home: { name: 'Corea del Sur', code: 'KOR', flag: getFlag('KR') }, away: { name: 'Ucrania', code: 'UKR', flag: getFlag('UA') }, date: '11 Jun', venue: 'Estadio Guadalajara', group: 'A' },
     { id: 'm3', home: { name: 'Ucrania', code: 'UKR', flag: getFlag('UA') }, away: { name: 'Sudáfrica', code: 'RSA', flag: getFlag('ZA') }, date: '18 Jun', venue: 'Atlanta Stadium', group: 'A' },
     { id: 'm4', home: { name: 'México', code: 'MEX', flag: getFlag('MX') }, away: { name: 'Corea del Sur', code: 'KOR', flag: getFlag('KR') }, date: '18 Jun', venue: 'Estadio Guadalajara', group: 'A' },
     { id: 'm5', home: { name: 'Ucrania', code: 'UKR', flag: getFlag('UA') }, away: { name: 'México', code: 'MEX', flag: getFlag('MX') }, date: '24 Jun', venue: 'Estadio Ciudad de México', group: 'A' },
@@ -499,11 +665,70 @@ const WC_MATCHES: Match[] = [
     { id: 'm72', home: { name: 'Croacia', code: 'CRO', flag: getFlag('HR') }, away: { name: 'Ghana', code: 'GHA', flag: getFlag('GH') }, date: '27 Jun', venue: 'Philadelphia Stadium', group: 'L' },
 ];
 
+const getTeamGlow = (code: string): string => {
+    switch (code) {
+        case 'ARG': return 'from-sky-400/20 to-transparent';
+        case 'MEX': return 'from-emerald-500/20 to-transparent';
+        case 'BRA': return 'from-amber-400/20 to-transparent';
+        case 'GER': return 'from-red-500/10 via-amber-500/10 to-transparent';
+        case 'UKR': return 'from-yellow-400/20 to-transparent';
+        case 'USA': return 'from-blue-600/20 to-transparent';
+        case 'ITA': return 'from-sky-600/20 to-transparent';
+        case 'FRA': return 'from-blue-700/20 to-transparent';
+        case 'ESP': return 'from-red-600/20 to-transparent';
+        default: return 'from-blue-500/15 to-transparent';
+    }
+};
+
+// ----------------------------------------------------------------
+// CIELO DINÁMICO: gradiente cinematográfico según hora del partido
+// ----------------------------------------------------------------
+function getSkyTheme(kickoff: Date): { gradient: string; weather: string; weatherLabel: string; bgImage?: string } {
+    const h = kickoff.getHours();
+    if (h >= 5 && h < 8) {
+        return {
+            gradient: 'from-amber-900/80 via-orange-900/40 to-black/90',
+            weather: '🌅',
+            weatherLabel: 'Amanecer'
+        };
+    } else if (h >= 8 && h < 13) {
+        return {
+            gradient: 'from-blue-900/80 via-sky-900/50 to-black/90',
+            weather: '☀️',
+            weatherLabel: 'Mañana'
+        };
+    } else if (h >= 13 && h < 17) {
+        return {
+            gradient: 'from-cyan-900/80 via-blue-900/50 to-black/90',
+            weather: '🌤️',
+            weatherLabel: 'Tarde'
+        };
+    } else if (h >= 17 && h < 20) {
+        return {
+            gradient: 'from-orange-900/90 via-red-950/60 to-black/95',
+            weather: '🌇',
+            weatherLabel: 'Atardecer'
+        };
+    } else if (h >= 20 && h < 24) {
+        return {
+            gradient: 'from-indigo-950/90 via-slate-900/80 to-black/95',
+            weather: '🌙',
+            weatherLabel: 'Noche'
+        };
+    } else {
+        return {
+            gradient: 'from-slate-950/95 via-gray-900/90 to-black/95',
+            weather: '🌌',
+            weatherLabel: 'Madrugada'
+        };
+    }
+}
+
 export const MundialGame: React.FC = () => {
     const { user, signOut } = useMundialAuth();
     
     // Auth guard and general setup
-    const [role, setRole] = useState<'asesor' | 'encargado'>('asesor');
+    const role = 'encargado';
     const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
     const [totalPoints, setTotalPoints] = useState(0);
     const [ranking, setRanking] = useState<MundialRanking[]>([]);
@@ -516,48 +741,61 @@ export const MundialGame: React.FC = () => {
     const [showShareModal, setShowShareModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [selectedTeam, setSelectedTeam] = useState<string>('');
+    const [selectedGroup, setSelectedGroup] = useState<string>('');
+    const [selectedScheduleGroup, setSelectedScheduleGroup] = useState<string>('');
+    const [selectedAstroGroup, setSelectedAstroGroup] = useState<string>('');
 
     const uniqueDates = Array.from(new Set(WC_MATCHES.map(m => m.date)));
     const uniqueTeams = Array.from(new Set(WC_MATCHES.flatMap(m => [m.home.name, m.away.name]))).sort();
+    const uniqueGroups = Array.from(new Set(WC_MATCHES.map(m => m.group))).sort();
 
     const filteredMatches = WC_MATCHES.filter(match => {
         const matchesDate = !selectedDate || match.date === selectedDate;
         const matchesTeam = !selectedTeam || match.home.name === selectedTeam || match.away.name === selectedTeam;
-        return matchesDate && matchesTeam;
+        const matchesGroup = !selectedGroup || match.group === selectedGroup;
+        return matchesDate && matchesTeam && matchesGroup;
     });
 
     useEffect(() => {
-        if (!user) return;
-
         const loadPredictions = async () => {
             try {
-                const { data, error } = await mundialSupabase
-                    .from('mundial_predictions')
-                    .select('*')
-                    .eq('user_id', user.id);
+                // First load from localStorage to be instantaneous
+                const localPreds = localStorage.getItem('mundial_predictions');
+                if (localPreds) {
+                    setPredictions(JSON.parse(localPreds));
+                }
 
-                if (error) throw error;
+                if (user) {
+                    const { data, error } = await mundialSupabase
+                        .from('mundial_predictions')
+                        .select('*')
+                        .eq('user_id', user.id);
 
-                const predMap: Record<string, Prediction> = {};
-                let points = 0;
+                    if (!error && data) {
+                        const predMap: Record<string, Prediction> = {};
+                        let points = 0;
 
-                data?.forEach((pred: MundialPrediction) => {
-                    if (pred.prediction.includes('-')) {
-                        const [homeScore, awayScore] = pred.prediction.split('-');
-                        predMap[pred.match_id] = {
-                            matchId: pred.match_id,
-                            homeScore,
-                            awayScore
-                        };
-                    } else {
-                        // Fallback in case old 'home_win'/'draw' predictions exist
-                        // we won't show anything specific or we map it to dummy values, but since this is fresh we just support exact scores
+                        data.forEach((pred: MundialPrediction) => {
+                            if (pred.prediction.includes('-')) {
+                                const [homeScore, awayScore] = pred.prediction.split('-');
+                                predMap[pred.match_id] = {
+                                    matchId: pred.match_id,
+                                    homeScore,
+                                    awayScore
+                                };
+                            }
+                            points += pred.points || 0;
+                        });
+                        
+                        // Merge Supabase predictions with local ones
+                        setPredictions(prev => {
+                            const newPreds = { ...prev, ...predMap };
+                            localStorage.setItem('mundial_predictions', JSON.stringify(newPreds));
+                            return newPreds;
+                        });
+                        setTotalPoints(points);
                     }
-                    points += pred.points || 0;
-                });
-
-                setPredictions(predMap);
-                setTotalPoints(points);
+                }
             } catch (err) {
                 console.error('Error loading predictions:', err);
             } finally {
@@ -599,11 +837,6 @@ export const MundialGame: React.FC = () => {
     };
 
     const handleSaveStatus = async (matchId: string) => {
-        if (!user) {
-            alert('¡Atención! Debes iniciar sesión o registrarte para poder guardar tus pronósticos.');
-            return;
-        }
-
         const prediction = predictions[matchId];
         if (!prediction || !prediction.homeScore || !prediction.awayScore) {
             alert('Por favor, ingresa los resultados para ambos equipos antes de guardar.');
@@ -611,32 +844,42 @@ export const MundialGame: React.FC = () => {
         }
 
         const predictionStr = `${prediction.homeScore}-${prediction.awayScore}`;
-        setSavingMatchId(matchId);
+        
+        // Save to localStorage immediately for instant feedback
+        const updatedPredictions = {
+            ...predictions,
+            [matchId]: prediction
+        };
+        setPredictions(updatedPredictions);
+        localStorage.setItem('mundial_predictions', JSON.stringify(updatedPredictions));
 
-        try {
-            const { error } = await mundialSupabase
-                .from('mundial_predictions')
-                .upsert([{
-                    user_id: user.id,
-                    match_id: matchId,
-                    prediction: predictionStr,
-                    points: 0
-                }], { onConflict: 'user_id,match_id' });
+        // Visual confirmation checkmark
+        setSavedMatchIds(prev => ({ ...prev, [matchId]: true }));
+        
+        // Clear the checkmark after 3 seconds
+        setTimeout(() => {
+            setSavedMatchIds(prev => ({ ...prev, [matchId]: false }));
+        }, 3000);
 
-            if (error) throw error;
-            
-            // Mark as saved!
-            setSavedMatchIds(prev => ({ ...prev, [matchId]: true }));
-            
-            // Clear the "saved" checkmark after 3 seconds
-            setTimeout(() => {
-                setSavedMatchIds(prev => ({ ...prev, [matchId]: false }));
-            }, 3000);
-        } catch (err) {
-            console.error('Error saving prediction:', err);
-            alert('Error al guardar el pronóstico. Intenta nuevamente.');
-        } finally {
-            setSavingMatchId(null);
+        // Async upsert to Supabase
+        if (user) {
+            setSavingMatchId(matchId);
+            try {
+                await mundialSupabase
+                    .from('mundial_predictions')
+                    .upsert([{
+                        user_id: user.id,
+                        match_id: matchId,
+                        prediction: predictionStr,
+                        points: 0
+                    }], { onConflict: 'user_id,match_id' });
+            } catch (err) {
+                console.error('Supabase save failed, but saved locally:', err);
+            } finally {
+                setSavingMatchId(null);
+            }
+        } else {
+            console.log('Saved prediction locally.');
         }
     };
 
@@ -666,7 +909,14 @@ export const MundialGame: React.FC = () => {
     }
 
     return (
-        <div className="relative min-h-screen bg-[#0B0F19] text-slate-200">
+        <div className="relative min-h-screen bg-slate-900 text-slate-200 overflow-x-hidden font-sans">
+            {/* Animated Nebula Background Spheres */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-1/4 w-[600px] h-[600px] bg-blue-500/10 blur-[140px] rounded-full animate-float-slow" />
+                <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-500/10 blur-[130px] rounded-full animate-float-slower" />
+                <div className="absolute top-[40%] left-[-15%] w-[450px] h-[450px] bg-emerald-500/5 blur-[120px] rounded-full animate-float-medium" />
+            </div>
+
             {/* LogOut Button / Profile Header */}
             <div className="absolute top-4 right-4 z-50 flex items-center gap-4">
                 <div className="hidden sm:block text-right">
@@ -675,7 +925,7 @@ export const MundialGame: React.FC = () => {
                 </div>
                 <button
                     onClick={signOut}
-                    className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300"
+                    className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.4)]"
                     title="Cerrar sesión"
                 >
                     <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-400 transition-colors" />
@@ -686,8 +936,11 @@ export const MundialGame: React.FC = () => {
             <MundialScene />
             
             <div className="max-w-4xl mx-auto space-y-6 relative z-10 py-6 px-4">
-                {/* Header & Role Selector */}
-                <div className="relative overflow-hidden glass-panel p-8 staggered-item bg-black/40 backdrop-blur-md rounded-2xl border border-white/10">
+                {/* Header Card */}
+                <div className="relative overflow-hidden glass-premium card-shine p-8 staggered-item rounded-[32px]">
+                    {/* Top gradient glowing bar */}
+                    <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 z-20" />
+                    
                     <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-500 opacity-5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
                     <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-600/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
 
@@ -697,15 +950,15 @@ export const MundialGame: React.FC = () => {
                                 <HeaderSoccerBall3D />
                             </div>
                             <div className="text-center md:text-left flex-1 min-w-0">
-                                <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tighter text-white mb-2 italic break-words">
-                                    ORÁCULO <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">MUNDIAL 2026</span>
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white mb-2 italic break-words">
+                                    ORÁCULO <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 drop-shadow-[0_2px_10px_rgba(56,189,248,0.2)]">MUNDIAL 2026</span>
                                 </h1>
-                                <p className="text-gray-400 font-medium tracking-wide">
+                                <p className="text-gray-300 font-bold tracking-widest text-xs uppercase">
                                     CONVIÉRTETE EN EL REY DE LOS PRONÓSTICOS
                                 </p>
-                                <div className="flex items-center gap-2 mt-3 justify-center md:justify-start">
-                                    <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded text-[10px] font-black text-blue-400 uppercase tracking-widest">🏆 PREMIOS SEMANALES</span>
-                                    <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[10px] font-black text-emerald-400 uppercase tracking-widest">⚡ IA POWERED</span>
+                                <div className="flex items-center gap-2 mt-4 justify-center md:justify-start">
+                                    <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-[10px] font-black text-emerald-400 uppercase tracking-widest shadow-[0_2px_10px_rgba(52,211,153,0.1)]">⚡ IA POWERED</span>
+                                    <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 rounded-full text-[10px] font-black text-blue-400 uppercase tracking-widest">🌍 MUNDIAL 2026</span>
                                 </div>
                             </div>
                         </div>
@@ -743,73 +996,53 @@ export const MundialGame: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Role Selector */}
-                <div className="flex bg-slate-900 p-1 rounded-xl border border-white/5 staggered-item" style={{ animationDelay: '0.1s' }}>
-                    <button
-                        onClick={() => setRole('asesor')}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all active:scale-95 ${role === 'asesor' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'
-                            }`}
-                    >
-                        <Users className="w-4 h-4" />
-                        Asesores
-                    </button>
-                    <button
-                        onClick={() => setRole('encargado')}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all active:scale-95 ${role === 'encargado' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'
-                            }`}
-                    >
-                        <User className="w-4 h-4" />
-                        Encargados
-                    </button>
-                </div>
-
                 {/* Navigation Tabs */}
                 <div className="flex border-b border-white/10 overflow-x-auto no-scrollbar gap-4 px-2">
                     <button
                         onClick={() => setActiveTab('matches')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'matches' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'
+                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'matches' ? 'text-blue-400 drop-shadow-[0_0_10px_rgba(56,189,248,0.6)]' : 'text-gray-400 hover:text-gray-200'
                             }`}
                     >
                         Partidos
-                        {activeTab === 'matches' && <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-500 rounded-t-full shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-in slide-in-from-left-2 duration-300" />}
+                        {activeTab === 'matches' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-blue-400 to-indigo-500 rounded-t-full shadow-[0_0_20px_rgba(56,189,248,0.8)] animate-in slide-in-from-left-2 duration-300" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('ranking')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'ranking' ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'
+                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'ranking' ? 'text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]' : 'text-gray-400 hover:text-gray-200'
                             }`}
                     >
                         Ranking
-                        {activeTab === 'ranking' && <div className="absolute bottom-0 left-0 w-full h-1 bg-yellow-500 rounded-t-full shadow-[0_0_15px_rgba(234,179,8,0.5)] animate-in slide-in-from-left-2 duration-300" />}
+                        {activeTab === 'ranking' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-yellow-400 to-amber-500 rounded-t-full shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-in slide-in-from-left-2 duration-300" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'history' ? 'text-indigo-400' : 'text-gray-500 hover:text-gray-300'
+                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'history' ? 'text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.6)]' : 'text-gray-400 hover:text-gray-200'
                             }`}
                     >
                         Mi Historial
-                        {activeTab === 'history' && <div className="absolute bottom-0 left-0 w-full h-1 bg-indigo-500 rounded-t-full shadow-[0_0_15px_rgba(99,102,241,0.5)] animate-in slide-in-from-left-2 duration-300" />}
+                        {activeTab === 'history' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-indigo-400 to-purple-500 rounded-t-full shadow-[0_0_20px_rgba(129,140,248,0.8)] animate-in slide-in-from-left-2 duration-300" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('astro')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'astro' ? 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.3)]' : 'text-gray-500 hover:text-purple-300'
+                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'astro' ? 'text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.7)]' : 'text-gray-400 hover:text-purple-300'
                             }`}
                     >
                         <span className="flex items-center gap-1.5">
                             <Sparkles className="w-3 h-3" />
                             Oráculo
                         </span>
-                        {activeTab === 'astro' && <div className="absolute bottom-0 left-0 w-full h-1 bg-purple-500 rounded-t-full shadow-[0_0_15px_rgba(168,85,247,0.8)] animate-in slide-in-from-left-2 duration-300" />}
+                        {activeTab === 'astro' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-purple-400 to-fuchsia-500 rounded-t-full shadow-[0_0_20px_rgba(168,85,247,0.9)] animate-in slide-in-from-left-2 duration-300" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('schedules')}
-                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'schedules' ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]' : 'text-gray-500 hover:text-emerald-300'
+                        className={`pb-3 px-4 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'schedules' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]' : 'text-gray-400 hover:text-emerald-300'
                             }`}
                     >
                         <span className="flex items-center gap-1.5">
                             <Clock className="w-3 h-3" />
                             Horarios
                         </span>
-                        {activeTab === 'schedules' && <div className="absolute bottom-0 left-0 w-full h-1 bg-emerald-500 rounded-t-full shadow-[0_0_15px_rgba(52,211,153,0.8)] animate-in slide-in-from-left-2 duration-300" />}
+                        {activeTab === 'schedules' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-400 to-teal-500 rounded-t-full shadow-[0_0_20px_rgba(52,211,153,0.9)] animate-in slide-in-from-left-2 duration-300" />}
                     </button>
                 </div>
 
@@ -829,36 +1062,76 @@ export const MundialGame: React.FC = () => {
                             <AnimatedBicycleKick />
                         </div>
 
-                        {/* LABORATORIO INTERACTIVO 3D CON FÍSICA Y PARTICULAS */}
-                        <Interactive3DSoccer />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+                        {/* FILTERS - 3 dropdowns */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <select
                                     value={selectedDate}
-                                    onChange={(e) => setSelectedDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white appearance-none focus:border-blue-500 focus:outline-none cursor-pointer"
+                                    onChange={(e) => { setSelectedDate(e.target.value); }}
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm font-bold appearance-none focus:border-blue-500 focus:outline-none cursor-pointer"
                                 >
-                                    <option value="">Todas las fechas</option>
+                                    <option value="">📅 Todas las fechas</option>
                                     {uniqueDates.map(date => (
                                         <option key={date} value={date} className="bg-gray-900 text-white">{date}</option>
                                     ))}
                                 </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
                             <div className="relative">
                                 <Flag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <select
                                     value={selectedTeam}
                                     onChange={(e) => setSelectedTeam(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white appearance-none focus:border-blue-500 focus:outline-none cursor-pointer"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm font-bold appearance-none focus:border-blue-500 focus:outline-none cursor-pointer"
                                 >
-                                    <option value="">Todos los equipos</option>
+                                    <option value="">🏳️ Todos los equipos</option>
                                     {uniqueTeams.map(team => (
                                         <option key={team} value={team} className="bg-gray-900 text-white">{team}</option>
                                     ))}
                                 </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
+                            <div className="relative">
+                                <Trophy className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <select
+                                    value={selectedGroup}
+                                    onChange={(e) => setSelectedGroup(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm font-bold appearance-none focus:border-blue-500 focus:outline-none cursor-pointer"
+                                >
+                                    <option value="">🔤 Todos los grupos</option>
+                                    {uniqueGroups.map(g => (
+                                        <option key={g} value={g} className="bg-gray-900 text-white">GRUPO {g}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
                         </div>
+
+                        {/* Si hay fecha seleccionada: panel derecho con lista rápida */}
+                        {selectedDate && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 40 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl"
+                            >
+                                <p className="text-blue-400 font-black uppercase tracking-widest text-xs mb-3">
+                                    ⚽ {filteredMatches.length} PARTIDO{filteredMatches.length !== 1 ? 'S' : ''} · {selectedDate}
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {filteredMatches.map(m => (
+                                        <div key={m.id} className="flex items-center gap-2 bg-black/30 rounded-xl p-2.5 border border-white/5">
+                                            <img src={m.home.flag} className="w-7 h-5 rounded object-cover shrink-0" alt="" />
+                                            <span className="text-white text-xs font-bold truncate">{m.home.name}</span>
+                                            <span className="text-slate-500 text-xs font-black shrink-0">vs</span>
+                                            <span className="text-white text-xs font-bold truncate">{m.away.name}</span>
+                                            <img src={m.away.flag} className="w-7 h-5 rounded object-cover shrink-0" alt="" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
 
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -870,6 +1143,8 @@ export const MundialGame: React.FC = () => {
                                 const now = new Date();
                                 const diffHours = (kickoff.getTime() - now.getTime()) / (1000 * 60 * 60);
                                 const isShowCountdown = diffHours > 0 && diffHours <= 3;
+                                const sky = getSkyTheme(kickoff);
+                                const stadium = getStadiumByVenue(match.venue);
 
                                 return (
                                     <motion.div
@@ -877,16 +1152,27 @@ export const MundialGame: React.FC = () => {
                                         initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.1, duration: 0.6 }}
-                                        whileHover={{ scale: 1.01, translateY: -4 }}
-                                        className="relative p-8 hover:border-amber-500/50 group overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10"
+                                        whileHover={{ scale: 1.02, translateY: -6 }}
+                                        className="relative p-10 hover:border-blue-500/50 group overflow-hidden backdrop-blur-lg rounded-[32px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700"
+                                        style={{ background: 'rgba(10,13,24,0.7)' }}
                                     >
-                                        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/20 transition-colors duration-700" />
+                                        {/* Base Background matching Web aesthetic */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 to-slate-950/95 pointer-events-none transition-all duration-1000" />
+                                        {/* Ambient Dynamic Color Glows */}
+                                        <div className={`absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r ${getTeamGlow(match.home.code)} opacity-[0.15] group-hover:opacity-30 transition-opacity duration-700 pointer-events-none`} />
+                                        <div className={`absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l ${getTeamGlow(match.away.code)} opacity-10 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none`} />
+                                        
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none" />
 
                                         <div className="relative z-10 flex justify-between items-center mb-8">
                                             <div className="flex items-center gap-3">
                                                 <div className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full">
                                                     <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic">GRUPO {match.group}</span>
+                                                </div>
+                                                {/* Weather badge */}
+                                                <div className="flex items-center gap-1 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                                                    <span className="text-base leading-none">{sky.weather}</span>
+                                                    <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">{sky.weatherLabel}</span>
                                                 </div>
                                                 {match.status === 'live' && (
                                                     <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
@@ -896,115 +1182,172 @@ export const MundialGame: React.FC = () => {
                                                 )}
                                                 {isShowCountdown && <MatchCountdown kickoff={kickoff} />}
                                             </div>
-                                        <div className="text-right">
-                                            <div className="flex items-center justify-end gap-2 text-white/40 mb-1">
-                                                <Calendar className="w-3 h-3" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest">{match.date}</p>
-                                            </div>
-                                            <div className="flex items-center justify-end gap-2 text-gray-500">
-                                                <MapPin className="w-3 h-3" />
-                                                <p className="text-[10px] font-medium uppercase truncate max-w-[150px]">{match.venue}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-9 gap-4 md:gap-8 items-center">
-                                        {/* Home Team */}
-                                        <div className="md:col-span-3 flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left transition-all group-hover:translate-x-1 duration-500 min-w-0">
-                                            <div className="relative">
-                                                <img src={match.home.flag} alt="" className="w-24 h-16 md:w-32 md:h-20 rounded-2xl object-cover shadow-2xl border-4 border-white/10 ring-4 ring-black/20 animate-flag-wave-left" />
-                                                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="text-xl md:text-2xl lg:text-3xl font-black text-white tracking-tighter mb-1 uppercase drop-shadow-lg truncate" title={match.home.name}>{match.home.name}</h3>
-                                                <div className="inline-block px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
-                                                    <span className="text-xs font-black text-blue-400/80 uppercase tracking-[0.2em]">{match.home.code}</span>
+                                            <div className="text-right">
+                                                <div className="flex items-center justify-end gap-2 text-white/40 mb-1">
+                                                    <Calendar className="w-3.5 h-3.5" />
+                                                    <p className="text-[10px] font-black uppercase tracking-widest">{match.date}</p>
+                                                </div>
+                                                <div className="flex items-center justify-end gap-2 text-gray-500">
+                                                    <MapPin className="w-3.5 h-3.5" />
+                                                    <p className="text-[10px] font-medium uppercase truncate max-w-[150px]">{match.venue}</p>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Inputs */}
-                                        <div className="md:col-span-3 flex flex-col items-center gap-6 py-2 scale-100">
-                                            <div className="flex items-center gap-4">
-                                                <div className="relative group/input">
-                                                    <input
-                                                        type="text"
-                                                        inputMode="numeric"
-                                                        pattern="[0-9]*"
-                                                        value={predictions[match.id]?.homeScore || ''}
-                                                        onChange={(e) => handleScoreChange(match.id, 'home', e.target.value.replace(/\D/g, ''))}
-                                                        placeholder="0"
-                                                        className="w-20 h-24 bg-slate-950/80 border-2 border-white/10 rounded-3xl text-center text-5xl font-black text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all hover:border-white/20 placeholder:opacity-10 shadow-[inset_0_4px_20px_rgba(0,0,0,0.8)]"
-                                                    />
-                                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-500 rounded-full opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                                        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                                            {/* Left Column: Teams and Score */}
+                                            <div className="flex flex-col gap-8">
+                                                {/* Home Team */}
+                                                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left transition-all group-hover:translate-x-1 duration-500">
+                                                    <div className="relative shrink-0">
+                                                        <img src={match.home.flag} alt="" className="w-32 h-20 md:w-40 md:h-28 rounded-2xl object-cover shadow-[0_15px_30px_rgba(0,0,0,0.6)] border-4 border-white/15 ring-4 ring-black/40 animate-flag-wave-left" />
+                                                        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tighter mb-2 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{match.home.name}</h3>
+                                                        <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-md">
+                                                            <span className="text-xs font-black text-blue-400/90 uppercase tracking-[0.2em]">{match.home.code}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex flex-col items-center">
-                                                    <span className="text-2xl font-black text-slate-700 italic tracking-tighter">VS</span>
+                                                {/* Score Inputs */}
+                                                <div className="flex flex-col items-center gap-6 py-4 bg-white/5 rounded-2xl p-6">
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="relative group/input">
+                                                            <input
+                                                                type="text"
+                                                                inputMode="numeric"
+                                                                pattern="[0-9]*"
+                                                                value={predictions[match.id]?.homeScore || ''}
+                                                                onChange={(e) => handleScoreChange(match.id, 'home', e.target.value.replace(/\D/g, ''))}
+                                                                placeholder="0"
+                                                                className="w-28 h-32 bg-slate-950/90 border-2 border-white/20 rounded-[28px] text-center text-6xl font-black text-white focus:border-blue-500 focus:ring-8 focus:ring-blue-500/20 focus:outline-none transition-all hover:border-white/30 placeholder:opacity-5 shadow-[inset_0_4px_25px_rgba(0,0,0,0.9)]"
+                                                            />
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-10 h-1 bg-blue-500 rounded-full opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                                                        </div>
+
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="text-4xl font-black text-slate-600 italic tracking-tighter">VS</span>
+                                                        </div>
+
+                                                        <div className="relative group/input">
+                                                            <input
+                                                                type="text"
+                                                                inputMode="numeric"
+                                                                pattern="[0-9]*"
+                                                                value={predictions[match.id]?.awayScore || ''}
+                                                                onChange={(e) => handleScoreChange(match.id, 'away', e.target.value.replace(/\D/g, ''))}
+                                                                placeholder="0"
+                                                                className="w-28 h-32 bg-slate-950/90 border-2 border-white/20 rounded-[28px] text-center text-6xl font-black text-white focus:border-emerald-500 focus:ring-8 focus:ring-emerald-500/20 focus:outline-none transition-all hover:border-white/30 placeholder:opacity-5 shadow-[inset_0_4px_25px_rgba(0,0,0,0.9)]"
+                                                            />
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-10 h-1 bg-emerald-500 rounded-full opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => handleSaveStatus(match.id)}
+                                                        disabled={savingMatchId === match.id}
+                                                        className={`w-full py-4.5 text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 shadow-2xl overflow-hidden relative border ${
+                                                            savedMatchIds[match.id]
+                                                                ? 'bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20'
+                                                                : savingMatchId === match.id
+                                                                ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/20 cursor-wait'
+                                                                : 'bg-white text-slate-950 border-white hover:bg-amber-500 hover:text-white group/save shadow-black/40'
+                                                        }`}
+                                                    >
+                                                        {!savedMatchIds[match.id] && savingMatchId !== match.id && (
+                                                            <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover/save:translate-y-0 transition-transform duration-500" />
+                                                        )}
+                                                        {savedMatchIds[match.id] ? (
+                                                            <Check className="w-5 h-5 relative z-10 animate-bounce" />
+                                                        ) : savingMatchId === match.id ? (
+                                                            <Loader2 className="w-5 h-5 relative z-10 animate-spin" />
+                                                        ) : (
+                                                            <Save className="w-5 h-5 relative z-10 transition-transform group-hover/save:rotate-12" />
+                                                        )}
+                                                        <span className="relative z-10 text-[10px] md:text-xs">
+                                                            {savedMatchIds[match.id]
+                                                                ? '¡PRONÓSTICO GUARDADO!'
+                                                                : savingMatchId === match.id
+                                                                ? 'GUARDANDO PRONÓSTICO...'
+                                                                : 'GUARDAR PRONÓSTICO'}
+                                                        </span>
+                                                    </motion.button>
                                                 </div>
 
-                                                <div className="relative group/input">
-                                                    <input
-                                                        type="text"
-                                                        inputMode="numeric"
-                                                        pattern="[0-9]*"
-                                                        value={predictions[match.id]?.awayScore || ''}
-                                                        onChange={(e) => handleScoreChange(match.id, 'away', e.target.value.replace(/\D/g, ''))}
-                                                        placeholder="0"
-                                                        className="w-20 h-24 bg-slate-950/80 border-2 border-white/10 rounded-3xl text-center text-5xl font-black text-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all hover:border-white/20 placeholder:opacity-10 shadow-[inset_0_4px_20px_rgba(0,0,0,0.8)]"
-                                                    />
-                                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-emerald-500 rounded-full opacity-0 group-focus-within/input:opacity-100 transition-opacity" />
+                                                {/* Away Team */}
+                                                <div className="flex flex-col-reverse md:flex-row items-center justify-end gap-4 md:gap-6 text-center md:text-right transition-all group-hover:-translate-x-1 duration-500 w-full ml-auto">
+                                                    <div className="flex-1 min-w-0 md:flex-none md:text-right">
+                                                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tighter mb-2 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{match.away.name}</h3>
+                                                        <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-md">
+                                                            <span className="text-xs font-black text-emerald-400/90 uppercase tracking-[0.2em]">{match.away.code}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative shrink-0">
+                                                        <img src={match.away.flag} alt="" className="w-32 h-20 md:w-40 md:h-28 rounded-2xl object-cover shadow-[0_15px_30px_rgba(0,0,0,0.6)] border-4 border-white/15 ring-4 ring-black/40 animate-flag-wave-right" />
+                                                        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Social Sentiment & Insider Data */}
+                                                <div className="flex flex-col gap-3 mt-2">
+                                                    <div className="bg-black/30 border border-white/10 rounded-xl p-3">
+                                                        <div className="flex justify-between text-[10px] font-black uppercase text-gray-400 mb-1">
+                                                            <span>Tendencia Global</span>
+                                                            <span>80% vs 20%</span>
+                                                        </div>
+                                                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden flex">
+                                                            <div className={`h-full ${getTeamGlow(match.home.code).split(' ')[0].replace('from-', 'bg-').replace('/20', '')} bg-blue-500`} style={{ width: '80%' }} />
+                                                            <div className={`h-full ${getTeamGlow(match.away.code).split(' ')[0].replace('from-', 'bg-').replace('/20', '')} bg-emerald-500`} style={{ width: '20%' }} />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-start gap-3">
+                                                        <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                                        <div>
+                                                            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-0.5">Insider Data</p>
+                                                            <p className="text-xs text-gray-300">Factor local: La humedad en {stadium?.city || match.venue} afecta históricamente a los equipos europeos. Predicción algorítmica: Empate con pocos goles.</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => handleSaveStatus(match.id)}
-                                                disabled={savingMatchId === match.id}
-                                                className={`w-full py-4 text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 shadow-2xl overflow-hidden relative border ${
-                                                    savedMatchIds[match.id]
-                                                        ? 'bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20'
-                                                        : savingMatchId === match.id
-                                                        ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/20 cursor-wait'
-                                                        : 'bg-white text-slate-950 border-white hover:bg-amber-500 hover:text-white group/save shadow-black/40'
-                                                }`}
-                                            >
-                                                {!savedMatchIds[match.id] && savingMatchId !== match.id && (
-                                                    <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover/save:translate-y-0 transition-transform duration-500" />
-                                                )}
-                                                {savedMatchIds[match.id] ? (
-                                                    <Check className="w-5 h-5 relative z-10 animate-bounce" />
-                                                ) : savingMatchId === match.id ? (
-                                                    <Loader2 className="w-5 h-5 relative z-10 animate-spin" />
-                                                ) : (
-                                                    <Save className="w-5 h-5 relative z-10 transition-transform group-hover/save:rotate-12" />
-                                                )}
-                                                <span className="relative z-10 text-[10px] md:text-xs">
-                                                    {savedMatchIds[match.id]
-                                                        ? '¡PRONÓSTICO GUARDADO!'
-                                                        : savingMatchId === match.id
-                                                        ? 'GUARDANDO PRONÓSTICO...'
-                                                        : 'GUARDAR PRONÓSTICO'}
-                                                </span>
-                                            </motion.button>
+
+                                            {/* Right Column: Stadium Image */}
+                                            {stadium && (
+                                                <div className="flex flex-col items-center justify-center h-full">
+                                                    <div className="w-full flex-1 min-h-[400px] rounded-[24px] overflow-hidden border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.4)] bg-slate-950 relative group/stadium">
+                                                        <img 
+                                                            src={stadium.imageUrl} 
+                                                            alt={stadium.name} 
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover/stadium:scale-105" 
+                                                            loading="lazy"
+                                                            referrerPolicy="no-referrer"
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/30 to-transparent pointer-events-none" />
+                                                        
+                                                        {/* Info Overlay */}
+                                                        <div className="absolute bottom-6 left-6 right-6 flex flex-col gap-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <div className="px-3 py-1 bg-amber-500/20 border border-amber-500/30 rounded-lg backdrop-blur-md">
+                                                                    <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Sede Oficial</span>
+                                                                </div>
+                                                            </div>
+                                                            <h4 className="text-2xl font-black text-white tracking-tight drop-shadow-md">{stadium.name}</h4>
+                                                            <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">
+                                                                <MapPin className="w-4 h-4" />
+                                                                {stadium.city}, {stadium.country}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Away Team */}
-                                        <div className="md:col-span-3 flex flex-col-reverse md:flex-row items-center gap-4 md:gap-6 text-center md:text-right transition-all group-hover:-translate-x-1 duration-500 min-w-0">
-                                            <div className="flex-1">
-                                                <h3 className="text-xl md:text-2xl lg:text-3xl font-black text-white tracking-tighter mb-1 uppercase drop-shadow-lg truncate" title={match.away.name}>{match.away.name}</h3>
-                                                <div className="inline-block px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
-                                                    <span className="text-xs font-black text-emerald-400/80 uppercase tracking-[0.2em]">{match.away.code}</span>
-                                                </div>
-                                            </div>
-                                            <div className="relative">
-                                                <img src={match.away.flag} alt="" className="w-24 h-16 md:w-32 md:h-20 rounded-2xl object-cover shadow-2xl border-4 border-white/10 ring-4 ring-black/20 animate-flag-wave-right" />
-                                                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </motion.div>
+                                        <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </motion.div>
+                                );
                             })}
                         </motion.div>
                     </div>
@@ -1025,7 +1368,7 @@ export const MundialGame: React.FC = () => {
                                     Líderes de la Red
                                 </h3>
                                 <p className="text-gray-400 text-sm mt-3 max-w-lg">
-                                    Sigue el ranking de asesores y encargados de Propgear AI. Predice con exactitud, suma puntos y reclama tu lugar en la cima de la red.
+                                    Sigue el ranking de encargados de Propgear AI. Predice con exactitud, suma puntos y reclama tu lugar en la cima de la red.
                                 </p>
                             </div>
                             <AnimatedTrophyCelebration />
@@ -1119,7 +1462,7 @@ export const MundialGame: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <p className="text-white font-black uppercase text-lg tracking-tighter group-hover:text-amber-400 transition-colors">
-                                                        {role === 'asesor' ? `Asesor ${pos}` : `Encargado ${pos}`}
+                                                        {`Encargado ${pos}`}
                                                     </p>
                                                     <div className="flex items-center gap-3">
                                                         <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em]">Puntaje: {100 - (pos * 5)}%</span>
@@ -1166,21 +1509,23 @@ export const MundialGame: React.FC = () => {
                             const match = WC_MATCHES.find(m => m.id === pred.matchId);
                             if (!match) return null;
                             return (
-                                <div key={pred.matchId} className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-blue-500/20 hover:-translate-y-1 transition-all cursor-pointer">
+                                <div key={pred.matchId} className="flex items-center justify-between p-6 rounded-3xl glass-premium card-shine cursor-pointer border border-white/10 hover:border-blue-500/30">
                                     <div className="flex items-center gap-6">
-                                        <div className="text-center w-12 shrink-0">
-                                            <p className="text-[10px] font-black text-gray-500 uppercase">{match.date}</p>
-                                            <p className="text-xs font-black text-blue-400">+3 PTS</p>
+                                        <div className="text-center w-14 shrink-0">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{match.date}</p>
+                                            <p className="text-xs font-black text-amber-400 tracking-wide mt-0.5">+3 PTS</p>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <img src={match.home.flag} alt="" className="w-10 h-7 rounded shadow-lg" />
-                                            <div className="bg-slate-950 px-4 py-1.5 rounded-xl border border-white/10">
-                                                <span className="text-xl font-black text-white">{pred.homeScore} - {pred.awayScore}</span>
+                                        <div className="flex items-center gap-5">
+                                            <img src={match.home.flag} alt="" className="w-14 h-9 rounded-lg object-cover shadow-[0_8px_20px_rgba(0,0,0,0.4)] border border-white/20 animate-flag-wave-left" />
+                                            <div className="bg-slate-950 px-5 py-2 rounded-2xl border-2 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.25)] flex items-center justify-center">
+                                                <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 tracking-wider">{pred.homeScore} - {pred.awayScore}</span>
                                             </div>
-                                            <img src={match.away.flag} alt="" className="w-10 h-7 rounded shadow-lg" />
+                                            <img src={match.away.flag} alt="" className="w-14 h-9 rounded-lg object-cover shadow-[0_8px_20px_rgba(0,0,0,0.4)] border border-white/20 animate-flag-wave-right" />
                                         </div>
                                     </div>
-                                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-black rounded-lg border border-emerald-500/20 uppercase">Guardado</span>
+                                    <span className="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black rounded-full border border-emerald-500/40 uppercase tracking-widest shadow-[0_4px_12px_rgba(16,185,129,0.15)] flex items-center gap-1.5">
+                                        <Check className="w-3.5 h-3.5 animate-pulse" /> Guardado
+                                    </span>
                                 </div>
                             );
                         })}
@@ -1210,8 +1555,36 @@ export const MundialGame: React.FC = () => {
                             <AnimatedCosmicBall />
                         </div>
 
+                        {/* Dropdown por Grupos para Oráculo Estelar */}
+                        <div className="relative z-20 max-w-xs mx-auto md:mx-0">
+                            <select
+                                value={selectedAstroGroup}
+                                onChange={(e) => setSelectedAstroGroup(e.target.value)}
+                                className="w-full bg-slate-900 border border-purple-500/30 text-white py-3 px-5 rounded-2xl font-black uppercase text-xs tracking-widest appearance-none focus:outline-none focus:ring-4 focus:ring-purple-500/20 cursor-pointer"
+                            >
+                                <option value="">🌌 Todos los Grupos</option>
+                                <option value="A">GRUPO A</option>
+                                <option value="B">GRUPO B</option>
+                                <option value="C">GRUPO C</option>
+                                <option value="D">GRUPO D</option>
+                                <option value="E">GRUPO E</option>
+                                <option value="F">GRUPO F</option>
+                                <option value="G">GRUPO G</option>
+                                <option value="H">GRUPO H</option>
+                                <option value="I">GRUPO I</option>
+                                <option value="J">GRUPO J</option>
+                                <option value="K">GRUPO K</option>
+                                <option value="L">GRUPO L</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-purple-400">
+                                <ChevronDown className="w-5 h-5" />
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                            {ASTRO_PREDICTIONS.map((section) => (
+                            {ASTRO_PREDICTIONS
+                                .filter(section => !selectedAstroGroup || section.title.includes(`GRUPO ${selectedAstroGroup}`) || section.type === 'highlight' || section.type === 'knockout')
+                                .map((section) => (
                                 <div key={section.id} className={`bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden staggered-item ${section.type === 'highlight' ? 'col-span-1 md:col-span-2 bg-gradient-to-br from-amber-500/10 via-purple-900/40 to-indigo-900/40 border-amber-500/30' : 'hover:border-purple-500/30'}`}>
                                     <div className="p-4 border-b border-white/5 bg-white/5">
                                         <h3 className="font-black uppercase tracking-wider text-purple-200 text-sm flex items-center gap-2">
@@ -1261,9 +1634,12 @@ export const MundialGame: React.FC = () => {
                                         {(section.type === 'group' || section.type === 'knockout') && section.matches && (
                                             <div className="space-y-3">
                                                 {section.matches.map((m, idx) => (
-                                                    <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-black/20 hover:bg-white/5 transition-all group">
-                                                        <span className="text-xs font-black text-white flex-1">{m.match}</span>
-                                                        <span className="text-xs font-black text-purple-400 group-hover:text-purple-300">{m.result}</span>
+                                                    <div key={idx} className="relative flex justify-between items-center p-4 rounded-xl bg-black/40 border border-white/5 hover:border-purple-500/50 hover:bg-purple-900/20 transition-all group overflow-hidden">
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-500/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+                                                        <span className="relative z-10 text-xs font-black text-white flex-1 drop-shadow-md group-hover:translate-x-1 transition-transform">{m.match}</span>
+                                                        <span className="relative z-10 text-[10px] md:text-xs font-black px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-md text-white shadow-[0_0_15px_rgba(147,51,234,0.3)] group-hover:shadow-[0_0_20px_rgba(147,51,234,0.6)] group-hover:scale-105 transition-all border border-purple-400/30">
+                                                            {m.result}
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1299,15 +1675,33 @@ export const MundialGame: React.FC = () => {
                                         <ChevronDown className="w-5 h-5" />
                                     </div>
                                 </div>
+                                {/* Group filter for schedules */}
+                                <div className="relative z-20 max-w-xs mx-auto md:mx-0 mt-3">
+                                    <select
+                                        value={selectedScheduleGroup}
+                                        onChange={(e) => setSelectedScheduleGroup(e.target.value)}
+                                        className="w-full bg-slate-900 border border-blue-500/30 text-white py-3 px-5 rounded-2xl font-black uppercase text-xs tracking-widest appearance-none focus:outline-none focus:ring-4 focus:ring-blue-500/20 cursor-pointer"
+                                    >
+                                        <option value="">🔤 Todos los grupos</option>
+                                        {uniqueGroups.map(g => (
+                                            <option key={g} value={g}>GRUPO {g}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-blue-400">
+                                        <ChevronDown className="w-5 h-5" />
+                                    </div>
+                                </div>
                             </div>
                             <AnimatedClockStadium />
                         </div>
 
                         <div className="space-y-6">
-                            {WORLD_CUP_SCHEDULES.map((group) => (
+                            {WORLD_CUP_SCHEDULES
+                                .filter(g => !selectedScheduleGroup || g.id === `group-${selectedScheduleGroup.toLowerCase()}` || g.name.includes(`GRUPO ${selectedScheduleGroup}`))
+                                .map((group) => (
                                 <div key={group.id} className="bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden staggered-item">
                                     <div className="p-4 bg-emerald-500/10 border-b border-white/5">
-                                        <h3 className="font-black uppercase tracking-widest text-white text-sm">⚽ {group.name}</h3>
+                                        <h3 className="font-black uppercase tracking-widest text-white text-base">⚽ {group.name}</h3>
                                     </div>
                                     <div className="divide-y divide-white/5">
                                         {group.matches.map((match) => {
@@ -1315,15 +1709,15 @@ export const MundialGame: React.FC = () => {
                                             return (
                                                 <div key={match.id} className="p-6 flex items-center justify-between hover:bg-white/5 transition-all group">
                                                     <div className="flex-1">
-                                                        <h4 className="font-black text-white text-lg tracking-tight mb-1 uppercase group-hover:text-amber-500 transition-colors">{match.title}</h4>
-                                                        <div className="flex items-center gap-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                                        <h4 className="font-black text-white text-xl tracking-tight mb-1 uppercase group-hover:text-amber-500 transition-colors">{match.title}</h4>
+                                                        <div className="flex items-center gap-3 text-xs font-black text-gray-400 uppercase tracking-widest">
                                                             <span>📅 {match.date}</span>
                                                             <span>📍 {match.venue}</span>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-3xl font-black text-white font-mono group-hover:scale-110 transition-transform">{localTime}</p>
-                                                        <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Hora Local</p>
+                                                        <p className="text-4xl font-black text-white font-mono group-hover:scale-110 transition-transform">{localTime}</p>
+                                                        <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">Hora Local</p>
                                                     </div>
                                                 </div>
                                             );

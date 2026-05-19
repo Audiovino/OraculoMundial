@@ -17,71 +17,20 @@ const MundialAuthContext = createContext<MundialAuthContextType | undefined>(und
 
 export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<MundialUser | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
     // Verificar sesión al montar
     useEffect(() => {
+        let isMounted = true;
+
         const checkSession = async () => {
             try {
                 const { data: { session } } = await mundialSupabase.auth.getSession();
+                if (!isMounted) return;
+
                 if (session?.user) {
-                    // Obtener datos del usuario desde la tabla users
-                    const { data, error: fetchError } = await mundialSupabase
-                        .from('mundial_users')
-                        .select('*')
-                        .eq('id', session.user.id)
-                        .single();
-
-                    if (data) {
-                        setUser({
-                            id: data.id,
-                            email: data.email,
-                            username: data.username,
-                            created_at: data.created_at
-                        });
-                    } else {
-                        // Fallback: usar datos del auth si no hay perfil en tabla
-                        setUser({
-                            id: session.user.id,
-                            email: session.user.email || '',
-                            username: session.user.email?.split('@')[0] || 'usuario',
-                            created_at: session.user.created_at || new Date().toISOString()
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error('Error checking session:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkSession();
-
-        // Escuchar cambios de autenticación
-        const { data: { subscription } } = mundialSupabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'PASSWORD_RECOVERY') {
-                setIsRecoveryMode(true);
-            }
-
-            if (session?.user) {
-                const { data } = await mundialSupabase
-                    .from('mundial_users')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (data) {
-                    setUser({
-                        id: data.id,
-                        email: data.email,
-                        username: data.username,
-                        created_at: data.created_at
-                    });
-                } else {
-                    // Fallback: usar datos del auth
                     setUser({
                         id: session.user.id,
                         email: session.user.email || '',
@@ -89,12 +38,35 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                         created_at: session.user.created_at || new Date().toISOString()
                     });
                 }
+            } catch (err) {
+                console.error('Error checking session:', err);
+            }
+        };
+
+        checkSession();
+
+        // Escuchar cambios de autenticación
+        const { data: { subscription } } = mundialSupabase.auth.onAuthStateChange((event, session) => {
+            if (!isMounted) return;
+
+            if (event === 'PASSWORD_RECOVERY') {
+                setIsRecoveryMode(true);
+            }
+
+            if (session?.user) {
+                setUser({
+                    id: session.user.id,
+                    email: session.user.email || '',
+                    username: session.user.email?.split('@')[0] || 'usuario',
+                    created_at: session.user.created_at || new Date().toISOString()
+                });
             } else {
                 setUser(null);
             }
         });
 
         return () => {
+            isMounted = false;
             subscription?.unsubscribe();
         };
     }, []);

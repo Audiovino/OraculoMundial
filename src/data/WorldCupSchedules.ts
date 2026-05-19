@@ -58,48 +58,42 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
         matches: [
             {
                 id: 'ga_m1',
-                title: 'PARTIDO 1: México 2-1 Sudáfrica',
-                score: '2-1',
+                title: 'PARTIDO 1: México vs Sudáfrica',
                 date: '11 junio',
                 venue: '📍 CDMX',
                 times: { arg: '00:00 (12)', uru: '00:00 (12)', par: '23:00', chi: '23:00', col: '22:00', mex: '21:00', usa: '23:00', esp: '05:00 (12)', stars: { mex: true } }
             },
             {
                 id: 'ga_m2',
-                title: 'PARTIDO 2: Corea 2-1 Ucrania',
-                score: '2-1',
+                title: 'PARTIDO 2: Corea vs Ucrania',
                 date: '11 junio',
                 venue: '📍 Guadalajara',
                 times: { arg: '21:00', uru: '21:00', par: '20:00', chi: '20:00', col: '19:00', mex: '18:00', usa: '20:00', esp: '02:00 (12)', stars: { mex: true } }
             },
             {
                 id: 'ga_m3',
-                title: 'PARTIDO 3: Ucrania 1-1 Sudáfrica',
-                score: '1-1',
+                title: 'PARTIDO 3: Ucrania vs Sudáfrica',
                 date: '18 junio',
                 venue: '📍 Atlanta',
                 times: { arg: '20:00', uru: '20:00', par: '19:00', chi: '19:00', col: '18:00', mex: '18:00', usa: '19:00', esp: '01:00 (19)', stars: { par: true, chi: true, usa: true } }
             },
             {
                 id: 'ga_m4',
-                title: 'PARTIDO 4: México 1-1 Corea',
-                score: '1-1',
+                title: 'PARTIDO 4: México vs Corea',
                 date: '18 junio',
                 venue: '📍 Guadalajara',
                 times: { arg: '00:00 (19)', uru: '00:00 (19)', par: '23:00', chi: '23:00', col: '22:00', mex: '21:00', usa: '23:00', esp: '05:00 (19)', stars: { mex: true } }
             },
             {
                 id: 'ga_m5',
-                title: 'PARTIDO 5: Ucrania 0-2 México',
-                score: '0-2',
+                title: 'PARTIDO 5: Ucrania vs México',
                 date: '24 junio',
                 venue: '📍 CDMX',
                 times: { arg: '00:00 (25)', uru: '00:00 (25)', par: '23:00', chi: '23:00', col: '22:00', mex: '21:00', usa: '23:00', esp: '05:00 (25)', stars: { mex: true } }
             },
             {
                 id: 'ga_m6',
-                title: 'PARTIDO 6: Sudáfrica 1-3 Corea',
-                score: '1-3',
+                title: 'PARTIDO 6: Sudáfrica vs Corea',
                 date: '24 junio',
                 venue: '📍 Monterrey',
                 times: { arg: '23:00', uru: '23:00', par: '22:00', chi: '22:00', col: '21:00', mex: '20:00', usa: '22:00', esp: '04:00 (25)', stars: { mex: true } }
@@ -113,8 +107,7 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
         matches: [
             {
                 id: 'gj_m1',
-                title: 'PARTIDO 1: 🇦🇷 Argentina 3-0 Argelia',
-                score: '3-0',
+                title: 'PARTIDO 1: 🇦🇷 Argentina vs Argelia',
                 date: '16 junio',
                 venue: '📍 Kansas City',
                 times: { arg: '22:00', uru: '22:00', par: '21:00', chi: '21:00', col: '20:00', mex: '20:00', usa: '20:00', esp: '04:00 (17)', stars: { arg: true } },
@@ -122,16 +115,14 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
             },
             {
                 id: 'gj_m2',
-                title: 'PARTIDO 2: Austria 2-0 Jordania',
-                score: '2-0',
+                title: 'PARTIDO 2: Austria vs Jordania',
                 date: '16 junio',
                 venue: '📍 San Francisco',
                 times: { arg: '00:00 (17)', uru: '00:00 (17)', par: '23:00', chi: '23:00', col: '21:00', mex: '20:00', usa: '18:00', esp: '04:00 (17)' }
             },
             {
                 id: 'gj_m3',
-                title: 'PARTIDO 3: 🇦🇷 Argentina 2-0 Austria',
-                score: '2-0',
+                title: 'PARTIDO 3: 🇦🇷 Argentina vs Austria',
                 date: '22 junio',
                 venue: '📍 Dallas',
                 times: { arg: '20:00', uru: '20:00', par: '19:00', chi: '19:00', col: '18:00', mex: '18:00', usa: '18:00', esp: '02:00 (23)', stars: { arg: true, par: true, chi: true } },
@@ -139,16 +130,14 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
             },
             {
                 id: 'gj_m4',
-                title: 'PARTIDO 4: Jordania 1-1 Argelia',
-                score: '1-1',
+                title: 'PARTIDO 4: Jordania vs Argelia',
                 date: '22 junio',
                 venue: '📍 San Francisco',
                 times: { arg: '00:00 (23)', uru: '00:00 (23)', par: '23:00', chi: '23:00', col: '21:00', mex: '20:00', usa: '18:00', esp: '04:00 (23)' }
             },
             {
                 id: 'gj_m5',
-                title: 'PARTIDO 5: Jordania 1-4 🇦🇷 Argentina',
-                score: '1-4',
+                title: 'PARTIDO 5: Jordania vs 🇦🇷 Argentina',
                 date: '27 junio',
                 venue: '📍 Kansas City',
                 times: { arg: '17:00', uru: '17:00', par: '16:00', chi: '16:00', col: '15:00', mex: '15:00', usa: '15:00', esp: '23:00', stars: { arg: true, par: true, chi: true } },
@@ -156,8 +145,7 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
             },
             {
                 id: 'gj_m6',
-                title: 'PARTIDO 6: Argelia 1-2 Austria',
-                score: '1-2',
+                title: 'PARTIDO 6: Argelia vs Austria',
                 date: '27 junio',
                 venue: '📍 Dallas',
                 times: { arg: '20:00', uru: '20:00', par: '19:00', chi: '19:00', col: '18:00', mex: '18:00', usa: '18:00', esp: '02:00 (28)' }
@@ -170,16 +158,14 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
         matches: [
             {
                 id: 'gh_m1',
-                title: 'PARTIDO 1: España 4-0 Cabo Verde',
-                score: '4-0',
+                title: 'PARTIDO 1: España vs Cabo Verde',
                 date: '15 junio',
                 venue: '📍 Miami',
                 times: { arg: '21:00', uru: '21:00', par: '20:00', chi: '20:00', col: '19:00', mex: '19:00', usa: '20:00', esp: '02:00 (16)' }
             },
             {
                 id: 'gh_m2',
-                title: 'PARTIDO 2: Arabia 1-3 🇺🇾 Uruguay',
-                score: '1-3',
+                title: 'PARTIDO 2: Arabia vs 🇺🇾 Uruguay',
                 date: '15 junio',
                 venue: '📍 Atlanta',
                 times: { arg: '18:00', uru: '18:00', par: '17:00', chi: '17:00', col: '16:00', mex: '16:00', usa: '17:00', esp: '23:00', stars: { uru: true } },
@@ -187,24 +173,21 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
             },
             {
                 id: 'gh_m3',
-                title: 'PARTIDO 3: España 3-0 Arabia',
-                score: '3-0',
+                title: 'PARTIDO 3: España vs Arabia',
                 date: '21 junio',
                 venue: '📍 Miami',
                 times: { arg: '21:00', uru: '21:00', par: '20:00', chi: '20:00', col: '19:00', mex: '19:00', usa: '20:00', esp: '02:00 (22)' }
             },
             {
                 id: 'gh_m4',
-                title: 'PARTIDO 4: Cabo Verde 0-2 🇺🇾 Uruguay',
-                score: '0-2',
+                title: 'PARTIDO 4: Cabo Verde vs 🇺🇾 Uruguay',
                 date: '21 junio',
                 venue: '📍 Atlanta',
                 times: { arg: '18:00', uru: '18:00', par: '17:00', chi: '17:00', col: '16:00', mex: '16:00', usa: '17:00', esp: '23:00', stars: { uru: true } }
             },
             {
                 id: 'gh_m5',
-                title: 'PARTIDO 5: 🇺🇾 Uruguay 1-1 España 🇪🇸',
-                score: '1-1',
+                title: 'PARTIDO 5: 🇺🇾 Uruguay vs España 🇪🇸',
                 date: '26 junio',
                 venue: '📍 Houston',
                 times: { arg: '21:00', uru: '21:00', par: '20:00', chi: '20:00', col: '19:00', mex: '19:00', usa: '19:00', esp: '03:00 (27)', stars: { par: true } },
@@ -212,8 +195,7 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
             },
             {
                 id: 'gh_m6',
-                title: 'PARTIDO 6: Cabo Verde 2-1 Arabia',
-                score: '2-1',
+                title: 'PARTIDO 6: Cabo Verde vs Arabia',
                 date: '26 junio',
                 venue: '📍 Guadalajara',
                 times: { arg: '20:00', uru: '20:00', par: '19:00', chi: '19:00', col: '18:00', mex: '18:00', usa: '20:00', esp: '02:00 (27)', stars: { usa: true } }
@@ -226,16 +208,14 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
         matches: [
             {
                 id: 'gk_m1',
-                title: 'PARTIDO 1: Portugal 3-0 Costa Rica',
-                score: '3-0',
+                title: 'PARTIDO 1: Portugal vs Costa Rica',
                 date: '17 junio',
                 venue: '📍 Houston',
                 times: { arg: '21:00', uru: '21:00', par: '20:00', chi: '20:00', col: '19:00', mex: '19:00', usa: '19:00', esp: '03:00 (18)', stars: { usa: true } }
             },
             {
                 id: 'gk_m2',
-                title: 'PARTIDO 2: Uzbekistán 0-2 🇨🇴 Colombia',
-                score: '0-2',
+                title: 'PARTIDO 2: Uzbekistán vs 🇨🇴 Colombia',
                 date: '17 junio',
                 venue: '📍 CDMX',
                 times: { arg: '00:00 (18)', uru: '00:00 (18)', par: '23:00', chi: '23:00', col: '22:00', mex: '21:00', usa: '23:00', esp: '05:00 (18)', stars: { col: true, mex: true } },
@@ -243,32 +223,28 @@ export const WORLD_CUP_SCHEDULES: ScheduleGroup[] = [
             },
             {
                 id: 'gk_m3',
-                title: 'PARTIDO 3: Portugal 4-1 Uzbekistán',
-                score: '4-1',
+                title: 'PARTIDO 3: Portugal vs Uzbekistán',
                 date: '23 junio',
                 venue: '📍 Houston',
                 times: { arg: '21:00', uru: '21:00', par: '20:00', chi: '20:00', col: '19:00', mex: '19:00', usa: '19:00', esp: '03:00 (24)', stars: { usa: true } }
             },
             {
                 id: 'gk_m4',
-                title: 'PARTIDO 4: Costa Rica 1-1 🇨🇴 Colombia',
-                score: '1-1',
+                title: 'PARTIDO 4: Costa Rica vs 🇨🇴 Colombia',
                 date: '23 junio',
                 venue: '📍 Guadalajara',
                 times: { arg: '20:00', uru: '20:00', par: '19:00', chi: '19:00', col: '18:00', mex: '18:00', usa: '20:00', esp: '02:00 (24)', stars: { col: true, mex: true } }
             },
             {
                 id: 'gk_m5',
-                title: 'PARTIDO 5: 🇨🇴 Colombia 1-2 Portugal',
-                score: '1-2',
+                title: 'PARTIDO 5: 🇨🇴 Colombia vs Portugal',
                 date: '27 junio',
                 venue: '📍 Miami',
                 times: { arg: '21:00', uru: '21:00', par: '20:00', chi: '20:00', col: '19:00', mex: '19:00', usa: '20:00', esp: '02:00 (28)', stars: { col: true } }
             },
             {
                 id: 'gk_m6',
-                title: 'PARTIDO 6: Costa Rica 2-0 Uzbekistán',
-                score: '2-0',
+                title: 'PARTIDO 6: Costa Rica vs Uzbekistán',
                 date: '27 junio',
                 venue: '📍 Atlanta',
                 times: { arg: '18:00', uru: '18:00', par: '17:00', chi: '17:00', col: '16:00', mex: '16:00', usa: '17:00', esp: '23:00' }
