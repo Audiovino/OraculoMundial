@@ -114,38 +114,38 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
           Estadios
         </motion.button>
 
-        {/* Admin Button - Solo visible para admins */}
-        {isAdmin && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onViewChange('admin')}
-            onMouseEnter={() => setIsHovering('admin')}
-            onMouseLeave={() => setIsHovering(null)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
-              backgroundColor:
-                currentView === 'admin'
-                  ? 'rgba(168, 85, 247, 0.8)'
-                  : isHovering === 'admin'
-                  ? 'rgba(168, 85, 247, 0.3)'
-                  : 'rgba(255, 255, 255, 0.1)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 'bold',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <Settings size={16} />
-            Admin
-          </motion.button>
-        )}
+        {/* Admin Button - Visible para admins (o siempre para debugging) */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onViewChange('admin')}
+          onMouseEnter={() => setIsHovering('admin')}
+          onMouseLeave={() => setIsHovering(null)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor:
+              currentView === 'admin'
+                ? 'rgba(168, 85, 247, 0.8)'
+                : isHovering === 'admin'
+                ? 'rgba(168, 85, 247, 0.3)'
+                : 'rgba(255, 255, 255, 0.1)',
+            color: '#ffffff',
+            border: isAdmin ? 'none' : '1px solid rgba(168, 85, 247, 0.5)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            transition: 'all 0.3s ease',
+            opacity: isAdmin ? 1 : 0.6
+          }}
+          title={isAdmin ? 'Admin Panel' : 'Admin Panel (Verificando permisos...)'}
+        >
+          <Settings size={16} />
+          Admin
+        </motion.button>
 
         {/* User Info */}
         <div
