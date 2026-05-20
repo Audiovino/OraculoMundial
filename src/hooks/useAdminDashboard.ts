@@ -47,24 +47,39 @@ export const useAdminDashboard = () => {
       setLoading(true);
       setError(null);
 
-      // Intentar obtener usuarios
+      console.log('[Admin] Loading dashboard stats...');
+
+      // Intentar obtener usuarios desde auth.users directamente
       let users = [];
       let predictions = [];
       let activity = [];
 
       try {
-        const { data: usersData, error: usersError } = await mundialSupabase
-          .from('mundial_users')
-          .select('*')
-          .limit(100);
-
-        if (!usersError) {
-          users = usersData || [];
-        } else {
-          console.warn('[Admin] No mundial_users table or empty:', usersError.message);
+        const { data: authUsers, error: authError } = await mundialSupabase.auth.admin.listUsers();
+        
+        if (!authError && authUsers) {
+          users = authUsers.users || [];
+          console.log('[Admin] Auth users loaded:', users.length);
         }
       } catch (err) {
-        console.warn('[Admin] Error fetching users:', err);
+        console.warn('[Admin] Could not load auth users:', err);
+      }
+
+      // Si no hay usuarios de auth, intentar mundial_users
+      if (users.length === 0) {
+        try {
+          const { data: mundialUsers, error: usersError } = await mundialSupabase
+            .from('mundial_users')
+            .select('*')
+            .limit(100);
+
+          if (!usersError && mundialUsers) {
+            users = mundialUsers;
+            console.log('[Admin] Mundial users loaded:', users.length);
+          }
+        } catch (err) {
+          console.warn('[Admin] Could not load mundial_users:', err);
+        }
       }
 
       try {
@@ -73,13 +88,12 @@ export const useAdminDashboard = () => {
           .select('*')
           .limit(1000);
 
-        if (!predictionsError) {
-          predictions = predictionsData || [];
-        } else {
-          console.warn('[Admin] No mundial_predictions table or empty:', predictionsError.message);
+        if (!predictionsError && predictionsData) {
+          predictions = predictionsData;
+          console.log('[Admin] Predictions loaded:', predictions.length);
         }
       } catch (err) {
-        console.warn('[Admin] Error fetching predictions:', err);
+        console.warn('[Admin] Could not load predictions:', err);
       }
 
       try {
@@ -89,11 +103,11 @@ export const useAdminDashboard = () => {
           .order('created_at', { ascending: false })
           .limit(10);
 
-        if (!activityError) {
-          activity = activityData || [];
+        if (!activityError && activityData) {
+          activity = activityData;
         }
       } catch (err) {
-        console.warn('[Admin] Error fetching activity:', err);
+        console.warn('[Admin] Could not load activity:', err);
       }
 
       // Calcular estadísticas
@@ -117,11 +131,7 @@ export const useAdminDashboard = () => {
         recentActivity: activity
       });
 
-      console.log('[Admin] Dashboard stats loaded:', {
-        users: users.length,
-        predictions: predictions.length,
-        completed: completedPreds.length
-      });
+      console.log('[Admin] Dashboard stats loaded successfully');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error loading dashboard stats';
       console.error('[Admin] Error:', message);
