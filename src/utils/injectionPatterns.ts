@@ -75,33 +75,28 @@ export const INJECTION_PATTERNS = {
 
   /**
    * NoSQL Injection patterns
+   * NOTA: No incluir /[{}\[\]]/ — bloquea emails y passwords válidos
    */
   NOSQL_INJECTION: [
-    // MongoDB operators
-    /\$where/i,
-    /\$ne/i,
-    /\$gt/i,
-    /\$lt/i,
-    /\$regex/i,
-    /\$or/i,
-    /\$and/i,
-    /\$not/i,
-    /\$nor/i,
-    /\$exists/i,
-    /\$type/i,
-    /\$in/i,
-    /\$nin/i,
-    /\$all/i,
-    /\$elemMatch/i,
-    /\$size/i,
-    /\$mod/i,
-    /\$text/i,
+    // MongoDB operators peligrosos en contexto de query
     /\$where\s*:/i,
+    /\$where\b/i,
+    /"\s*\$ne\s*":/i,
+    /"\s*\$gt\s*":/i,
+    /"\s*\$lt\s*":/i,
+    /"\s*\$regex\s*":/i,
+    /"\s*\$or\s*"\s*:/i,
+    /"\s*\$and\s*"\s*:/i,
+    /"\s*\$not\s*"\s*:/i,
+    /"\s*\$nor\s*"\s*:/i,
+    /"\s*\$exists\s*":/i,
+    /"\s*\$in\s*"\s*:/i,
+    /"\s*\$nin\s*"\s*:/i,
+    /"\s*\$elemMatch\s*":/i,
     
-    // JSON injection patterns
-    /[{}\[\]]/,
-    /"\s*:\s*\{/,
-    /"\s*:\s*\[/,
+    // JSON injection en campos de texto (objeto completo como valor)
+    /^\s*\{.*"?\$\w+"?\s*:/,
+    /^\s*\[.*\{.*"?\$\w+"?\s*:/,
   ],
 
   /**

@@ -180,20 +180,25 @@ export function useSecurityMonitor(autoMonitor: boolean = true) {
   }, [validationErrors, state.status, state.alerts]);
 
   /**
-   * Efecto: Monitoreo automático cada 5 minutos
+   * Efecto: Monitoreo automático cada 30 minutos (no cada 5 — ahorra requests del free tier)
    */
   useEffect(() => {
     if (!autoMonitor) return;
 
-    // Ejecutar monitoreo inmediatamente
-    runMonitoring();
+    // Ejecutar monitoreo con delay de 10s al montar (no bloquear el render inicial)
+    const initialDelay = setTimeout(() => {
+      runMonitoring();
+    }, 10_000);
 
-    // Configurar intervalo de 5 minutos
+    // Intervalo de 30 minutos
     const interval = setInterval(() => {
       runMonitoring();
-    }, 5 * 60 * 1000); // 5 minutos
+    }, 30 * 60 * 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(interval);
+    };
   }, [autoMonitor, runMonitoring]);
 
   /**

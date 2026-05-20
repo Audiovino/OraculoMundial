@@ -9,6 +9,13 @@ import { MundialScene } from './scene/MundialScene';
 import { getStadiumByVenue } from '../data/StadiumsData';
 import RealisticStadium3D from './scene/RealisticStadium3D';
 import * as THREE from 'three';
+import OracleAdvisor from './OracleAdvisor';
+import WinCelebration from './WinCelebration';
+import StreakBadge from './StreakBadge';
+import CommunityBar from './CommunityBar';
+import PrivateLeague from './PrivateLeague';
+import { useStreak } from '../hooks/useStreak';
+import { useSecurityMonitor } from '../hooks/useSecurityMonitor';
 
 // Lazy load MiniStadium3D para optimización en móvil
 const MiniStadium3D = React.lazy(() => import('./scene/MiniStadium3D'));
@@ -392,9 +399,93 @@ function getSkyTheme(kickoff: Date): { gradient: string; weather: string; weathe
     }
 }
 
+// ----------------------------------------------------------------
+// SHARE BUTTONS — WhatsApp + Copiar enlace con estado React
+// ----------------------------------------------------------------
+interface ShareButtonsProps {
+    user: { username?: string; email?: string } | null;
+    totalPoints: number;
+}
+
+function ShareButtons({ user, totalPoints }: ShareButtonsProps) {
+    const [copied, setCopied] = React.useState(false);
+
+    const handleWhatsApp = React.useCallback(() => {
+        const username = user?.username || user?.email?.split('@')[0] || 'alguien';
+        const shareUrl = window.location.origin;
+        const shareText = `⚽ *Oráculo Mundial 2026*\n\n🔮 ${username} te desafía a predecir el Mundial!\n🏆 Mi puntaje actual: *${totalPoints} pts*\n\n¿Podés superarme? Jugá acá:\n${shareUrl}`;
+        
+        // Detectar si es mobile o desktop
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Mobile: wa.me funciona perfecto
+        // Desktop: web.whatsapp.com es más confiable
+        const whatsappUrl = isMobile
+            ? `https://wa.me/?text=${encodeURIComponent(shareText)}`
+            : `https://web.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+        
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    }, [user, totalPoints]);
+
+    const handleCopy = React.useCallback(async () => {
+        const url = window.location.href;
+        try {
+            await navigator.clipboard.writeText(url);
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+    }, []);
+
+    return (
+        <div className="space-y-4">
+            <button
+                onClick={handleWhatsApp}
+                className="w-full py-4 bg-[#25D366] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:scale-105 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                Compartir por WhatsApp
+            </button>
+            <button
+                onClick={handleCopy}
+                className={`w-full py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 ${
+                    copied
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+                }`}
+            >
+                {copied ? (
+                    <>✅ Enlace Copiado!</>
+                ) : (
+                    <>
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                        </svg>
+                        Copiar Enlace
+                    </>
+                )}
+            </button>
+        </div>
+    );
+}
+
 export const MundialGame: React.FC = () => {
     const { user, signOut } = useMundialAuth();
     
+    // Monitor de seguridad Hermes para protección de datos
+    const { validateField, getSecurityStatus } = useSecurityMonitor();
+
     // Auth guard and general setup
     const role = 'encargado';
     const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
@@ -404,7 +495,7 @@ export const MundialGame: React.FC = () => {
     const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
     const [savedMatchIds, setSavedMatchIds] = useState<Record<string, boolean>>({});
 
-    const [activeTab, setActiveTab] = useState<'matches' | 'ranking' | 'history' | 'astro' | 'schedules'>('matches');
+    const [activeTab, setActiveTab] = useState<'matches' | 'ranking' | 'ligas' | 'history' | 'astro' | 'schedules'>('matches');
     const [selectedCountry, setSelectedCountry] = useState('arg');
     const [showShareModal, setShowShareModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string>('');
@@ -412,6 +503,19 @@ export const MundialGame: React.FC = () => {
     const [selectedGroup, setSelectedGroup] = useState<string>('');
     const [selectedScheduleGroup, setSelectedScheduleGroup] = useState<string>('');
     const [selectedAstroGroup, setSelectedAstroGroup] = useState<string>('');
+
+    // Verificación inicial de seguridad al montar el componente
+    useEffect(() => {
+        const status = getSecurityStatus();
+        if (status.isSecure) {
+            console.log('🛡️ Hermes: Escudo de seguridad activo y monitoreando integridad de datos.');
+        }
+    }, [getSecurityStatus]);
+
+    // Nuevos features: Oráculo, Celebración, Streak
+    const [oracleMatch, setOracleMatch] = useState<Match | null>(null);
+    const [celebration, setCelebration] = useState<{ type: 'exact' | 'winner' | null; home: string; away: string }>({ type: null, home: '', away: '' });
+    const { streak } = useStreak(user?.id);
 
     const uniqueDates = Array.from(new Set(WC_MATCHES.map(m => m.date)));
     const uniqueTeams = Array.from(new Set(WC_MATCHES.flatMap(m => [m.home.name, m.away.name]))).sort();
@@ -436,14 +540,14 @@ export const MundialGame: React.FC = () => {
                 if (user) {
                     const { data, error } = await mundialSupabase
                         .from('mundial_predictions')
-                        .select('*')
+                        .select('match_id, prediction, points')
                         .eq('user_id', user.id);
 
                     if (!error && data) {
                         const predMap: Record<string, Prediction> = {};
                         let points = 0;
 
-                        data.forEach((pred: MundialPrediction) => {
+                        data.forEach((pred: Pick<MundialPrediction, 'match_id' | 'prediction' | 'points'>) => {
                             if (pred.prediction.includes('-')) {
                                 const [homeScore, awayScore] = pred.prediction.split('-');
                                 predMap[pred.match_id] = {
@@ -516,6 +620,13 @@ export const MundialGame: React.FC = () => {
     const handleSaveStatus = async (matchId: string) => {
         const prediction = predictions[matchId];
         // 1. Verificación de campos completos
+        
+        // Validación de inyección vía Hermes
+        if (!validateField('homeScore', prediction?.homeScore || '') || !validateField('awayScore', prediction?.awayScore || '')) {
+            alert('⚠️ Hermes: Se detectó un patrón de entrada sospechoso. La predicción no fue guardada por seguridad.');
+            return;
+        }
+
         if (!prediction || prediction.homeScore === '' || prediction.awayScore === '' || prediction.homeScore === undefined || prediction.awayScore === undefined) {
             alert('⚠️ Hermes: Por favor, ingresa los resultados para ambos equipos antes de guardar.');
             return;
@@ -596,6 +707,7 @@ export const MundialGame: React.FC = () => {
     }
 
     return (
+        <>
         <div className="relative min-h-screen bg-slate-900 text-slate-200 overflow-x-hidden font-sans">
             {/* Animated Nebula Background Spheres */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -643,9 +755,12 @@ export const MundialGame: React.FC = () => {
                                 <p className="text-gray-300 font-bold tracking-widest text-xs uppercase">
                                     CONVIÉRTETE EN EL REY DE LOS PRONÓSTICOS
                                 </p>
-                                <div className="flex items-center gap-2 mt-4 justify-center md:justify-start">
+                                <div className="flex items-center gap-2 mt-4 justify-center md:justify-start flex-wrap">
                                     <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-[10px] font-black text-emerald-400 uppercase tracking-widest shadow-[0_2px_10px_rgba(52,211,153,0.1)]">⚡ IA POWERED</span>
                                     <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 rounded-full text-[10px] font-black text-blue-400 uppercase tracking-widest">🌍 MUNDIAL 2026</span>
+                                    {streak.current > 0 && (
+                                        <StreakBadge streak={streak} />
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -731,12 +846,39 @@ export const MundialGame: React.FC = () => {
                         </span>
                         {activeTab === 'schedules' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-400 to-teal-500 rounded-t-full shadow-[0_0_20px_rgba(52,211,153,0.9)] animate-in slide-in-from-left-2 duration-300" />}
                     </button>
+                    <button
+                        onClick={() => setActiveTab('ligas')}
+                        className={`pb-2 sm:pb-3 px-2 sm:px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === 'ligas' ? 'text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.7)]' : 'text-gray-400 hover:text-purple-300'
+                            }`}
+                    >
+                        <span className="flex items-center gap-1.5">
+                            <Users className="w-3 h-3" />
+                            Ligas
+                        </span>
+                        {activeTab === 'ligas' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-purple-400 to-fuchsia-500 rounded-t-full shadow-[0_0_20px_rgba(168,85,247,0.9)] animate-in slide-in-from-left-2 duration-300" />}
+                    </button>
                 </div>
 
                 {/* Tab content */}
                 {activeTab === 'matches' && (
                     <div className="space-y-5">
                         {/* BANNER ANIMADO PREMIUM */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-4 mb-2"
+                        >
+                            <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center shrink-0">
+                                <Sparkles className="w-5 h-5 text-blue-400" />
+                            </div>
+                            <div>
+                                <h4 className="text-white font-black text-xs uppercase tracking-widest mb-1">Guía Rápida</h4>
+                                <p className="text-gray-400 text-[10px] leading-relaxed">
+                                    1. Ingresa los goles. 2. Presiona <b>"Guardar Pronóstico"</b> (Protegido por Hermes). 3. Usa el <b>Oráculo</b> para consejos astrales. 4. ¡Suma puntos y sube en el Ranking!
+                                </p>
+                            </div>
+                        </motion.div>
+
                         <div className="relative overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
                             <div className="flex-1 text-center md:text-left">
                                 <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-2 flex items-center justify-center md:justify-start gap-2">
@@ -964,7 +1106,27 @@ export const MundialGame: React.FC = () => {
                                                                 : 'GUARDAR PRONÓSTICO'}
                                                         </span>
                                                     </motion.button>
-                                                </div>
+
+                                                    {/* Botón Consultar Oráculo */}
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => setOracleMatch(match)}
+                                                        className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                                                        style={{
+                                                            background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(168,85,247,0.1))',
+                                                            border: '1px solid rgba(168,85,247,0.3)',
+                                                            color: '#c084fc'
+                                                        }}
+                                                    >
+                                                        <Sparkles className="w-4 h-4" />
+                                                        Consultar Oráculo
+                                                    </motion.button>
+
+                                                    {/* CommunityBar — solo visible después de guardar */}
+                                                    <CommunityBar
+                                                        matchId={match.id}
+                                                        userPrediction={predictions[match.id]}
+                                                    />                                                </div>
 
                                                 {/* Away Team */}
                                                 <div className="flex flex-col-reverse md:flex-row items-center justify-end gap-4 md:gap-6 text-center md:text-right transition-all group-hover:-translate-x-1 duration-500 w-full ml-auto">
@@ -1444,6 +1606,16 @@ export const MundialGame: React.FC = () => {
                     </div>
                 )}
 
+                {activeTab === 'ligas' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                    >
+                        <PrivateLeague />
+                    </motion.div>
+                )}
+
                 {showShareModal && (
                     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
                         <div className="w-full max-w-sm bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden max-h-[92vh] overflow-y-auto custom-scrollbar">
@@ -1463,16 +1635,33 @@ export const MundialGame: React.FC = () => {
                                         className="w-40 h-40 mx-auto"
                                     />
                                 </div>
-                                <div className="space-y-4">
-                                    <button className="w-full py-4 bg-[#25D366] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:scale-105 transition-all">Compartir WhatsApp</button>
-                                    <button className="w-full py-4 bg-white/10 text-white border border-white/20 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-white/20 transition-all">Copiar Enlace</button>
-                                </div>
+                                <ShareButtons user={user} totalPoints={totalPoints} />
                             </div>
                         </div>
                     </div>
                 )}
             </div>
         </div>
+
+        {/* OracleAdvisor Modal */}
+        {oracleMatch && (
+            <OracleAdvisor
+                homeTeam={oracleMatch.home.name}
+                awayTeam={oracleMatch.away.name}
+                homeCode={oracleMatch.home.code}
+                awayCode={oracleMatch.away.code}
+                group={oracleMatch.group}
+                onClose={() => setOracleMatch(null)}
+            />
+        )}
+
+        {/* WinCelebration */}
+        <WinCelebration
+            type={celebration.type}
+            homeTeam={celebration.home}
+            awayTeam={celebration.away}
+            onDone={() => setCelebration({ type: null, home: '', away: '' })}
+        />
+        </>
     );
 };
-

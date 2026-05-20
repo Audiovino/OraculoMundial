@@ -46,7 +46,7 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         checkSession();
 
         // Escuchar cambios de autenticación
-        const { data: { subscription } } = mundialSupabase.auth.onAuthStateChange((event, session) => {
+        const { data: { subscription } } = mundialSupabase.auth.onAuthStateChange(async (event, session) => {
             if (!isMounted) return;
 
             if (event === 'PASSWORD_RECOVERY') {
@@ -54,14 +54,37 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
             }
 
             if (session?.user) {
-                setUser({
-                    id: session.user.id,
-                    email: session.user.email || '',
-                    username: session.user.email?.split('@')[0] || 'usuario',
-                    created_at: session.user.created_at || new Date().toISOString()
-                });
+                // Intentar cargar perfil completo desde mundial_users
+                try {
+                    const { data: profile } = await mundialSupabase
+                        .from('mundial_users')
+                        .select('id, email, username, created_at')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    if (profile && isMounted) {
+                        setUser({
+                            id: profile.id,
+                            email: profile.email,
+                            username: profile.username,
+                            created_at: profile.created_at
+                        });
+                        return;
+                    }
+                } catch {
+                    // Perfil no disponible — usar datos del token
+                }
+
+                if (isMounted) {
+                    setUser({
+                        id: session.user.id,
+                        email: session.user.email || '',
+                        username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'usuario',
+                        created_at: session.user.created_at || new Date().toISOString()
+                    });
+                }
             } else {
-                setUser(null);
+                if (isMounted) setUser(null);
             }
         });
 
@@ -75,33 +98,32 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         try {
             setError(null);
             
-            // Registrar en Supabase Auth
             const { data: authData, error: authError } = await mundialSupabase.auth.signUp({
                 email,
-                password
+                password,
+                options: {
+                    data: { username } // guardar username en metadata como backup
+                }
             });
 
             if (authError) throw authError;
             if (!authData.user) throw new Error('No user returned from signup');
 
-            // Crear registro en tabla mundial_users
-            const { error: insertError } = await mundialSupabase
+            // Usar upsert para evitar duplicados si el perfil ya existe parcialmente
+            const { error: upsertError } = await mundialSupabase
                 .from('mundial_users')
-                .insert([{
+                .upsert([{
                     id: authData.user.id,
                     email,
                     username,
                     created_at: new Date().toISOString()
-                }]);
+                }], { onConflict: 'id' });
 
-            // Si falla por RLS, igual dejamos al usuario logueado
-            // El perfil se puede crear después cuando RLS esté configurado
-            if (insertError) {
-                console.warn('⚠️ No se pudo crear perfil en mundial_users (RLS):', insertError.message);
-                // Continuar de todas formas — el usuario existe en Auth
+            if (upsertError) {
+                // No bloquear el registro — el perfil se puede recuperar en el próximo login
+                console.warn('⚠️ Perfil no creado en mundial_users (RLS o error):', upsertError.message);
             }
 
-            // Setear usuario con los datos disponibles
             setUser({
                 id: authData.user.id,
                 email,
@@ -127,22 +149,35 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
             if (signInError) throw signInError;
             if (!data.user) throw new Error('No user returned from signin');
 
-            // Obtener datos del usuario
-            const { data: userData, error: fetchError } = await mundialSupabase
-                .from('mundial_users')
-                .select('*')
-                .eq('id', data.user.id)
-                .single();
+            // Intentar obtener perfil de mundial_users — si falla, usar datos de Auth (no bloquear login)
+            try {
+                const { data: userData } = await mundialSupabase
+                    .from('mundial_users')
+                    .select('id, email, username, created_at')
+                    .eq('id', data.user.id)
+                    .single();
 
-            if (fetchError) throw fetchError;
-            if (userData) {
-                setUser({
-                    id: userData.id,
-                    email: userData.email,
-                    username: userData.username,
-                    created_at: userData.created_at
-                });
+                if (userData) {
+                    setUser({
+                        id: userData.id,
+                        email: userData.email,
+                        username: userData.username,
+                        created_at: userData.created_at
+                    });
+                    return;
+                }
+            } catch {
+                // Perfil no encontrado — continuar con datos de Auth
             }
+
+            // Fallback: usar datos del token de Auth directamente
+            setUser({
+                id: data.user.id,
+                email: data.user.email || email,
+                username: data.user.user_metadata?.username || email.split('@')[0],
+                created_at: data.user.created_at || new Date().toISOString()
+            });
+
         } catch (err: any) {
             setError(err.message || 'Error en inicio de sesión');
             throw err;

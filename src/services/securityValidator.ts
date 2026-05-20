@@ -91,7 +91,8 @@ export function validatePassword(password: string): { valid: boolean; error?: st
 }
 
 /**
- * Sanitizar string: remover caracteres peligrosos
+ * Sanitizar string: remover caracteres de control y peligrosos
+ * NOTA: No escapar / ni ' en emails — son caracteres válidos en RFC 5322
  */
 export function sanitizeInput(input: string): string {
   if (!input || typeof input !== 'string') {
@@ -100,17 +101,14 @@ export function sanitizeInput(input: string): string {
 
   let sanitized = input.trim();
 
-  // Remover caracteres de control
+  // Remover caracteres de control (null bytes, etc.)
   sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
 
-  // Escapar caracteres HTML especiales
+  // Escapar solo los caracteres HTML más peligrosos para prevenir XSS en display
   sanitized = sanitized
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replace(/>/g, '&gt;');
 
   return sanitized;
 }
