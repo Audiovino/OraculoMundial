@@ -46,7 +46,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             textShadow: '0 0 20px rgba(255, 255, 255, 0.3)'
           }}
         >
-          ⚽ Oráculo Mundial
+          ⚽ Oráculo Mundial - v2.0
         </div>
       </div>
 
