@@ -17,7 +17,7 @@ const MundialAuthContext = createContext<MundialAuthContextType | undefined>(und
 
 export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<MundialUser | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
@@ -38,8 +38,10 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                         created_at: session.user.created_at || new Date().toISOString()
                     });
                 }
+                setLoading(false);
             } catch (err) {
                 console.error('Error checking session:', err);
+                if (isMounted) setLoading(false);
             }
         };
 
@@ -97,6 +99,7 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const signUp = async (email: string, password: string, username: string) => {
         try {
             setError(null);
+            setLoading(true);
             
             const { data: authData, error: authError } = await mundialSupabase.auth.signUp({
                 email,
@@ -124,22 +127,21 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 console.warn('⚠️ Perfil no creado en mundial_users (RLS o error):', upsertError.message);
             }
 
-            setUser({
-                id: authData.user.id,
-                email,
-                username,
-                created_at: new Date().toISOString()
-            });
+            // NO setear user aquí — dejar que onAuthStateChange lo maneje
 
         } catch (err: any) {
             setError(err.message || 'Error en registro');
+            setLoading(false);
             throw err;
+        } finally {
+            setTimeout(() => setLoading(false), 1000);
         }
     };
 
     const signIn = async (email: string, password: string) => {
         try {
             setError(null);
+            setLoading(true);
             
             const { data, error: signInError } = await mundialSupabase.auth.signInWithPassword({
                 email,
@@ -149,38 +151,16 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
             if (signInError) throw signInError;
             if (!data.user) throw new Error('No user returned from signin');
 
-            // Intentar obtener perfil de mundial_users — si falla, usar datos de Auth (no bloquear login)
-            try {
-                const { data: userData } = await mundialSupabase
-                    .from('mundial_users')
-                    .select('id, email, username, created_at')
-                    .eq('id', data.user.id)
-                    .single();
-
-                if (userData) {
-                    setUser({
-                        id: userData.id,
-                        email: userData.email,
-                        username: userData.username,
-                        created_at: userData.created_at
-                    });
-                    return;
-                }
-            } catch {
-                // Perfil no encontrado — continuar con datos de Auth
-            }
-
-            // Fallback: usar datos del token de Auth directamente
-            setUser({
-                id: data.user.id,
-                email: data.user.email || email,
-                username: data.user.user_metadata?.username || email.split('@')[0],
-                created_at: data.user.created_at || new Date().toISOString()
-            });
+            // NO setear user aquí — dejar que onAuthStateChange lo maneje
+            // Esto evita el loop de re-renders
 
         } catch (err: any) {
             setError(err.message || 'Error en inicio de sesión');
+            setLoading(false);
             throw err;
+        } finally {
+            // El loading se apagará cuando onAuthStateChange dispare
+            setTimeout(() => setLoading(false), 1000);
         }
     };
 
