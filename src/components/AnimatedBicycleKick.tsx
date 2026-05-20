@@ -13,44 +13,31 @@ export default function AnimatedBicycleKick() {
             {/* Radial Blur Glow */}
             <div className="absolute w-16 h-16 bg-blue-500/30 rounded-full blur-[20px] group-hover:bg-blue-400/40 transition-colors duration-500 pointer-events-none" />
             
-            {/* Real Visual SVG: Bicycle Kick Player with Neon Speed Trails */}
-            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_12px_rgba(59,130,246,0.6)] group-hover:scale-110 transition-transform duration-500">
+            {/* Real Visual SVG: Soccer Ball */}
+            <svg viewBox="0 0 24 24" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-500 animate-[bounce_3s_ease-in-out_infinite]">
                 <defs>
-                    <linearGradient id="kickGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#38bdf8" />
-                        <stop offset="100%" stopColor="#818cf8" />
-                    </linearGradient>
                     <linearGradient id="ballGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="100%" stopColor="#3b82f6" />
+                        <stop offset="0%" stopColor="#93c5fd" />
+                        <stop offset="100%" stopColor="#1e3a8a" />
                     </linearGradient>
                 </defs>
                 
-                {/* Motion lines / Speed trails */}
-                <path d="M15,55 C30,55 45,45 60,35" stroke="url(#kickGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.4" strokeDasharray="3 3" />
-                <path d="M10,65 C28,63 45,50 65,30" stroke="url(#kickGradient)" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.8" />
-                <path d="M22,75 C38,70 52,58 70,38" stroke="url(#kickGradient)" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.5" />
-
-                {/* Soccer Player Silhouette in a perfect Chilena pose */}
-                <g fill="url(#kickGradient)">
-                    {/* Head */}
-                    <circle cx="50" cy="50" r="4.5" />
-                    {/* Torso & Hips */}
-                    <path d="M50,54.5 L36,64 L30,60 L42,52 Z" />
-                    {/* Back Leg bent */}
-                    <path d="M30,60 L20,55 L25,48 L32,56 Z" />
-                    {/* Kicking Leg fully extended high towards the ball */}
-                    <path d="M36,64 L48,78 L53,75 L40,61 Z" />
-                    {/* Arms balancing in mid-air */}
-                    <path d="M50,53 L58,45 L62,48 L52,55 Z" />
-                    <path d="M48,51 L38,42 L34,44 L44,52 Z" />
-                </g>
+                {/* Main Ball Body */}
+                <circle cx="12" cy="12" r="10" fill="url(#ballGradient)" stroke="#bfdbfe" strokeWidth="0.8" />
                 
-                {/* Kicked Ball leaving trail */}
-                <g>
-                    <circle cx="78" cy="25" r="7.5" fill="none" stroke="#60a5fa" strokeWidth="1" opacity="0.5" className="animate-ping" />
-                    <circle cx="78" cy="25" r="5" fill="url(#ballGradient)" />
-                </g>
+                {/* Central Pentagon */}
+                <path d="M 12 15.5 L 15 12.5 L 13.8 8.5 L 10.2 8.5 L 9 12.5 Z" fill="#0f172a" stroke="#bfdbfe" strokeWidth="0.8" strokeLinejoin="round" />
+                
+                {/* Lines radiating from vertices to form the classic pattern */}
+                <path d="M 12 15.5 L 12 22" stroke="#bfdbfe" strokeWidth="0.8" strokeLinecap="round" />
+                <path d="M 15 12.5 L 21 14" stroke="#bfdbfe" strokeWidth="0.8" strokeLinecap="round" />
+                <path d="M 9 12.5 L 3 14" stroke="#bfdbfe" strokeWidth="0.8" strokeLinecap="round" />
+                <path d="M 13.8 8.5 L 16.5 3.5" stroke="#bfdbfe" strokeWidth="0.8" strokeLinecap="round" />
+                <path d="M 10.2 8.5 L 7.5 3.5" stroke="#bfdbfe" strokeWidth="0.8" strokeLinecap="round" />
+                
+                {/* Motion Lines */}
+                <path d="M 2 20 Q 8 24 12 22" fill="none" stroke="#60a5fa" strokeWidth="1" opacity="0.4" strokeDasharray="2 2" />
+                <path d="M -2 16 Q 4 22 8 20" fill="none" stroke="#3b82f6" strokeWidth="0.6" opacity="0.3" strokeDasharray="1 2" />
             </svg>
             
             {/* Sparkles particle effects */}
