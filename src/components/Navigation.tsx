@@ -114,7 +114,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
           Estadios
         </motion.button>
 
-        {/* Admin Button - Visible para admins (o siempre para debugging) */}
+        {/* Admin Button - SIEMPRE VISIBLE */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -133,15 +133,14 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
                 ? 'rgba(168, 85, 247, 0.3)'
                 : 'rgba(255, 255, 255, 0.1)',
             color: '#ffffff',
-            border: isAdmin ? 'none' : '1px solid rgba(168, 85, 247, 0.5)',
+            border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
             fontSize: '13px',
             fontWeight: 'bold',
-            transition: 'all 0.3s ease',
-            opacity: isAdmin ? 1 : 0.6
+            transition: 'all 0.3s ease'
           }}
-          title={isAdmin ? 'Admin Panel' : 'Admin Panel (Verificando permisos...)'}
+          title="Admin Panel"
         >
           <Settings size={16} />
           Admin
