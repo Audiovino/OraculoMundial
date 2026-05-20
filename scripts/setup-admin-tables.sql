@@ -20,16 +20,34 @@ CREATE INDEX IF NOT EXISTS idx_admin_users_user_id ON admin_users(user_id);
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Política: Solo admins pueden ver la tabla
-CREATE POLICY IF NOT EXISTS "Admins can view admin_users"
-  ON admin_users
-  FOR SELECT
-  USING (auth.uid() IN (SELECT user_id FROM admin_users));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'admin_users' 
+    AND policyname = 'Admins can view admin_users'
+  ) THEN
+    CREATE POLICY "Admins can view admin_users"
+      ON admin_users
+      FOR SELECT
+      USING (auth.uid() IN (SELECT user_id FROM admin_users));
+  END IF;
+END $$;
 
 -- Política: Solo admins pueden insertar
-CREATE POLICY IF NOT EXISTS "Admins can insert admin_users"
-  ON admin_users
-  FOR INSERT
-  WITH CHECK (auth.uid() IN (SELECT user_id FROM admin_users));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'admin_users' 
+    AND policyname = 'Admins can insert admin_users'
+  ) THEN
+    CREATE POLICY "Admins can insert admin_users"
+      ON admin_users
+      FOR INSERT
+      WITH CHECK (auth.uid() IN (SELECT user_id FROM admin_users));
+  END IF;
+END $$;
 
 -- 2. Crear tabla notifications (opcional, para sistema de notificaciones)
 CREATE TABLE IF NOT EXISTS notifications (
@@ -48,10 +66,20 @@ CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
 
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own notifications"
-  ON notifications
-  FOR SELECT
-  USING (auth.uid() = user_id);
+-- Política: Solo usuarios pueden ver sus propias notificaciones
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'notifications' 
+    AND policyname = 'Users can view their own notifications'
+  ) THEN
+    CREATE POLICY "Users can view their own notifications"
+      ON notifications
+      FOR SELECT
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- ============================================
 -- AGREGAR ADMINS (reemplaza YOUR_USER_ID)

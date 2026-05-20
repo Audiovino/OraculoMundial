@@ -7,8 +7,8 @@
 Ejecuta este SQL en el editor SQL de Supabase:
 
 ```sql
--- Crear tabla admin_users
-CREATE TABLE admin_users (
+-- 1. Crear tabla admin_users
+CREATE TABLE IF NOT EXISTS admin_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
@@ -17,28 +17,46 @@ CREATE TABLE admin_users (
 );
 
 -- Crear índice para búsquedas rápidas
-CREATE INDEX idx_admin_users_user_id ON admin_users(user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_users_user_id ON admin_users(user_id);
 
 -- Habilitar RLS (Row Level Security)
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Política: Solo admins pueden ver la tabla
-CREATE POLICY "Admins can view admin_users"
-  ON admin_users
-  FOR SELECT
-  USING (auth.uid() IN (SELECT user_id FROM admin_users));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'admin_users' 
+    AND policyname = 'Admins can view admin_users'
+  ) THEN
+    CREATE POLICY "Admins can view admin_users"
+      ON admin_users
+      FOR SELECT
+      USING (auth.uid() IN (SELECT user_id FROM admin_users));
+  END IF;
+END $$;
 
 -- Política: Solo admins pueden insertar
-CREATE POLICY "Admins can insert admin_users"
-  ON admin_users
-  FOR INSERT
-  WITH CHECK (auth.uid() IN (SELECT user_id FROM admin_users));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'admin_users' 
+    AND policyname = 'Admins can insert admin_users'
+  ) THEN
+    CREATE POLICY "Admins can insert admin_users"
+      ON admin_users
+      FOR INSERT
+      WITH CHECK (auth.uid() IN (SELECT user_id FROM admin_users));
+  END IF;
+END $$;
 ```
 
 ### 2. Crear tabla `notifications` (opcional, para sistema de notificaciones)
 
 ```sql
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
@@ -49,15 +67,25 @@ CREATE TABLE notifications (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE INDEX idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX idx_notifications_read ON notifications(read);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
 
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own notifications"
-  ON notifications
-  FOR SELECT
-  USING (auth.uid() = user_id);
+-- Política: Solo usuarios pueden ver sus propias notificaciones
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'notifications' 
+    AND policyname = 'Users can view their own notifications'
+  ) THEN
+    CREATE POLICY "Users can view their own notifications"
+      ON notifications
+      FOR SELECT
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;
 ```
 
 ### 3. Agregar un usuario como admin
