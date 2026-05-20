@@ -53,11 +53,11 @@ function HeaderSoccerBall3D() {
         const ambient = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambient);
 
-        const light1 = new THREE.DirectionalLight(0x38bdf8, 1.6);
+        const light1 = new THREE.DirectionalLight(0xffffff, 1.4);
         light1.position.set(5, 5, 2);
         scene.add(light1);
 
-        const light2 = new THREE.DirectionalLight(0xc084fc, 0.9);
+        const light2 = new THREE.DirectionalLight(0xfff6d8, 0.7);
         light2.position.set(-5, -5, -2);
         scene.add(light2);
 
@@ -65,9 +65,9 @@ function HeaderSoccerBall3D() {
         const soccerBallMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 light1Pos: { value: new THREE.Vector3(5, 5, 2).normalize() },
-                light1Color: { value: new THREE.Color(0x38bdf8) },
+                light1Color: { value: new THREE.Color(0xffffff) },
                 light2Pos: { value: new THREE.Vector3(-5, -5, -2).normalize() },
-                light2Color: { value: new THREE.Color(0xc084fc) }
+                light2Color: { value: new THREE.Color(0xfff6d8) }
             },
             vertexShader: `
                 varying vec3 vNormal;
@@ -81,37 +81,70 @@ function HeaderSoccerBall3D() {
             fragmentShader: `
                 varying vec3 vNormal;
                 varying vec3 vPosition;
-                
+
                 uniform vec3 light1Pos;
                 uniform vec3 light1Color;
                 uniform vec3 light2Pos;
                 uniform vec3 light2Color;
-                
+
+                vec3 icos[12];
+
                 void main() {
-                    // Simplified soccer ball pattern using modulo instead of icosahedron
+                    float phi = 1.61803398875;
+                    icos[0] = normalize(vec3(-1.0, phi, 0.0));
+                    icos[1] = normalize(vec3(1.0, phi, 0.0));
+                    icos[2] = normalize(vec3(-1.0, -phi, 0.0));
+                    icos[3] = normalize(vec3(1.0, -phi, 0.0));
+                    icos[4] = normalize(vec3(0.0, -1.0, phi));
+                    icos[5] = normalize(vec3(0.0, 1.0, phi));
+                    icos[6] = normalize(vec3(0.0, -1.0, -phi));
+                    icos[7] = normalize(vec3(0.0, 1.0, -phi));
+                    icos[8] = normalize(vec3(phi, 0.0, -1.0));
+                    icos[9] = normalize(vec3(phi, 0.0, 1.0));
+                    icos[10] = normalize(vec3(-phi, 0.0, -1.0));
+                    icos[11] = normalize(vec3(-phi, 0.0, 1.0));
+
                     vec3 p = normalize(vPosition);
-                    
-                    // Create pentagon pattern using spherical coordinates
-                    float theta = atan(p.y, p.x);
-                    float phi = acos(p.z);
-                    
-                    // Pentagon tiling pattern
-                    float pattern = mod(theta * 2.5 + phi * 1.5, 1.0);
-                    
-                    vec3 baseColor = vec3(0.96, 0.96, 0.98);
-                    if (pattern < 0.15) {
-                        baseColor = vec3(0.08, 0.08, 0.10);
+                    float firstMax = -1.0;
+                    float secondMax = -1.0;
+                    for (int i = 0; i < 12; i++) {
+                        float d = dot(p, icos[i]);
+                        if (d > firstMax) {
+                            secondMax = firstMax;
+                            firstMax = d;
+                        } else if (d > secondMax) {
+                            secondMax = d;
+                        }
                     }
-                    
-                    // Simplified lighting (removed expensive specular calculation)
+
+                    vec3 baseColor = vec3(0.97, 0.97, 0.99);
+                    if (firstMax > 0.89) {
+                        baseColor = vec3(0.05, 0.05, 0.06);
+                    }
+
+                    float seam1 = abs(firstMax - 0.89);
+                    if (seam1 < 0.018) {
+                        baseColor = vec3(0.0, 0.0, 0.0);
+                    }
+
+                    float edgeVal = firstMax - secondMax;
+                    if (edgeVal < 0.048 && firstMax <= 0.89) {
+                        baseColor = vec3(0.0, 0.0, 0.0);
+                    }
+
                     vec3 n = normalize(vNormal);
                     float diff1 = max(dot(n, light1Pos), 0.0);
+                    vec3 r1 = reflect(-light1Pos, n);
+                    float spec1 = pow(max(dot(r1, vec3(0.0, 0.0, 1.0)), 0.0), 32.0);
                     float diff2 = max(dot(n, light2Pos), 0.0);
-                    
-                    vec3 ambient = vec3(0.25) * baseColor;
+                    vec3 r2 = reflect(-light2Pos, n);
+                    float spec2 = pow(max(dot(r2, vec3(0.0, 0.0, 1.0)), 0.0), 32.0);
+
+                    vec3 ambient = vec3(0.2) * baseColor;
                     vec3 diffuse = (diff1 * light1Color + diff2 * light2Color) * baseColor * 0.95;
-                    
-                    gl_FragColor = vec4(ambient + diffuse, 1.0);
+                    vec3 specular = (spec1 * light1Color * 0.35) + (spec2 * light2Color * 0.25);
+
+                    gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
                 }
             `
         });
@@ -540,23 +573,27 @@ export const MundialGame: React.FC = () => {
                 if (user) {
                     const { data, error } = await mundialSupabase
                         .from('mundial_predictions')
-                        .select('match_id, prediction, points')
+                        .select('*')
                         .eq('user_id', user.id);
 
                     if (!error && data) {
                         const predMap: Record<string, Prediction> = {};
                         let points = 0;
 
-                        data.forEach((pred: Pick<MundialPrediction, 'match_id' | 'prediction' | 'points'>) => {
-                            if (pred.prediction.includes('-')) {
-                                const [homeScore, awayScore] = pred.prediction.split('-');
+                        data.forEach((pred: any) => {
+                            const predictionValue = pred.prediction ?? pred.resultado ?? pred.score ?? pred.result;
+                            const pointValue = Number(pred.points ?? pred.score_points ?? 0);
+
+                            if (typeof predictionValue === 'string' && predictionValue.includes('-')) {
+                                const [homeScore, awayScore] = predictionValue.split('-').map(s => s.trim());
                                 predMap[pred.match_id] = {
                                     matchId: pred.match_id,
                                     homeScore,
-                                    awayScore
+                                    awayScore,
                                 };
                             }
-                            points += pred.points || 0;
+
+                            points += Number.isNaN(pointValue) ? 0 : pointValue;
                         });
                         
                         // Merge Supabase predictions with local ones
@@ -569,7 +606,7 @@ export const MundialGame: React.FC = () => {
                     }
                 }
             } catch (err) {
-                console.error('Error loading predictions:', err);
+                console.warn('[MundialGame] Error loading predictions:', err);
             } finally {
                 setLoading(false);
             }
@@ -587,10 +624,15 @@ export const MundialGame: React.FC = () => {
                     .order('position', { ascending: true })
                     .limit(10);
 
-                if (error) throw error;
+                if (error) {
+                    console.warn('[MundialGame] Ranking not available:', error.message || error);
+                    setRanking([]);
+                    return;
+                }
                 setRanking(data || []);
             } catch (err) {
-                console.error('Error loading ranking:', err);
+                console.warn('[MundialGame] Error loading ranking:', err);
+                setRanking([]);
             }
         };
 
@@ -663,7 +705,7 @@ export const MundialGame: React.FC = () => {
         if (user) {
             setSavingMatchId(matchId);
             try {
-                await mundialSupabase
+                const { error } = await mundialSupabase
                     .from('mundial_predictions')
                     .upsert([{
                         user_id: user.id,
@@ -671,8 +713,12 @@ export const MundialGame: React.FC = () => {
                         prediction: predictionStr,
                         points: 0
                     }], { onConflict: 'user_id,match_id' });
+
+                if (error) {
+                    console.warn('[MundialGame] Supabase save failed; continuing with local cache:', error.message || error);
+                }
             } catch (err) {
-                console.error('Supabase save failed, but saved locally:', err);
+                console.warn('[MundialGame] Supabase save exception; continuing with local cache:', err);
             } finally {
                 setSavingMatchId(null);
             }
@@ -707,8 +753,25 @@ export const MundialGame: React.FC = () => {
     }
 
     return (
-        <>
-        <div className="relative min-h-screen bg-slate-900 text-slate-200 overflow-x-hidden font-sans">
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen bg-[#0B0F19] text-white">
+                <div className="flex flex-col items-center">
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                        className="w-16 h-16 border-4 border-white/10 border-t-blue-500 rounded-full mb-6"
+                    />
+                    <motion.p
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className="text-blue-400 font-medium tracking-widest uppercase text-sm"
+                    >
+                        Cargando animaciones...
+                    </motion.p>
+                </div>
+            </div>
+        }>
+            <div className="relative min-h-screen bg-slate-900 text-slate-200 overflow-x-hidden font-sans">
             {/* Animated Nebula Background Spheres */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-1/4 w-[600px] h-[600px] bg-blue-500/10 blur-[140px] rounded-full animate-float-slow" />
@@ -1662,6 +1725,6 @@ export const MundialGame: React.FC = () => {
             awayTeam={celebration.away}
             onDone={() => setCelebration({ type: null, home: '', away: '' })}
         />
-        </>
+        </Suspense>
     );
 };

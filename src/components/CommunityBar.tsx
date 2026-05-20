@@ -34,19 +34,20 @@ export const CommunityBar: React.FC<CommunityBarProps> = ({ matchId, userPredict
       try {
         const { data, error } = await mundialSupabase
           .from('mundial_predictions')
-          .select('prediction')
+          .select('*')
           .eq('match_id', matchId);
 
         if (error || !data || data.length === 0) {
-          // Fallback con datos simulados si no hay suficientes predicciones
           setDist({ local: 52, empate: 23, visitante: 25, total: data?.length || 0 });
           return;
         }
 
         let local = 0, empate = 0, visitante = 0;
-        data.forEach(row => {
-          if (!row.prediction?.includes('-')) return;
-          const [h, a] = row.prediction.split('-').map(Number);
+        data.forEach((row: any) => {
+          const value = row.prediction ?? row.resultado ?? row.score ?? row.result;
+          if (typeof value !== 'string' || !value.includes('-')) return;
+          const [h, a] = value.split('-').map(Number);
+          if (Number.isNaN(h) || Number.isNaN(a)) return;
           const r = getResult(h, a);
           if (r === 'local') local++;
           else if (r === 'empate') empate++;
@@ -65,7 +66,8 @@ export const CommunityBar: React.FC<CommunityBarProps> = ({ matchId, userPredict
           visitante: Math.round((visitante / total) * 100),
           total,
         });
-      } catch {
+      } catch (err) {
+        console.warn('[CommunityBar] load error:', err);
         setDist({ local: 52, empate: 23, visitante: 25, total: 0 });
       } finally {
         setLoading(false);

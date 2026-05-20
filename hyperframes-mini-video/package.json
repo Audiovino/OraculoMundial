@@ -1,0 +1,13 @@
+{
+  "name": "hyperframes-mini-video",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "render": "hyperframes render",
+    "render-gpu": "hyperframes render --docker",
+    "preview": "hyperframes preview"
+  },
+  "devDependencies": {
+    "hyperframes": "^0.6.29"
+  }
+}

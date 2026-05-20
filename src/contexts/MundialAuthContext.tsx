@@ -21,26 +21,68 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const [error, setError] = useState<string | null>(null);
     const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
+    const syncUserWithSession = async (session: any) => {
+        if (session?.user) {
+            try {
+                const dbPromise = mundialSupabase
+                    .from('mundial_users')
+                    .select('id, email, username, created_at')
+                    .eq('id', session.user.id)
+                    .single();
+                
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Timeout de DB')), 5000)
+                );
+
+                const { data: profile } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+                if (profile) {
+                    setUser({
+                        id: profile.id,
+                        email: profile.email,
+                        username: profile.username,
+                        created_at: profile.created_at
+                    });
+                    return;
+                }
+            } catch (err) {
+                // Si la tabla no responde, fallback al perfil del token.
+                console.warn("Error o timeout sincronizando usuario:", err);
+            }
+
+            setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'usuario',
+                created_at: session.user.created_at || new Date().toISOString()
+            });
+            return;
+        }
+
+        setUser(null);
+    };
+
     // Verificar sesión al montar
     useEffect(() => {
         let isMounted = true;
 
         const checkSession = async () => {
             try {
-                const { data: { session } } = await mundialSupabase.auth.getSession();
+                // Timeout de seguridad: si Supabase no responde en 5s, seguir sin sesión
+                const sessionPromise = mundialSupabase.auth.getSession();
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Timeout: Supabase no respondió')), 5000)
+                );
+
+                const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
                 if (!isMounted) return;
 
-                if (session?.user) {
-                    setUser({
-                        id: session.user.id,
-                        email: session.user.email || '',
-                        username: session.user.email?.split('@')[0] || 'usuario',
-                        created_at: session.user.created_at || new Date().toISOString()
-                    });
-                }
-                setLoading(false);
+                await syncUserWithSession(session);
             } catch (err) {
                 console.error('Error checking session:', err);
+                // En caso de timeout o error, permitir que la app cargue sin sesión
+                if (isMounted) setUser(null);
+            } finally {
                 if (isMounted) setLoading(false);
             }
         };
@@ -53,41 +95,12 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
             if (event === 'PASSWORD_RECOVERY') {
                 setIsRecoveryMode(true);
+            } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+                setIsRecoveryMode(false);
             }
 
-            if (session?.user) {
-                // Intentar cargar perfil completo desde mundial_users
-                try {
-                    const { data: profile } = await mundialSupabase
-                        .from('mundial_users')
-                        .select('id, email, username, created_at')
-                        .eq('id', session.user.id)
-                        .single();
-
-                    if (profile && isMounted) {
-                        setUser({
-                            id: profile.id,
-                            email: profile.email,
-                            username: profile.username,
-                            created_at: profile.created_at
-                        });
-                        return;
-                    }
-                } catch {
-                    // Perfil no disponible — usar datos del token
-                }
-
-                if (isMounted) {
-                    setUser({
-                        id: session.user.id,
-                        email: session.user.email || '',
-                        username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'usuario',
-                        created_at: session.user.created_at || new Date().toISOString()
-                    });
-                }
-            } else {
-                if (isMounted) setUser(null);
-            }
+            await syncUserWithSession(session);
+            if (isMounted) setLoading(false);
         });
 
         return () => {
@@ -133,8 +146,6 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
             setError(err.message || 'Error en registro');
             setLoading(false);
             throw err;
-        } finally {
-            setTimeout(() => setLoading(false), 1000);
         }
     };
 
@@ -151,16 +162,11 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
             if (signInError) throw signInError;
             if (!data.user) throw new Error('No user returned from signin');
 
-            // NO setear user aquí — dejar que onAuthStateChange lo maneje
-            // Esto evita el loop de re-renders
-
+            // NO setear user aquí – el auth state change sincronizará el usuario.
         } catch (err: any) {
             setError(err.message || 'Error en inicio de sesión');
             setLoading(false);
             throw err;
-        } finally {
-            // El loading se apagará cuando onAuthStateChange dispare
-            setTimeout(() => setLoading(false), 1000);
         }
     };
 

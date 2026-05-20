@@ -39,16 +39,16 @@ export const MundialScene: React.FC = () => {
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
         // --- 2. ILUMINACIÓN ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
         scene.add(ambientLight);
 
-        // Luz azul brillante (estilo mundialista futurista)
-        const dirLight1 = new THREE.DirectionalLight(0x38bdf8, 1.5);
+        // Luz cálida blanca para resaltar la textura del balón
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
         dirLight1.position.set(10, 10, 5);
         scene.add(dirLight1);
 
-        // Luz índigo de contraste para estética Slate/Azul
-        const dirLight2 = new THREE.DirectionalLight(0x818cf8, 0.8);
+        // Luz fría suave de relleno para mantener contraste sin tintes naranjas
+        const dirLight2 = new THREE.DirectionalLight(0xe3f2fd, 0.7);
         dirLight2.position.set(-10, -10, -5);
         scene.add(dirLight2);
 

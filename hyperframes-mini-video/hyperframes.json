@@ -1,0 +1,9 @@
+{
+  "entry": "index.html",
+  "output": "dist",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 8,
+  "background": "#080b18"
+}

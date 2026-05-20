@@ -46,29 +46,43 @@ export const PrivateLeague: React.FC = () => {
       const { data, error } = await mundialSupabase
         .from('private_leagues')
         .select('*')
-        .or(`creador_id.eq.${user.id}`);
+        .eq('creador_id', user.id);
 
       if (!error && data) {
         setLeagues(data);
       } else {
-        // Fallback: cargar desde localStorage
+        console.warn('[PrivateLeague] loadLeagues Supabase error:', error);
         const local = localStorage.getItem(`leagues_${user.id}`);
         if (local) setLeagues(JSON.parse(local));
       }
-    } catch {
+    } catch (supabaseError) {
+      console.warn('[PrivateLeague] loadLeagues caught error:', supabaseError);
       const local = localStorage.getItem(`leagues_${user.id}`);
       if (local) setLeagues(JSON.parse(local));
     }
   };
 
   const createLeague = async () => {
-    if (!newName.trim() || !user?.id) return;
+    if (!newName.trim()) {
+      setError('El nombre de la liga no puede estar vacío.');
+      return;
+    }
+    if (!user?.id) {
+      setError('Debés iniciar sesión para crear una liga.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     const code = generateCode();
+    const leagueId =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `league_${Math.random().toString(36).slice(2, 10)}_${Date.now()}`;
+
     const newLeague: League = {
-      id: crypto.randomUUID(),
+      id: leagueId,
       nombre: newName.trim(),
       codigo_invitacion: code,
       creador_id: user.id,
@@ -80,8 +94,9 @@ export const PrivateLeague: React.FC = () => {
         .insert([newLeague]);
 
       if (error) throw error;
-    } catch {
-      // Guardar localmente si Supabase falla
+    } catch (supabaseError: any) {
+      console.warn('[PrivateLeague] Supabase createLeague error:', supabaseError);
+      setError('No se pudo crear la liga en Supabase; se guardará localmente.');
     }
 
     const updated = [...leagues, newLeague];
@@ -93,7 +108,15 @@ export const PrivateLeague: React.FC = () => {
   };
 
   const joinLeague = async () => {
-    if (!joinCode.trim() || !user?.id) return;
+    if (!joinCode.trim()) {
+      setError('El código de invitación no puede estar vacío.');
+      return;
+    }
+    if (!user?.id) {
+      setError('Debés iniciar sesión para unirte a una liga.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -105,22 +128,30 @@ export const PrivateLeague: React.FC = () => {
         .single();
 
       if (error || !data) {
+        console.warn('[PrivateLeague] joinLeague Supabase lookup error:', error);
         setError('Código inválido. Verificá que esté bien escrito.');
         setLoading(false);
         return;
       }
 
-      // Unirse a la liga
-      await mundialSupabase
+      const { error: joinError } = await mundialSupabase
         .from('league_members')
         .upsert([{ liga_id: data.id, user_id: user.id }]);
+
+      if (joinError) {
+        console.warn('[PrivateLeague] joinLeague upsert error:', joinError);
+        setError('No se pudo unir a la liga. Intentá de nuevo.');
+        setLoading(false);
+        return;
+      }
 
       const updated = [...leagues, data];
       setLeagues(updated);
       localStorage.setItem(`leagues_${user.id}`, JSON.stringify(updated));
       setJoinCode('');
       setMode('list');
-    } catch {
+    } catch (supabaseError) {
+      console.warn('[PrivateLeague] joinLeague caught error:', supabaseError);
       setError('Error al unirse. Intentá de nuevo.');
     }
     setLoading(false);
@@ -145,36 +176,44 @@ export const PrivateLeague: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users size={18} className="text-purple-400" />
-          <h3 className="text-white font-black text-sm uppercase tracking-wider">Mini-Ligas</h3>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users size={18} className="text-purple-400" />
+            <h3 className="text-white font-black text-sm uppercase tracking-wider">Mini-Ligas</h3>
+          </div>
+          <div className="flex gap-2">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setMode(mode === 'create' ? 'list' : 'create')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              style={{
+                backgroundColor: mode === 'create' ? 'rgba(168,85,247,0.3)' : 'rgba(168,85,247,0.1)',
+                color: '#c084fc',
+                border: '1px solid rgba(168,85,247,0.3)'
+              }}
+            >
+              <Plus size={12} /> Crear
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setMode(mode === 'join' ? 'list' : 'join')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              style={{
+                backgroundColor: mode === 'join' ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.1)',
+                color: '#60a5fa',
+                border: '1px solid rgba(59,130,246,0.3)'
+              }}
+            >
+              <LogIn size={12} /> Unirse
+            </motion.button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setMode(mode === 'create' ? 'list' : 'create')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            style={{
-              backgroundColor: mode === 'create' ? 'rgba(168,85,247,0.3)' : 'rgba(168,85,247,0.1)',
-              color: '#c084fc',
-              border: '1px solid rgba(168,85,247,0.3)'
-            }}
-          >
-            <Plus size={12} /> Crear
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setMode(mode === 'join' ? 'list' : 'join')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            style={{
-              backgroundColor: mode === 'join' ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.1)',
-              color: '#60a5fa',
-              border: '1px solid rgba(59,130,246,0.3)'
-            }}
-          >
-            <LogIn size={12} /> Unirse
-          </motion.button>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p className="text-[11px] uppercase tracking-[0.24em] text-gray-400">Qué hace</p>
+          <p className="mt-2 text-sm leading-6 text-gray-200">
+            Mini-Ligas es una competencia privada para tus pronósticos del Mundial. Crear una liga permite invitar a amigos con un código y comparar solo sus resultados entre ustedes. No cambia los partidos: usa los mismos pronósticos que ya ingresás en la app.
+          </p>
         </div>
       </div>
 
@@ -199,6 +238,7 @@ export const PrivateLeague: React.FC = () => {
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
               onKeyDown={e => e.key === 'Enter' && createLeague()}
             />
+            {error && <p className="text-red-400 text-xs">{error}</p>}
             <button
               onClick={createLeague}
               disabled={!newName.trim() || loading}
@@ -246,7 +286,10 @@ export const PrivateLeague: React.FC = () => {
       {leagues.length === 0 ? (
         <div className="text-center py-6">
           <p className="text-gray-500 text-sm">No tenés ligas todavía.</p>
-          <p className="text-gray-600 text-xs mt-1">Creá una o unite con un código.</p>
+          <p className="text-gray-600 text-xs mt-1">
+            Las ligas agrupan a tus pronósticos del Mundial con un grupo de amigos. Creá una liga para competir solo entre ustedes.
+          </p>
+          <p className="text-gray-600 text-xs mt-1">Usá el botón Crear o Unirse para empezar.</p>
         </div>
       ) : (
         <div className="space-y-2">

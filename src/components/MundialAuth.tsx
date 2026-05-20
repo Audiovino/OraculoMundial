@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,10 @@ type AuthMode = 'signin' | 'signup' | 'forgot_password' | 'update_password';
 export const MundialAuth: React.FC<{ isRecovery?: boolean }> = ({ isRecovery }) => {
     const { signIn, signUp, resetPassword, updatePassword, error } = useMundialAuth();
     const [mode, setMode] = useState<AuthMode>(isRecovery ? 'update_password' : 'signin');
+
+    useEffect(() => {
+        setMode(isRecovery ? 'update_password' : 'signin');
+    }, [isRecovery]);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');

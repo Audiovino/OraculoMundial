@@ -30,22 +30,28 @@ export const useStreak = (userId: string | undefined) => {
     if (!userId) return;
     const load = async () => {
       try {
-        const { data } = await mundialSupabase
+        const { data, error } = await mundialSupabase
           .from('mundial_users')
-          .select('streak_actual, streak_maximo, ultima_jornada_evaluada')
+          .select('*')
           .eq('id', userId)
           .single();
 
+        if (error) {
+          throw error;
+        }
+
         if (data) {
           const s: StreakData = {
-            current: data.streak_actual || 0,
-            max: data.streak_maximo || 0,
-            lastUpdated: data.ultima_jornada_evaluada || null,
+            current: Number(data.streak_actual ?? data.current_streak ?? data.streak ?? 0),
+            max: Number(data.streak_maximo ?? data.max_streak ?? data.streak_max ?? 0),
+            lastUpdated: data.ultima_jornada_evaluada ?? data.last_evaluated ?? data.updated_at ?? null,
           };
           setStreak(s);
           localStorage.setItem(`streak_${userId}`, JSON.stringify(s));
         }
-      } catch {}
+      } catch (err: any) {
+        console.warn('[useStreak] Could not load streak from Supabase:', err?.message || err);
+      }
     };
     load();
   }, [userId]);

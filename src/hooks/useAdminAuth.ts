@@ -33,15 +33,10 @@ export const useAdminAuth = () => {
                     .single();
 
                 if (queryError) {
-                    if (queryError.code === 'PGRST116') {
-                        // PGRST116 = no rows found (es normal si no es admin)
-                        console.log('[Admin Auth] User is NOT admin (no row found)');
-                        setIsAdmin(false);
-                    } else {
-                        console.warn('[Admin Auth] Query error:', queryError.code, queryError.message);
-                        setError(queryError.message);
-                        setIsAdmin(false);
-                    }
+                    // Si la tabla no existe o la política falla, no bloqueamos la app.
+                    console.warn('[Admin Auth] Query error:', queryError.code, queryError.message);
+                    setIsAdmin(false);
+                    setError(null);
                 } else {
                     console.log('[Admin Auth] User IS admin:', data);
                     setIsAdmin(!!data);
