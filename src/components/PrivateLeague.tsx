@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown } from 'lucide-react';
+import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown, PlayCircle } from 'lucide-react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 
@@ -181,6 +181,19 @@ export const PrivateLeague: React.FC = () => {
           <div className="flex items-center gap-2">
             <Users size={18} className="text-purple-400" />
             <h3 className="text-white font-black text-sm uppercase tracking-wider">Mini-Ligas</h3>
+            <a 
+              href="http://localhost:3002" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center gap-1.5 px-2 py-1 ml-2 rounded-lg text-[10px] font-bold transition-all"
+              style={{
+                backgroundColor: 'rgba(234,179,8,0.15)',
+                color: '#facc15',
+                border: '1px solid rgba(234,179,8,0.3)'
+              }}
+            >
+              <PlayCircle size={12} /> Video tutorial
+            </a>
           </div>
           <div className="flex gap-2">
             <motion.button
