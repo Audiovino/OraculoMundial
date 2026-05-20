@@ -53,14 +53,68 @@ export interface MatchStats {
  */
 export const getAllMatches = async (): Promise<Match[]> => {
   try {
-    const response = await fetch(`${WC_API_BASE}/matches`);
-    if (!response.ok) throw new Error('Failed to fetch matches');
+    console.log('[API] Fetching all matches from WC2026 API...');
+    const response = await fetch(`${WC_API_BASE}/matches`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn(`[API] WC2026 API returned status ${response.status}`);
+      return getDemoMatches();
+    }
+    
     const data = await response.json();
-    return data.matches || [];
+    console.log('[API] Matches fetched successfully:', data.matches?.length || 0);
+    return data.matches || getDemoMatches();
   } catch (error) {
-    console.error('Error fetching matches:', error);
-    return [];
+    console.error('[API] Error fetching matches:', error);
+    return getDemoMatches();
   }
+};
+
+/**
+ * Datos de demostración si la API no responde
+ */
+const getDemoMatches = (): Match[] => {
+  console.log('[API] Using demo matches (API unavailable)');
+  return [
+    {
+      id: 'demo_1',
+      homeTeam: 'Argentina',
+      awayTeam: 'México',
+      homeTeamCode: 'ARG',
+      awayTeamCode: 'MEX',
+      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'scheduled',
+      venue: 'Estadio Azteca',
+      group: 'C'
+    },
+    {
+      id: 'demo_2',
+      homeTeam: 'Brasil',
+      awayTeam: 'Uruguay',
+      homeTeamCode: 'BRA',
+      awayTeamCode: 'URU',
+      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'scheduled',
+      venue: 'SoFi Stadium',
+      group: 'D'
+    },
+    {
+      id: 'demo_3',
+      homeTeam: 'Francia',
+      awayTeam: 'Alemania',
+      homeTeamCode: 'FRA',
+      awayTeamCode: 'GER',
+      date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'scheduled',
+      venue: 'MetLife Stadium',
+      group: 'E'
+    }
+  ];
 };
 
 /**
@@ -71,7 +125,7 @@ export const getMatchesByStatus = async (status: 'scheduled' | 'live' | 'complet
     const allMatches = await getAllMatches();
     return allMatches.filter(m => m.status === status);
   } catch (error) {
-    console.error('Error filtering matches:', error);
+    console.error('[API] Error filtering matches:', error);
     return [];
   }
 };
@@ -90,7 +144,7 @@ export const getUpcomingMatches = async (): Promise<Match[]> => {
       return matchDate >= now && matchDate <= sevenDaysLater && m.status === 'scheduled';
     });
   } catch (error) {
-    console.error('Error fetching upcoming matches:', error);
+    console.error('[API] Error fetching upcoming matches:', error);
     return [];
   }
 };
@@ -102,7 +156,7 @@ export const getLiveMatches = async (): Promise<Match[]> => {
   try {
     return await getMatchesByStatus('live');
   } catch (error) {
-    console.error('Error fetching live matches:', error);
+    console.error('[API] Error fetching live matches:', error);
     return [];
   }
 };
@@ -114,7 +168,7 @@ export const getCompletedMatches = async (): Promise<Match[]> => {
   try {
     return await getMatchesByStatus('completed');
   } catch (error) {
-    console.error('Error fetching completed matches:', error);
+    console.error('[API] Error fetching completed matches:', error);
     return [];
   }
 };
@@ -124,14 +178,51 @@ export const getCompletedMatches = async (): Promise<Match[]> => {
  */
 export const getStandings = async (): Promise<StandingsData[]> => {
   try {
-    const response = await fetch(`${WC_API_BASE}/standings`);
-    if (!response.ok) throw new Error('Failed to fetch standings');
+    console.log('[API] Fetching standings from WC2026 API...');
+    const response = await fetch(`${WC_API_BASE}/standings`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn(`[API] WC2026 API standings returned status ${response.status}`);
+      return getDemoStandings();
+    }
+    
     const data = await response.json();
-    return data.standings || [];
+    console.log('[API] Standings fetched successfully:', data.standings?.length || 0);
+    return data.standings || getDemoStandings();
   } catch (error) {
-    console.error('Error fetching standings:', error);
-    return [];
+    console.error('[API] Error fetching standings:', error);
+    return getDemoStandings();
   }
+};
+
+/**
+ * Datos de demostración para standings
+ */
+const getDemoStandings = (): StandingsData[] => {
+  console.log('[API] Using demo standings (API unavailable)');
+  return [
+    {
+      group: 'A',
+      teams: [
+        { code: 'MEX', name: 'México', played: 2, points: 4, won: 1, drawn: 1, lost: 0, goalsFor: 3, goalsAgainst: 1, goalDifference: 2 },
+        { code: 'CAN', name: 'Canadá', played: 2, points: 3, won: 1, drawn: 0, lost: 1, goalsFor: 2, goalsAgainst: 2, goalDifference: 0 },
+        { code: 'USA', name: 'Estados Unidos', played: 2, points: 1, won: 0, drawn: 1, lost: 1, goalsFor: 1, goalsAgainst: 2, goalDifference: -1 }
+      ]
+    },
+    {
+      group: 'B',
+      teams: [
+        { code: 'ARG', name: 'Argentina', played: 2, points: 6, won: 2, drawn: 0, lost: 0, goalsFor: 5, goalsAgainst: 1, goalDifference: 4 },
+        { code: 'PAR', name: 'Paraguay', played: 2, points: 3, won: 1, drawn: 0, lost: 1, goalsFor: 2, goalsAgainst: 2, goalDifference: 0 },
+        { code: 'BOL', name: 'Bolivia', played: 2, points: 0, won: 0, drawn: 0, lost: 2, goalsFor: 0, goalsAgainst: 4, goalDifference: -4 }
+      ]
+    }
+  ];
 };
 
 /**
@@ -156,7 +247,7 @@ export const getTournamentStats = async (): Promise<MatchStats> => {
       averageGoalsPerMatch: completed.length > 0 ? totalGoals / completed.length : 0
     };
   } catch (error) {
-    console.error('Error calculating tournament stats:', error);
+    console.error('[API] Error calculating tournament stats:', error);
     return {
       totalMatches: 0,
       completedMatches: 0,
@@ -176,7 +267,7 @@ export const getMatchById = async (matchId: string): Promise<Match | null> => {
     const matches = await getAllMatches();
     return matches.find(m => m.id === matchId) || null;
   } catch (error) {
-    console.error('Error fetching match:', error);
+    console.error('[API] Error fetching match:', error);
     return null;
   }
 };
@@ -189,7 +280,7 @@ export const getTeamMatches = async (teamCode: string): Promise<Match[]> => {
     const matches = await getAllMatches();
     return matches.filter(m => m.homeTeamCode === teamCode || m.awayTeamCode === teamCode);
   } catch (error) {
-    console.error('Error fetching team matches:', error);
+    console.error('[API] Error fetching team matches:', error);
     return [];
   }
 };
@@ -206,7 +297,7 @@ export const getTopScorers = async (): Promise<any[]> => {
     const data = await response.json();
     return data.results || [];
   } catch (error) {
-    console.error('Error fetching top scorers:', error);
+    console.error('[API] Error fetching top scorers:', error);
     return [];
   }
 };
@@ -223,7 +314,7 @@ export const getTeamLogo = async (teamName: string): Promise<string | null> => {
     const team = data.results?.find((r: any) => r.strTeam === teamName);
     return team?.strTeamBadge || null;
   } catch (error) {
-    console.error('Error fetching team logo:', error);
+    console.error('[API] Error fetching team logo:', error);
     return null;
   }
 };
@@ -271,7 +362,7 @@ export const getPredictionStats = async (predictions: any[]): Promise<any> => {
     };
     return stats;
   } catch (error) {
-    console.error('Error calculating prediction stats:', error);
+    console.error('[API] Error calculating prediction stats:', error);
     return null;
   }
 };
