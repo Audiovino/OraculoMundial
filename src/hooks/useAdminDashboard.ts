@@ -47,50 +47,96 @@ export const useAdminDashboard = () => {
       setLoading(true);
       setError(null);
 
-      // Obtener usuarios
-      const { data: users, error: usersError } = await mundialSupabase
-        .from('mundial_users')
-        .select('*');
+      // Intentar obtener usuarios
+      let users = [];
+      let predictions = [];
+      let activity = [];
 
-      if (usersError) throw usersError;
+      try {
+        const { data: usersData, error: usersError } = await mundialSupabase
+          .from('mundial_users')
+          .select('*')
+          .limit(100);
 
-      // Obtener predicciones
-      const { data: predictions, error: predictionsError } = await mundialSupabase
-        .from('mundial_predictions')
-        .select('*');
+        if (!usersError) {
+          users = usersData || [];
+        } else {
+          console.warn('[Admin] No mundial_users table or empty:', usersError.message);
+        }
+      } catch (err) {
+        console.warn('[Admin] Error fetching users:', err);
+      }
 
-      if (predictionsError) throw predictionsError;
+      try {
+        const { data: predictionsData, error: predictionsError } = await mundialSupabase
+          .from('mundial_predictions')
+          .select('*')
+          .limit(1000);
 
-      // Obtener actividad reciente
-      const { data: activity, error: activityError } = await mundialSupabase
-        .from('mundial_predictions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
+        if (!predictionsError) {
+          predictions = predictionsData || [];
+        } else {
+          console.warn('[Admin] No mundial_predictions table or empty:', predictionsError.message);
+        }
+      } catch (err) {
+        console.warn('[Admin] Error fetching predictions:', err);
+      }
 
-      if (activityError) throw activityError;
+      try {
+        const { data: activityData, error: activityError } = await mundialSupabase
+          .from('mundial_predictions')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (!activityError) {
+          activity = activityData || [];
+        }
+      } catch (err) {
+        console.warn('[Admin] Error fetching activity:', err);
+      }
 
       // Calcular estadísticas
-      const completedPreds = predictions?.filter(p => p.homeScore !== null && p.awayScore !== null) || [];
-      const pendingPreds = predictions?.filter(p => p.homeScore === null || p.awayScore === null) || [];
+      const completedPreds = predictions.filter(p => p.homeScore !== null && p.awayScore !== null) || [];
+      const pendingPreds = predictions.filter(p => p.homeScore === null || p.awayScore === null) || [];
       const avgScore = completedPreds.length > 0
         ? completedPreds.reduce((sum, p) => sum + (p.score || 0), 0) / completedPreds.length
         : 0;
 
-      // Top player
-      const topPlayer = predictions?.reduce((max, p) => (p.score || 0) > (max.score || 0) ? p : max, {});
+      const topPlayer = predictions.length > 0
+        ? predictions.reduce((max, p) => (p.score || 0) > (max.score || 0) ? p : max, {})
+        : null;
 
       setStats({
-        totalUsers: users?.length || 0,
-        totalPredictions: predictions?.length || 0,
+        totalUsers: users.length,
+        totalPredictions: predictions.length,
         completedPredictions: completedPreds.length,
         pendingPredictions: pendingPreds.length,
         averageScore: avgScore,
         topPlayer,
-        recentActivity: activity || []
+        recentActivity: activity
+      });
+
+      console.log('[Admin] Dashboard stats loaded:', {
+        users: users.length,
+        predictions: predictions.length,
+        completed: completedPreds.length
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading dashboard stats');
+      const message = err instanceof Error ? err.message : 'Error loading dashboard stats';
+      console.error('[Admin] Error:', message);
+      setError(message);
+      
+      // Mostrar estadísticas vacías pero funcionales
+      setStats({
+        totalUsers: 0,
+        totalPredictions: 0,
+        completedPredictions: 0,
+        pendingPredictions: 0,
+        averageScore: 0,
+        topPlayer: null,
+        recentActivity: []
+      });
     } finally {
       setLoading(false);
     }
@@ -99,6 +145,7 @@ export const useAdminDashboard = () => {
   // Cargar partidos
   const loadMatches = useCallback(async () => {
     try {
+      console.log('[Admin] Loading matches from API...');
       const [all, upcoming, live, completed] = await Promise.all([
         getAllMatches(),
         getUpcomingMatches(),
@@ -110,33 +157,51 @@ export const useAdminDashboard = () => {
       setUpcomingMatches(upcoming);
       setLiveMatches(live);
       setCompletedMatches(completed);
+
+      console.log('[Admin] Matches loaded:', {
+        total: all.length,
+        upcoming: upcoming.length,
+        live: live.length,
+        completed: completed.length
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading matches');
+      const message = err instanceof Error ? err.message : 'Error loading matches';
+      console.error('[Admin] Error loading matches:', message);
+      setError(message);
     }
   }, []);
 
   // Cargar standings
   const loadStandings = useCallback(async () => {
     try {
+      console.log('[Admin] Loading standings...');
       const data = await getStandings();
       setStandings(data);
+      console.log('[Admin] Standings loaded:', data.length, 'groups');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading standings');
+      const message = err instanceof Error ? err.message : 'Error loading standings';
+      console.error('[Admin] Error loading standings:', message);
+      setError(message);
     }
   }, []);
 
   // Cargar estadísticas del torneo
   const loadTournamentStats = useCallback(async () => {
     try {
+      console.log('[Admin] Loading tournament stats...');
       const data = await getTournamentStats();
       setTournamentStats(data);
+      console.log('[Admin] Tournament stats loaded:', data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading tournament stats');
+      const message = err instanceof Error ? err.message : 'Error loading tournament stats';
+      console.error('[Admin] Error loading tournament stats:', message);
+      setError(message);
     }
   }, []);
 
   // Cargar todo al montar
   useEffect(() => {
+    console.log('[Admin] Initializing dashboard...');
     loadDashboardStats();
     loadMatches();
     loadStandings();
@@ -144,6 +209,7 @@ export const useAdminDashboard = () => {
 
     // Recargar cada 5 minutos
     const interval = setInterval(() => {
+      console.log('[Admin] Auto-refreshing data...');
       loadDashboardStats();
       loadMatches();
       loadTournamentStats();
@@ -155,6 +221,8 @@ export const useAdminDashboard = () => {
   // Actualizar resultado de un partido
   const updateMatchResult = useCallback(async (matchId: string, homeGoals: number, awayGoals: number) => {
     try {
+      console.log('[Admin] Updating match result:', matchId, homeGoals, '-', awayGoals);
+
       // Actualizar en Supabase
       const { error } = await mundialSupabase
         .from('mundial_matches')
@@ -195,9 +263,11 @@ export const useAdminDashboard = () => {
       await loadDashboardStats();
       await loadMatches();
 
+      console.log('[Admin] Match result updated successfully');
       return { success: true };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error updating match result';
+      console.error('[Admin] Error updating match:', message);
       setError(message);
       return { success: false, error: message };
     }
@@ -206,6 +276,7 @@ export const useAdminDashboard = () => {
   // Obtener ranking de usuarios
   const getUserRanking = useCallback(async () => {
     try {
+      console.log('[Admin] Fetching user ranking...');
       const { data, error } = await mundialSupabase
         .from('mundial_predictions')
         .select('userId, score')
@@ -229,9 +300,13 @@ export const useAdminDashboard = () => {
         return acc;
       }, []) || [];
 
-      return ranking.sort((a: any, b: any) => b.totalScore - a.totalScore);
+      const sorted = ranking.sort((a: any, b: any) => b.totalScore - a.totalScore);
+      console.log('[Admin] Ranking fetched:', sorted.length, 'users');
+      return sorted;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching ranking');
+      const message = err instanceof Error ? err.message : 'Error fetching ranking';
+      console.error('[Admin] Error fetching ranking:', message);
+      setError(message);
       return [];
     }
   }, []);
@@ -239,6 +314,7 @@ export const useAdminDashboard = () => {
   // Enviar notificación a todos los usuarios
   const sendNotification = useCallback(async (title: string, message: string) => {
     try {
+      console.log('[Admin] Sending notification to all users...');
       const { data: users, error: usersError } = await mundialSupabase
         .from('mundial_users')
         .select('id');
@@ -260,9 +336,11 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
 
+      console.log('[Admin] Notifications sent:', notifications.length);
       return { success: true, notificationsSent: notifications.length };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error sending notification';
+      console.error('[Admin] Error sending notification:', message);
       setError(message);
       return { success: false, error: message };
     }
@@ -271,6 +349,7 @@ export const useAdminDashboard = () => {
   // Exportar ranking a JSON
   const exportRankingJSON = useCallback(async () => {
     try {
+      console.log('[Admin] Exporting ranking to JSON...');
       const ranking = await getUserRanking();
       const json = JSON.stringify(ranking, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
@@ -280,9 +359,11 @@ export const useAdminDashboard = () => {
       a.download = `ranking-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      console.log('[Admin] Ranking exported successfully');
       return { success: true };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error exporting ranking';
+      console.error('[Admin] Error exporting ranking:', message);
       setError(message);
       return { success: false, error: message };
     }
@@ -291,6 +372,7 @@ export const useAdminDashboard = () => {
   // Generar mensaje de WhatsApp con ranking
   const generateWhatsAppMessage = useCallback(async () => {
     try {
+      console.log('[Admin] Generating WhatsApp message...');
       const ranking = await getUserRanking();
       let message = '🏆 *Ranking Oráculo Mundial 2026* 🏆\n\n';
       
@@ -301,9 +383,12 @@ export const useAdminDashboard = () => {
       message += `\n📊 Total predicciones: ${ranking.reduce((sum: number, p: any) => sum + p.predictions, 0)}\n`;
       message += `🎮 Juega en: https://oraculo-mundial.vercel.app`;
 
+      console.log('[Admin] WhatsApp message generated');
       return message;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error generating message');
+      const message = err instanceof Error ? err.message : 'Error generating message';
+      console.error('[Admin] Error generating message:', message);
+      setError(message);
       return '';
     }
   }, [getUserRanking]);
