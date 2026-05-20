@@ -182,7 +182,7 @@ export const PrivateLeague: React.FC = () => {
             <Users size={18} className="text-purple-400" />
             <h3 className="text-white font-black text-sm uppercase tracking-wider">Mini-Ligas</h3>
             <a 
-              href="http://localhost:3002" 
+              href="https://hyperframes-mini-video.vercel.app" 
               target="_blank" 
               rel="noreferrer"
               className="flex items-center gap-1.5 px-2 py-1 ml-2 rounded-lg text-[10px] font-bold transition-all"
