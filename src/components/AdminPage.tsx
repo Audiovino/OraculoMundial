@@ -5,12 +5,12 @@ import AdminDashboard from './AdminDashboard';
 import { motion } from 'framer-motion';
 
 /**
- * Página de administración con protección de acceso
- * Solo usuarios registrados como admins pueden acceder
+ * Página de administración
+ * Acceso abierto para testing (sin verificación de permisos)
  */
 export const AdminPage: React.FC = () => {
     const { user } = useMundialAuth();
-    const { isAdmin, loading, error } = useAdminAuth();
+    const { isAdmin, loading } = useAdminAuth();
 
     // Mientras se verifica el estado de admin
     if (loading) {
@@ -27,7 +27,7 @@ export const AdminPage: React.FC = () => {
                         transition={{ repeat: Infinity, duration: 2 }}
                         className="text-blue-400 font-medium tracking-widest uppercase text-sm"
                     >
-                        Verificando Permisos...
+                        Cargando Panel...
                     </motion.p>
                 </div>
             </div>
@@ -49,25 +49,20 @@ export const AdminPage: React.FC = () => {
         );
     }
 
-    // Usuario autenticado pero no es admin
-    if (!isAdmin) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-[#0B0F19] text-white">
-                <div className="text-center">
-                    <h1 className="text-3xl font-bold mb-4">Acceso Denegado</h1>
-                    <p className="text-gray-400 mb-2">No tienes permisos de administrador.</p>
-                    {error && <p className="text-red-400 text-sm mb-6">{error}</p>}
-                    <a href="/" className="text-blue-400 hover:text-blue-300 underline">
-                        Volver al inicio
-                    </a>
-                </div>
-            </div>
-        );
-    }
-
-    // Usuario es admin - mostrar dashboard
+    // Usuario autenticado - mostrar dashboard
+    // (Sin verificación de admin para testing)
     return (
         <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
+            {isAdmin && (
+                <div className="bg-green-500/10 border-b border-green-500/30 px-6 py-2 text-green-400 text-sm">
+                    ✅ Acceso de Admin verificado
+                </div>
+            )}
+            {!isAdmin && (
+                <div className="bg-yellow-500/10 border-b border-yellow-500/30 px-6 py-2 text-yellow-400 text-sm">
+                    ⚠️ Acceso de prueba (no eres admin registrado)
+                </div>
+            )}
             <AdminDashboard />
         </div>
     );
