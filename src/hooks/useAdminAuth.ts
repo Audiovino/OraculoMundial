@@ -14,7 +14,10 @@ export const useAdminAuth = () => {
 
     useEffect(() => {
         const checkAdminStatus = async () => {
+            console.log('[Admin Auth] Checking admin status for user:', user?.id);
+
             if (!user?.id) {
+                console.log('[Admin Auth] No user ID found');
                 setIsAdmin(false);
                 setLoading(false);
                 return;
@@ -22,19 +25,27 @@ export const useAdminAuth = () => {
 
             try {
                 // Intentar consultar tabla admin_users
+                console.log('[Admin Auth] Querying admin_users table...');
                 const { data, error: queryError } = await mundialSupabase
                     .from('admin_users')
                     .select('user_id')
                     .eq('user_id', user.id)
                     .single();
 
-                if (queryError && queryError.code !== 'PGRST116') {
-                    // PGRST116 = no rows found (es normal si no es admin)
-                    console.warn('[Admin Auth] Query error:', queryError);
-                    setError(queryError.message);
+                if (queryError) {
+                    if (queryError.code === 'PGRST116') {
+                        // PGRST116 = no rows found (es normal si no es admin)
+                        console.log('[Admin Auth] User is NOT admin (no row found)');
+                        setIsAdmin(false);
+                    } else {
+                        console.warn('[Admin Auth] Query error:', queryError.code, queryError.message);
+                        setError(queryError.message);
+                        setIsAdmin(false);
+                    }
+                } else {
+                    console.log('[Admin Auth] User IS admin:', data);
+                    setIsAdmin(!!data);
                 }
-
-                setIsAdmin(!!data);
             } catch (err) {
                 console.error('[Admin Auth] Error checking admin status:', err);
                 setError(err instanceof Error ? err.message : 'Unknown error');
