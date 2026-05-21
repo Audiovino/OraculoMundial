@@ -1778,24 +1778,24 @@ export const MundialGame: React.FC = () => {
 
                 {showVideoModal && (
                     <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-300">
-                        <div className="relative max-w-4xl w-full bg-gray-900 rounded-2xl p-1 sm:p-2 border border-white/10 shadow-2xl overflow-hidden">
+                        <div className="relative max-w-4xl w-full bg-[#0A0D18] rounded-2xl p-0.5 sm:p-2 border border-white/10 shadow-2xl overflow-hidden">
                             <div className="absolute top-3 right-3 z-20">
                                 <button 
-                                    className="text-white/50 hover:text-white p-1.5 bg-black/20 hover:bg-black/40 rounded-full transition-all" 
+                                    className="text-white/70 hover:text-white p-2 bg-black/40 rounded-full transition-all touch-manipulation" 
                                     onClick={() => setShowVideoModal(false)}
                                 >
-                                    <X size={18} />
+                                    <X size={20} />
                                 </button>
                             </div>
-                            <div className="aspect-video bg-black rounded-xl overflow-hidden relative">
+                            <div className="aspect-video bg-[#0A0D18] rounded-xl overflow-hidden relative w-full h-full">
                                 <iframe
                                     title="Tutorial Oráculo"
                                     src={`https://hyperframes-mini-video.vercel.app/?user=${encodeURIComponent(user?.username || 'Invitado')}&pts=${String(totalPoints)}`}
-                                    className="absolute inset-0 w-full h-full border-0"
-                                    style={{ border: 'none', background: '#0A0D18' }}
+                                    className="absolute top-0 left-0 w-full h-full border-0"
+                                    style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%' }}
                                     loading="lazy"
                                     scrolling="no"
-                                    allow="autoplay; fullscreen; picture-in-picture"
+                                    allow="autoplay; fullscreen"
                                     allowFullScreen
                                     sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                                 />
