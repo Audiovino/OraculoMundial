@@ -119,6 +119,22 @@ img {
    RESPONSIVE UTILITIES
    ============================================ */
 
+/* Prevent text overlap/overflow on small screens */
+@media (max-width: 768px) {
+  p, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+  }
+
+  /* Avoid accidental clipping from long UI strings */
+  .break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
 /* Ocultar en mobile */
 @media (max-width: 768px) {
   .hide-mobile {

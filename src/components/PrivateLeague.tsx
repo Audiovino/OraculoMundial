@@ -233,26 +233,55 @@ export const PrivateLeague: React.FC = () => {
       <AnimatePresence>
         {showTutorial && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="rounded-3xl overflow-hidden border border-white/10 bg-slate-950/80"
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              y: 0,
+              boxShadow: [
+                '0 0 20px rgba(139, 92, 246, 0.1), 0 10px 30px rgba(0,0,0,0.5)',
+                '0 0 35px rgba(139, 92, 246, 0.3), 0 10px 35px rgba(0,0,0,0.5)',
+                '0 0 20px rgba(139, 92, 246, 0.1), 0 10px 30px rgba(0,0,0,0.5)'
+              ]
+            }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            whileHover={{ 
+              scale: 1.015,
+              borderColor: 'rgba(139, 92, 246, 0.4)',
+              transition: { duration: 0.3 }
+            }}
+            transition={{
+              boxShadow: {
+                repeat: Infinity,
+                duration: 3,
+                ease: 'easeInOut'
+              },
+              default: {
+                type: 'spring',
+                damping: 25,
+                stiffness: 120
+              }
+            }}
+            className="rounded-3xl overflow-hidden border border-white/10 bg-[#0A0D18] relative"
           >
-            <div className="flex items-center justify-between gap-3 p-3 bg-slate-900/90 border-b border-white/10">
+            <div className="flex items-center justify-between gap-3 p-3 bg-[#0d111d] border-b border-white/10">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Video tutorial</p>
-                <h4 className="text-sm font-black text-white">Mini-Ligas</h4>
+                <h4 className="text-sm font-black text-white font-sans">Mini-Ligas</h4>
               </div>
               <button
                 onClick={() => setShowTutorial(false)}
-                className="text-slate-400 text-xs font-semibold hover:text-white"
-              >Cerrar</button>
+                className="text-slate-400 text-xs font-semibold hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Cerrar
+              </button>
             </div>
-            <div className="aspect-video bg-black">
+            <div className="aspect-video bg-[#0A0D18] relative w-full overflow-hidden">
               <iframe
                 title="Tutorial Mini-Ligas"
-                src="https://hyperframes-mini-video.vercel.app"
-                className="w-full h-full"
+                src="https://hyperframes-mini-video.vercel.app/"
+                className="w-full h-full border-0 absolute inset-0"
+                style={{ border: 'none', background: '#0A0D18' }}
                 loading="lazy"
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowFullScreen

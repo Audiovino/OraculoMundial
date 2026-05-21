@@ -46,7 +46,7 @@ const AppContent: React.FC = () => {
         <HermesSecurityWrapper>
             <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
                 <Navigation currentView={currentView} onViewChange={setCurrentView} />
-                <div style={{ paddingTop: '70px' }}>
+                <div className="pt-[110px] md:pt-[70px]">
                     {currentView === 'game' && <MundialGame />}
                     {currentView === 'stadiums' && <StadiumsGrid filter="all" />}
                     {currentView === 'admin' && <AdminDashboard />}

@@ -799,7 +799,7 @@ export const MundialGame: React.FC = () => {
             
             <div className="max-w-4xl mx-auto space-y-6 relative z-10 py-6 px-4">
                 {/* Header Card */}
-                <div className="relative overflow-hidden glass-premium card-shine p-8 staggered-item rounded-[32px]">
+                <div className="relative overflow-hidden glass-premium card-shine p-5 sm:p-8 staggered-item rounded-[32px]">
                     {/* Top gradient glowing bar */}
                     <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 z-20" />
                     

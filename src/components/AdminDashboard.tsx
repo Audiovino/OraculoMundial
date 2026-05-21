@@ -41,6 +41,7 @@ import { useLocation } from '../hooks/useLocation';
 import { getGoogleMapsAddress } from '../utils/locationDetector';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 import { AdminMatchManager } from './AdminMatchManager';
+import { HermesMonitorPanel } from '../services/HermesMonitorPanel';
 
 /* ─── Tooltip Component ─── */
 const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => {
@@ -165,7 +166,7 @@ const AdminDashboard: React.FC = () => {
     generateWhatsAppMessage
   } = useAdminDashboard(); // Asegúrate de que useAdminDashboard no esté en conflicto con HermesMonitorPanel
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'api-matches' | 'ranking' | 'standings' | 'analytics' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'api-matches' | 'ranking' | 'standings' | 'analytics' | 'settings' | 'hermes'>('overview');
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [homeGoals, setHomeGoals] = useState('');
   const [awayGoals, setAwayGoals] = useState('');
@@ -182,19 +183,45 @@ const AdminDashboard: React.FC = () => {
   const { status: locationStatus, ipLocation, browserLocation, error: locationError } = useLocation(isAdmin, false);
   const googleMapsAddress = getGoogleMapsAddress(browserLocation || ipLocation);
 
-  // Load users for user management
+  // Load users for user management and preload rankings automatically
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const { data, error: err } = await mundialSupabase
-          .from('mundial_users')
-          .select('*')
-          .limit(200);
-        if (!err && data) setUserList(data);
-      } catch { /* silently fail */ }
+        let allUsers: any[] = [];
+        let page = 0;
+        const pageSize = 1000;
+        let hasMore = true;
+
+        while (hasMore) {
+          const { data, error: err } = await mundialSupabase
+            .from('mundial_users')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .range(page * pageSize, (page + 1) * pageSize - 1);
+
+          if (err) {
+            console.error('[Admin] Error fetching users chunk:', err);
+            break;
+          }
+
+          if (data && data.length > 0) {
+            allUsers = [...allUsers, ...data];
+            hasMore = data.length === pageSize;
+            page++;
+          } else {
+            hasMore = false;
+          }
+        }
+        setUserList(allUsers);
+      } catch (err) {
+        console.error('[Admin] loadUsers caught error:', err);
+      }
     };
     loadUsers();
-  }, []);
+
+    // Preload rankings so the table is instantly populated on mount
+    getUserRanking().then(data => setRanking(data)).catch(() => {});
+  }, [getUserRanking]);
 
   const handleUpdateResult = async () => {
     if (!selectedMatch || homeGoals === '' || awayGoals === '') {

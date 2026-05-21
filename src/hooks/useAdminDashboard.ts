@@ -51,37 +51,53 @@ export const useAdminDashboard = () => {
 
       console.log('[Admin] Loading dashboard stats...');
 
-      // Intentar obtener usuarios desde auth.users directamente
-      let users = [];
+      // Obtener cantidad exacta de usuarios registrados
+      let totalUsersCount = 0;
       let predictions = [];
       let activity = [];
 
       try {
-        const { data: mundialUsers, error: usersError } = await mundialSupabase
+        const { count, error: usersError } = await mundialSupabase
           .from('mundial_users')
-          .select('*')
-          .limit(100);
+          .select('*', { count: 'exact', head: true });
 
-        if (!usersError && mundialUsers) {
-          users = mundialUsers;
-          console.log('[Admin] Mundial users loaded:', users.length);
+        if (!usersError && count !== null) {
+          totalUsersCount = count;
+          console.log('[Admin] Total registered users count:', totalUsersCount);
         }
       } catch (err) {
-        console.warn('[Admin] Could not load mundial_users:', err);
+        console.warn('[Admin] Could not load total registered users count:', err);
       }
 
       try {
-        const { data: predictionsData, error: predictionsError } = await mundialSupabase
-          .from('mundial_predictions')
-          .select('*')
-          .limit(1000);
+        let allPredictions: any[] = [];
+        let page = 0;
+        const pageSize = 1000;
+        let hasMore = true;
 
-        if (!predictionsError && predictionsData) {
-          predictions = predictionsData;
-          console.log('[Admin] Predictions loaded:', predictions.length);
+        while (hasMore) {
+          const { data: predictionsData, error: predictionsError } = await mundialSupabase
+            .from('mundial_predictions')
+            .select('*')
+            .range(page * pageSize, (page + 1) * pageSize - 1);
+
+          if (predictionsError) {
+            console.error('[Admin] Error fetching predictions chunk:', predictionsError);
+            break;
+          }
+
+          if (predictionsData && predictionsData.length > 0) {
+            allPredictions = [...allPredictions, ...predictionsData];
+            hasMore = predictionsData.length === pageSize;
+            page++;
+          } else {
+            hasMore = false;
+          }
         }
+        predictions = allPredictions;
+        console.log('[Admin] Predictions loaded recursively:', predictions.length);
       } catch (err) {
-        console.warn('[Admin] Could not load predictions:', err);
+        console.warn('[Admin] Could not load predictions recursively:', err);
       }
 
       try {
@@ -117,7 +133,7 @@ export const useAdminDashboard = () => {
       const topPlayer = Object.values(rankingByUser).sort((a: any, b: any) => b.totalPoints - a.totalPoints)[0] || null;
 
       setStats({
-        totalUsers: users.length,
+        totalUsers: totalUsersCount,
         totalPredictions: predictions.length,
         completedPredictions: completedPreds.length,
         pendingPredictions: pendingPreds.length,
@@ -305,24 +321,55 @@ export const useAdminDashboard = () => {
   // Obtener ranking de usuarios
   const getUserRanking = useCallback(async () => {
     try {
-      console.log('[Admin] Fetching user ranking...');
+      console.log('[Admin] Fetching user ranking recursively...');
       
-      // Obtenemos los usuarios y sus rachas actuales
-      const { data: users, error: userError } = await mundialSupabase
-        .from('mundial_users')
-        .select('id, username, streak_actual');
+      // Obtenemos los usuarios y sus rachas actuales de forma recursiva
+      let allUsers: any[] = [];
+      let pageUsers = 0;
+      const pageSize = 1000;
+      let hasMoreUsers = true;
 
-      if (userError) throw userError;
+      while (hasMoreUsers) {
+        const { data: usersData, error: userError } = await mundialSupabase
+          .from('mundial_users')
+          .select('id, username, streak_actual')
+          .range(pageUsers * pageSize, (pageUsers + 1) * pageSize - 1);
 
-      const { data, error } = await mundialSupabase
-        .from('mundial_predictions')
-        .select('user_id, points')
-        .order('points', { ascending: false });
+        if (userError) throw userError;
 
-      if (error) throw error;
+        if (usersData && usersData.length > 0) {
+          allUsers = [...allUsers, ...usersData];
+          hasMoreUsers = usersData.length === pageSize;
+          pageUsers++;
+        } else {
+          hasMoreUsers = false;
+        }
+      }
+
+      // Obtenemos todas las predicciones de forma recursiva
+      let allPredictions: any[] = [];
+      let pagePreds = 0;
+      let hasMorePreds = true;
+
+      while (hasMorePreds) {
+        const { data: predsData, error: predsError } = await mundialSupabase
+          .from('mundial_predictions')
+          .select('user_id, points')
+          .range(pagePreds * pageSize, (pagePreds + 1) * pageSize - 1);
+
+        if (predsError) throw predsError;
+
+        if (predsData && predsData.length > 0) {
+          allPredictions = [...allPredictions, ...predsData];
+          hasMorePreds = predsData.length === pageSize;
+          pagePreds++;
+        } else {
+          hasMorePreds = false;
+        }
+      }
 
       // Agrupamos predicciones por ID de usuario
-      const totals = data?.reduce((acc: Record<string, any>, pred: any) => {
+      const totals = allPredictions.reduce((acc: Record<string, any>, pred: any) => {
         const uid = pred.user_id || 'unknown';
         acc[uid] = acc[uid] || { totalScore: 0, predictions: 0 };
         acc[uid].totalScore += Number(pred.points ?? 0);
@@ -331,7 +378,7 @@ export const useAdminDashboard = () => {
       }, {}) || {};
 
       // Mapeamos los usuarios con sus estadísticas y racha
-      const ranking = users.map(u => ({
+      const ranking = allUsers.map(u => ({
         id: u.id,
         userId: u.username || u.id,
         totalScore: totals[u.id]?.totalScore || 0,
@@ -341,11 +388,10 @@ export const useAdminDashboard = () => {
       }));
 
       const sorted = ranking.sort((a: any, b: any) => b.totalScore - a.totalScore);
-      console.log('[Admin] Ranking fetched:', sorted.length, 'users');
+      console.log('[Admin] Ranking fetched recursively:', sorted.length, 'users');
       return sorted;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching ranking';
-      console.error('[Admin] Error fetching ranking:', message);
+      console.error('[Admin] Error fetching ranking recursively:', err);
       // Mock data to prevent empty state and errors during testing
       return [
         { userId: 'juan_perez', totalScore: 125, predictions: 18 },
@@ -364,13 +410,29 @@ export const useAdminDashboard = () => {
       if (userId) {
         targetUserIds = [userId];
       } else {
-        console.log('[Admin] Sending notification to all users...');
-        const { data: users, error: usersError } = await mundialSupabase
-          .from('mundial_users')
-          .select('id');
+        console.log('[Admin] Sending notification to all users (fetching all)...');
+        let allUsers: any[] = [];
+        let page = 0;
+        const pageSize = 1000;
+        let hasMore = true;
 
-        if (usersError) throw usersError;
-        targetUserIds = users?.map(u => u.id) || [];
+        while (hasMore) {
+          const { data: usersData, error: usersError } = await mundialSupabase
+            .from('mundial_users')
+            .select('id')
+            .range(page * pageSize, (page + 1) * pageSize - 1);
+
+          if (usersError) throw usersError;
+
+          if (usersData && usersData.length > 0) {
+            allUsers = [...allUsers, ...usersData];
+            hasMore = usersData.length === pageSize;
+            page++;
+          } else {
+            hasMore = false;
+          }
+        }
+        targetUserIds = allUsers.map(u => u.id);
       }
 
       // Crear notificaciones para cada usuario

@@ -27,7 +27,7 @@ export function useHermesStatus() {
     // Suscribirse a cambios en tiempo real para reaccionar al instante
     const channel = mundialSupabase
       .channel('hermes_realtime_alerts')
-      .on('postgres_changes', { event: 'INSERT', table: 'hermes_logs' }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hermes_logs' } as any, (payload: any) => {
         setStatus(payload.new.status);
       })
       .subscribe();

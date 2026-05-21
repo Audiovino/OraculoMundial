@@ -1,13 +1,70 @@
 /**
- * Sistema de Agentes Hermes (Ollama) para Seguridad y Monitoreo
+ * Sistema de Agentes Hermes para Seguridad y Monitoreo
  * 
- * Estos agentes se ejecutan automáticamente para proteger la aplicación
+ * Usa Ollama local cuando está disponible (localhost).
+ * Fallback automático a Gemini Flash (gratuito) cuando se accede desde
+ * dispositivos externos / celulares donde Ollama no es accesible.
  */
 import { mundialSupabase } from './mundialSupabaseClient';
 import { getBrowserDeviceType } from '../utils/deviceDetector';
 
 const OLLAMA_URL = 'http://localhost:11434/api/generate';
 const MODEL = 'hermes3';
+
+// ZhipuAI GLM-4 Flash — fallback gratuito para acceso remoto/mobile
+const ZHIPU_API_KEY = import.meta.env.VITE_ZHIPU_API_KEY || '';
+const ZHIPU_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+
+/** Detecta si Ollama está disponible (solo funciona en localhost) */
+let _ollamaAvailable: boolean | null = null;
+async function isOllamaAvailable(): Promise<boolean> {
+  if (_ollamaAvailable !== null) return _ollamaAvailable;
+  try {
+    const res = await fetch('http://localhost:11434/api/tags', { signal: AbortSignal.timeout(1500) });
+    _ollamaAvailable = res.ok;
+  } catch {
+    _ollamaAvailable = false;
+  }
+  return _ollamaAvailable;
+}
+
+/**
+ * Llama al LLM disponible: Ollama primero, ZhipuAI como fallback.
+ * Siempre devuelve texto de respuesta o lanza error.
+ */
+async function callLLM(prompt: string): Promise<string> {
+  const ollamaOk = await isOllamaAvailable();
+
+  if (ollamaOk) {
+    const res = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, prompt, stream: false, options: { temperature: 0.1 } })
+    });
+    const data = await res.json();
+    return data.response as string;
+  }
+
+  // Fallback: ZhipuAI GLM-4 Flash
+  if (!ZHIPU_API_KEY) {
+    throw new Error('Ollama no disponible y VITE_ZHIPU_API_KEY no configurada');
+  }
+  const res = await fetch(ZHIPU_URL, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${ZHIPU_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'glm-4-flash',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1,
+      max_tokens: 512
+    })
+  });
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? '';
+}
 
 interface HermesResponse {
   valid: boolean;
@@ -26,15 +83,13 @@ export interface HermesFullReport {
 }
 
 /**
- * Utilidad para extraer y parsear JSON de la respuesta de Ollama,
+ * Extrae y parsea JSON de la respuesta del LLM,
  * manejando posibles bloques de formato Markdown.
  */
 function parseHermesResponse(text: string): any {
   try {
-    // Intenta parsear directamente
     return JSON.parse(text);
-  } catch (e) {
-    // Si falla, busca contenido dentro de bloques de código JSON
+  } catch {
     const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     const jsonContent = match ? match[1] : text;
     return JSON.parse(jsonContent.trim());
@@ -71,21 +126,8 @@ Responde SOLO con JSON válido:
 }`;
 
   try {
-    const response = await fetch(OLLAMA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL,
-        prompt,
-        stream: false,
-        options: { temperature: 0.1 } // Baja temperatura para respuestas consistentes
-      })
-    });
-
-    const data = await response.json();
-    const result = parseHermesResponse(data.response);
-    
-    return result;
+    const text = await callLLM(prompt);
+    return parseHermesResponse(text);
   } catch (error) {
     console.error('❌ Hermes Agent 1 error:', error);
     // Fallback: validación básica
@@ -127,21 +169,8 @@ Responde SOLO con JSON válido:
 }`;
 
   try {
-    const response = await fetch(OLLAMA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL,
-        prompt,
-        stream: false,
-        options: { temperature: 0.1 }
-      })
-    });
-
-    const data = await response.json();
-    const result = parseHermesResponse(data.response);
-    
-    return result;
+    const text = await callLLM(prompt);
+    return parseHermesResponse(text);
   } catch (error) {
     console.error('❌ Hermes Agent 2 error:', error);
     return {
@@ -178,21 +207,8 @@ Responde SOLO con JSON válido:
 }`;
 
   try {
-    const response = await fetch(OLLAMA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL,
-        prompt,
-        stream: false,
-        options: { temperature: 0.1 }
-      })
-    });
-
-    const data = await response.json();
-    const result = parseHermesResponse(data.response);
-    
-    return result;
+    const text = await callLLM(prompt);
+    return parseHermesResponse(text);
   } catch (error) {
     console.error('❌ Hermes Agent 3 error:', error);
     return {
@@ -265,20 +281,8 @@ Responde SOLO con JSON válido:
 }`;
 
   try {
-    const response = await fetch(OLLAMA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL,
-        prompt,
-        stream: false,
-        options: { temperature: 0.1 }
-      })
-    });
-
-    const data = await response.json();
-    const result = parseHermesResponse(data.response);
-    
+    const text = await callLLM(prompt);
+    const result = parseHermesResponse(text);
     return {
       ...result,
       sanitized: {
@@ -312,7 +316,6 @@ export async function checkResponsiveness(): Promise<HermesResponse> {
   const deviceType = getBrowserDeviceType();
   const isMobile = deviceType === 'mobile';
   const isTablet = deviceType === 'tablet';
-  const isDesktop = deviceType === 'desktop';
   
   // Verificar elementos críticos
   const criticalElements = [
@@ -361,20 +364,8 @@ Responde SOLO con JSON válido:
 }`;
 
   try {
-    const response = await fetch(OLLAMA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL,
-        prompt,
-        stream: false,
-        options: { temperature: 0.1 }
-      })
-    });
-
-    const data = await response.json();
-    const result = parseHermesResponse(data.response);
-    
+    const text = await callLLM(prompt);
+    const result = parseHermesResponse(text);
     return {
       ...result,
       sanitized: {
@@ -421,24 +412,13 @@ export async function performSystemQATest(): Promise<HermesResponse> {
   }`;
 
   try {
-    const response = await fetch(OLLAMA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: MODEL,
-        prompt,
-        stream: false,
-        options: { temperature: 0.1 }
-      })
-    });
-
-    const data = await response.json();
-    return parseHermesResponse(data.response);
+    const text = await callLLM(prompt);
+    return parseHermesResponse(text);
   } catch (error) {
     return {
       valid: false,
-      issues: ['No se pudo ejecutar el Agente QA: Ollama no responde'],
-      recommendation: 'Asegúrate de que Ollama esté corriendo localmente con el modelo hermes3.'
+      issues: ['No se pudo ejecutar el Agente QA: LLM no disponible (Ollama ni Gemini)'],
+      recommendation: 'Asegúrate de que Ollama esté corriendo localmente o configura VITE_GEMINI_API_KEY.'
     };
   }
 }
@@ -537,8 +517,8 @@ export async function runAllAgents(context?: any): Promise<HermesFullReport> {
   };
 
   // Determinar estado global
-  const allValid = report.health.valid && report.responsiveness.valid && report.secrets.valid && report.qaTest.valid;
-  const hasCritical = !report.secrets.valid || !report.health.valid || !report.qaTest.valid;
+  const allValid = report.health.valid && report.responsiveness.valid && report.secrets.valid && (report.qaTest?.valid ?? false);
+  const hasCritical = !report.secrets.valid || !report.health.valid || !(report.qaTest?.valid ?? false);
   
   if (hasCritical) {
     report.overallStatus = 'critical';

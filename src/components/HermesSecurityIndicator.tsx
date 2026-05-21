@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Shield, AlertTriangle, CheckCircle, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useHermesMonitoring, useResponsivenessMonitor, useHealthMonitor } from '../hooks/useHermesMonitoring';
+import { useResponsivenessMonitor, useHealthMonitor } from '../hooks/useHermesMonitoring';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 
 /**
