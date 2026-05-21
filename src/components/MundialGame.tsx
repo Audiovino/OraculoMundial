@@ -1127,7 +1127,7 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.homeScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-lg text-center text-2xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
+                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
                                                         />
                                                         <span className="text-xl font-black text-slate-600">:</span>
                                                         <input
@@ -1138,7 +1138,7 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.awayScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-16 h-16 bg-slate-950/90 border-2 border-white/20 rounded-2xl text-center text-3xl font-black text-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none transition-all placeholder:opacity-5"
+                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5"
                                                         />
                                                     </div>
                                                 </div>
@@ -1790,7 +1790,7 @@ export const MundialGame: React.FC = () => {
                             <div className="aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center">
                                 <iframe
                                     title="Tutorial Oráculo"
-                                    src={`https://hyperframes-mini-video.vercel.app/?user=${encodeURIComponent(user?.username || 'Invitado')}&pts=${totalPoints}`}
+                                    src={`https://hyperframes-mini-video.vercel.app/?user=${encodeURIComponent(user?.username || 'Invitado')}&pts=${String(totalPoints)}`}
                                     className="w-full h-full border-0 block"
                                     style={{ border: 'none', background: '#0A0D18', display: 'block' }}
                                     loading="lazy"

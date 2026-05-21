@@ -336,10 +336,10 @@ export async function checkPerformanceAndAnimations(): Promise<HermesResponse> {
   
   // Analizar carga del DOM y procesos visuales
   const heavyElements = {
-    canvases: document.querySelectorAll('canvas').length,
-    videos: document.querySelectorAll('video').length,
-    framerElements: document.querySelectorAll('[class*="motion"]').length,
-    tabHidden: document.hidden
+    canvases: typeof document !== 'undefined' ? document.querySelectorAll('canvas').length : 0,
+    videos: typeof document !== 'undefined' ? document.querySelectorAll('video').length : 0,
+    framerElements: typeof document !== 'undefined' ? document.querySelectorAll('[class*="motion"]').length : 0,
+    tabHidden: typeof document !== 'undefined' ? document.hidden : false
   };
 
   const prompt = `Eres un experto en Web Performance. Analiza esta carga visual para un dispositivo ${isMobile ? 'MÓVIL' : 'DESKTOP'}:
