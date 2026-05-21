@@ -16,6 +16,7 @@ import CommunityBar from './CommunityBar';
 import PrivateLeague from './PrivateLeague';
 import { useStreak } from '../hooks/useStreak';
 import { useSecurityMonitor } from '../hooks/useSecurityMonitor';
+import { useVisibleElement } from '../hooks/useVisibleElement';
 
 // Lazy load MiniStadium3D para optimización en móvil
 const MiniStadium3D = React.lazy(() => import('./scene/MiniStadium3D'));
@@ -32,9 +33,12 @@ const AnimatedClockStadium = React.lazy(() => import('./AnimatedClockStadium'));
 // ---------------------------------------------------------
 function HeaderSoccerBall3D() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const { ref: containerRef, isVisible } = useVisibleElement({ threshold: 0.1 });
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     useEffect(() => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current || !isVisible) return; // Pausar motor si no es visible
         const canvas = canvasRef.current;
 
         const scene = new THREE.Scene();
@@ -44,10 +48,10 @@ function HeaderSoccerBall3D() {
         const renderer = new THREE.WebGLRenderer({
             canvas,
             alpha: true,
-            antialias: true
+            antialias: false // Desactivado totalmente en móvil para máximo rendimiento en Chrome
         });
         renderer.setSize(96, 96);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(isMobile ? 0.8 : Math.min(window.devicePixelRatio, 2)); // Resolución reducida en móvil para fluidez
 
         // Iluminación para resaltar la 3D del balón
         const ambient = new THREE.AmbientLight(0xffffff, 0.6);
@@ -149,37 +153,45 @@ function HeaderSoccerBall3D() {
             `
         });
 
-        const ballGeo = new THREE.SphereGeometry(1.0, 32, 32);
+        const ballGeo = new THREE.SphereGeometry(1.0, isMobile ? 8 : 32, isMobile ? 8 : 32); // Geometría mínima para móvil
         const ball = new THREE.Mesh(ballGeo, soccerBallMaterial);
         scene.add(ball);
 
         let animationFrameId: number;
         let clock = new THREE.Clock();
+        let lastFrameTime = 0;
 
-        const animate = () => {
+        const animate = (time: number) => {
+            // En móviles limitamos a 30 FPS para reducir el consumo de batería un 50%
+            if (isMobile && time - lastFrameTime < 33) {
+                animationFrameId = requestAnimationFrame(animate);
+                return;
+            }
+            lastFrameTime = time;
+
             const elapsedTime = clock.getElapsedTime();
             ball.rotation.y = elapsedTime * 0.9;
             ball.rotation.x = elapsedTime * 0.45;
             
-            // Efecto sutil de bote físico interactivo
             ball.position.y = Math.sin(elapsedTime * 4.5) * 0.08;
 
             renderer.render(scene, camera);
             animationFrameId = requestAnimationFrame(animate);
         };
 
-        animate();
+        animationFrameId = requestAnimationFrame(animate);
 
         return () => {
             cancelAnimationFrame(animationFrameId);
+            renderer.dispose();
             ballGeo.dispose();
             soccerBallMaterial.dispose();
-            renderer.dispose();
+            scene.clear();
         };
-    }, []);
+    }, [isMobile, isVisible]);
 
     return (
-        <div className="w-24 h-24 relative flex items-center justify-center">
+        <div ref={containerRef} className="w-24 h-24 relative flex items-center justify-center">
             <canvas ref={canvasRef} className="w-24 h-24 block drop-shadow-[0_10px_20px_rgba(56,189,248,0.4)]" />
         </div>
     );
@@ -519,6 +531,7 @@ export const MundialGame: React.FC = () => {
     // Monitor de seguridad Hermes para protección de datos
     const { validateField, getSecurityStatus } = useSecurityMonitor();
 
+    const [showVideoModal, setShowVideoModal] = useState(false);
     // Auth guard and general setup
     const role = 'encargado';
     const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
@@ -839,11 +852,18 @@ export const MundialGame: React.FC = () => {
                                             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>
                                         <div class="aspect-video bg-black rounded-xl overflow-hidden">
-                                            <video src="/videos/futbolm.mp4" controls autoplay class="w-full h-full object-contain"></video>
+                                            <video src="/videos/futbolm.mp4" controls playsinline muted autoplay loop x-webkit-airplay="allow" style="width:100%;height:100%;object-fit:contain"></video>
                                         </div>
                                     </div>
                                 `;
                                     document.body.appendChild(modal);
+                                    const videoEl = modal.querySelector('video');
+                                    if (videoEl) {
+                                        videoEl.setAttribute('playsinline', '');
+                                        videoEl.setAttribute('webkit-playsinline', '');
+                                        videoEl.load();
+                                        videoEl.play().catch(() => {});
+                                    }
                                 }}
                                 className="w-full sm:w-auto px-6 py-4 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-all group hover:bg-indigo-600 hover:text-white"
                             >
@@ -1045,7 +1065,7 @@ export const MundialGame: React.FC = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.1, duration: 0.6 }}
                                         whileHover={{ scale: 1.02, translateY: -6 }}
-                                        className="relative p-10 hover:border-blue-500/50 group overflow-hidden backdrop-blur-lg rounded-[32px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700"
+                                        className="relative p-3 sm:p-10 hover:border-blue-500/50 group overflow-hidden backdrop-blur-lg rounded-[32px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700"
                                         style={{ background: 'rgba(10,13,24,0.7)' }}
                                     >
                                         {/* Base Background matching Web aesthetic */}
@@ -1086,7 +1106,84 @@ export const MundialGame: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                                        <div className="relative z-10 flex flex-col gap-6">
+                                            {/* Mobile Compact Layout: Both teams + score in one view */}
+                                            <div className="lg:hidden flex flex-col gap-4">
+                                                {/* Scoreboard Row: Perfect symmetry for Chrome Mobile */}
+                                                <div className="flex items-center justify-between gap-1.5">
+                                                    {/* Home Team - Compact */}
+                                                    <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+                                                        <img src={match.home.flag} alt="" className="w-10 h-7 rounded-lg object-cover shadow-lg border border-white/15" />
+                                                        <h3 className="text-[11px] font-black text-white uppercase text-center leading-tight truncate w-full">{match.home.name}</h3>
+                                                    </div>
+
+                                                    {/* Score Inputs Center Area */}
+                                                    <div className="flex items-center justify-center gap-2 px-2 py-2 bg-white/5 rounded-xl border border-white/5">
+                                                        <input
+                                                            type="text"
+                                                            inputMode="numeric"
+                                                            pattern="[0-9]*"
+                                                            maxLength={2}
+                                                            value={predictions[match.id]?.homeScore ?? ''}
+                                                            onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                                                            placeholder="0"
+                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-lg text-center text-2xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
+                                                        />
+                                                        <span className="text-xl font-black text-slate-600">:</span>
+                                                        <input
+                                                            type="text"
+                                                            inputMode="numeric"
+                                                            pattern="[0-9]*"
+                                                            maxLength={2}
+                                                            value={predictions[match.id]?.awayScore ?? ''}
+                                                            onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                                                            placeholder="0"
+                                                            className="w-16 h-16 bg-slate-950/90 border-2 border-white/20 rounded-2xl text-center text-3xl font-black text-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none transition-all placeholder:opacity-5"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="flex flex-col gap-3">
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => handleSaveStatus(match.id)}
+                                                        disabled={savingMatchId === match.id}
+                                                        className={`w-full min-h-[52px] py-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
+                                                            savedMatchIds[match.id]
+                                                                ? 'bg-emerald-500 text-white'
+                                                                : savingMatchId === match.id
+                                                                ? 'bg-blue-600 text-white cursor-wait'
+                                                                : 'bg-white text-slate-950 hover:bg-amber-500 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        {savedMatchIds[match.id] ? (
+                                                            <><Check className="w-4 h-4" /> GUARDADO</>
+                                                        ) : savingMatchId === match.id ? (
+                                                            <><Loader2 className="w-4 h-4 animate-spin" /> GUARDANDO...</>
+                                                        ) : (
+                                                            <><Save className="w-4 h-4" /> GUARDAR PRONÓSTICO</>
+                                                        )}
+                                                    </motion.button>
+
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => setOracleMatch(match)}
+                                                        className="w-full min-h-[52px] py-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 bg-purple-500/15 border border-purple-500/30 text-purple-400"
+                                                    >
+                                                        <Sparkles className="w-4 h-4" />
+                                                        Consultar Oráculo
+                                                    </motion.button>
+
+                                                    <CommunityBar
+                                                        matchId={match.id}
+                                                        userPrediction={predictions[match.id]}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Desktop Layout: Original two-column layout */}
+                                            <div className="hidden lg:grid lg:grid-cols-2 gap-8 items-start">
                                             {/* Left Column: Teams and Score */}
                                             <div className="flex flex-col gap-8">
                                                 {/* Home Team */}
@@ -1656,7 +1753,7 @@ export const MundialGame: React.FC = () => {
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-4xl font-black text-white font-mono group-hover:scale-110 transition-transform">{localTime}</p>
+                                                        <p className="text-2xl sm:text-4xl font-black text-white font-mono group-hover:scale-110 transition-transform">{localTime}</p>
                                                         <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">Hora Local</p>
                                                     </div>
                                                 </div>
@@ -1677,6 +1774,34 @@ export const MundialGame: React.FC = () => {
                     >
                         <PrivateLeague />
                     </motion.div>
+                )}
+
+                {showVideoModal && (
+                    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-300">
+                        <div className="relative max-w-4xl w-full bg-gray-900 rounded-2xl p-1 sm:p-2 border border-white/10 shadow-2xl overflow-hidden">
+                            <div className="absolute top-3 right-3 z-20">
+                                <button 
+                                    className="text-white/50 hover:text-white p-1.5 bg-black/20 hover:bg-black/40 rounded-full transition-all" 
+                                    onClick={() => setShowVideoModal(false)}
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+                            <div className="aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center">
+                                <iframe
+                                    title="Tutorial Oráculo"
+                                    src={`https://hyperframes-mini-video.vercel.app/?user=${encodeURIComponent(user?.username || 'Invitado')}&pts=${totalPoints}`}
+                                    className="w-full h-full border-0 block"
+                                    style={{ border: 'none', background: '#0A0D18', display: 'block' }}
+                                    loading="lazy"
+                                    scrolling="no"
+                                    allow="autoplay; fullscreen; picture-in-picture"
+                                    allowFullScreen
+                                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {showShareModal && (

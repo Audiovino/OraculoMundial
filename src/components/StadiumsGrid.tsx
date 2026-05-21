@@ -116,11 +116,13 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
   const { ref: containerRef, isVisible } = useVisibleElement({ threshold: 0.1, rootMargin: '100px' });
 
   useEffect(() => {
+    if (!isVisible) return; // Ahorro de CPU: No actualizar el reloj si la tarjeta no se ve
+
     const interval = setInterval(() => {
       setLocalTime(getLocalTime(stadium.timezone));
     }, 1000);
     return () => clearInterval(interval);
-  }, [stadium.timezone]);
+  }, [stadium.timezone, isVisible]);
 
   const hour = localTime.getHours();
   const timeLabel = getTimeOfDayLabel(hour);

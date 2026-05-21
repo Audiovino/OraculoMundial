@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Home, LogOut, Settings } from 'lucide-react';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
@@ -15,6 +15,17 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
   const { isAdmin } = useAdminAuth();
   const [isHovering, setIsHovering] = useState<string | null>(null);
   const hermesStatus = useHermesStatus();
+
+  // Optimización: Prefetch de HyperFrames para carga instantánea al abrir el modal
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = 'https://hyperframes-mini-video.vercel.app/';
+    document.head.appendChild(link);
+    return () => {
+      if (document.head.contains(link)) document.head.removeChild(link);
+    };
+  }, []);
 
   return (
     <motion.div
@@ -125,7 +136,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             alignItems: 'center',
             justifyContent: 'center',
             gap: '5px',
-            padding: '7px 10px',
+            padding: '16px 10px',
             backgroundColor:
               currentView === 'game'
                 ? 'rgba(59, 130, 246, 0.85)'
@@ -134,7 +145,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             border: currentView === 'game' ? '1px solid rgba(59,130,246,0.5)' : '1px solid rgba(255,255,255,0.08)',
             borderRadius: '8px',
             cursor: 'pointer',
-            fontSize: '11px',
+            fontSize: '13px',
             fontWeight: 'bold',
             transition: 'all 0.3s ease',
             whiteSpace: 'nowrap',
@@ -155,7 +166,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             alignItems: 'center',
             justifyContent: 'center',
             gap: '5px',
-            padding: '7px 10px',
+            padding: '16px 10px',
             backgroundColor:
               currentView === 'stadiums'
                 ? 'rgba(239, 68, 68, 0.85)'
@@ -164,7 +175,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             border: currentView === 'stadiums' ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.08)',
             borderRadius: '8px',
             cursor: 'pointer',
-            fontSize: '11px',
+            fontSize: '13px',
             fontWeight: 'bold',
             transition: 'all 0.3s ease',
             whiteSpace: 'nowrap',
@@ -185,7 +196,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             alignItems: 'center',
             justifyContent: 'center',
             gap: '5px',
-            padding: '7px 10px',
+            padding: '16px 10px',
             backgroundColor:
               currentView === 'admin'
                 ? 'rgba(168, 85, 247, 0.85)'
@@ -194,7 +205,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             border: currentView === 'admin' ? '1px solid rgba(168,85,247,0.5)' : '1px solid rgba(255,255,255,0.08)',
             borderRadius: '8px',
             cursor: 'pointer',
-            fontSize: '11px',
+            fontSize: '13px',
             fontWeight: 'bold',
             transition: 'all 0.3s ease',
             whiteSpace: 'nowrap',
