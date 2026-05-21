@@ -29,10 +29,12 @@ import {
   Filter,
   RefreshCw,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Database
 } from 'lucide-react';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
+import { AdminMatchManager } from './AdminMatchManager';
 
 /* ─── Tooltip Component ─── */
 const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => {
@@ -157,7 +159,7 @@ const AdminDashboard: React.FC = () => {
     generateWhatsAppMessage
   } = useAdminDashboard();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'ranking' | 'standings' | 'analytics' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'api-matches' | 'ranking' | 'standings' | 'analytics' | 'settings'>('overview');
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [homeGoals, setHomeGoals] = useState('');
   const [awayGoals, setAwayGoals] = useState('');
@@ -293,6 +295,7 @@ const AdminDashboard: React.FC = () => {
           {[
             { id: 'overview', label: 'Resumen', icon: BarChart3, tip: 'Vista general de métricas clave: usuarios, predicciones, actividad y rendimiento' },
             { id: 'matches', label: 'Partidos', icon: Calendar, tip: 'Carga resultados reales de partidos para que se calculen los puntos automáticamente' },
+            { id: 'api-matches', label: 'API & Scraping', icon: Database, tip: 'Sincroniza partidos desde API-Football, scrapea con Hermes o edita manualmente' },
             { id: 'ranking', label: 'Ranking', icon: Trophy, tip: 'Tabla de posiciones de todos los jugadores ordenados por puntos acumulados' },
             { id: 'standings', label: 'Grupos', icon: TrendingUp, tip: 'Tabla de posiciones del Mundial real (datos de API en vivo)' },
             { id: 'analytics', label: 'Análisis', icon: Zap, tip: 'Gráficos y estadísticas avanzadas: burbujas, mapas de calor y tendencias de participación' },
@@ -508,6 +511,13 @@ const AdminDashboard: React.FC = () => {
                   ))}
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* ═══════ API & SCRAPING TAB ═══════ */}
+          {activeTab === 'api-matches' && (
+            <motion.div key="api-matches" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <AdminMatchManager />
             </motion.div>
           )}
 
