@@ -4,6 +4,7 @@
  * Estos agentes se ejecutan automáticamente para proteger la aplicación
  */
 import { mundialSupabase } from './mundialSupabaseClient';
+import { getBrowserDeviceType } from '../utils/deviceDetector';
 
 const OLLAMA_URL = 'http://localhost:11434/api/generate';
 const MODEL = 'hermes3';
@@ -308,9 +309,10 @@ Responde SOLO con JSON válido:
 export async function checkResponsiveness(): Promise<HermesResponse> {
   const screenWidth = window.innerWidth;
   const screenHeight = window.innerHeight;
-  const isMobile = screenWidth < 768;
-  const isTablet = screenWidth >= 768 && screenWidth < 1024;
-  const isDesktop = screenWidth >= 1024;
+  const deviceType = getBrowserDeviceType();
+  const isMobile = deviceType === 'mobile';
+  const isTablet = deviceType === 'tablet';
+  const isDesktop = deviceType === 'desktop';
   
   // Verificar elementos críticos
   const criticalElements = [

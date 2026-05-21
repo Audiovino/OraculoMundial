@@ -32,9 +32,13 @@ import {
   Database,
   Shield,
   Flame,
-  Activity
+  Activity,
+  MapPin
 } from 'lucide-react';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
+import { useAdminAuth } from '../hooks/useAdminAuth';
+import { useLocation } from '../hooks/useLocation';
+import { getGoogleMapsAddress } from '../utils/locationDetector';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 import { AdminMatchManager } from './AdminMatchManager';
 
@@ -174,6 +178,9 @@ const AdminDashboard: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [dmMessage, setDmMessage] = useState('');
   const [copied, setCopied] = useState('');
+  const { isAdmin } = useAdminAuth();
+  const { status: locationStatus, ipLocation, browserLocation, error: locationError } = useLocation(isAdmin, false);
+  const googleMapsAddress = getGoogleMapsAddress(browserLocation || ipLocation);
 
   // Load users for user management
   useEffect(() => {
@@ -377,6 +384,30 @@ const AdminDashboard: React.FC = () => {
                   </Tooltip>
                 ))}
               </div>
+
+              {isAdmin && (
+                <div className={`${cardBg} ${cardStyle} mb-6`}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="w-5 h-5 text-fuchsia-400" />
+                    <div>
+                      <h3 className="text-base font-black">Dirección de Google Maps</h3>
+                      <p className="text-xs text-slate-500">Solo visible para Administrador. Basado en IP (ciudad/provincia/país) o en coordenadas del navegador.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    {locationStatus === 'loading' && <p className="text-slate-400">Obteniendo dirección...</p>}
+                    {locationStatus === 'error' && <p className="text-red-300">No se pudo obtener la ubicación: {locationError}</p>}
+                    {locationStatus === 'loaded' && !googleMapsAddress && (
+                      <p className="text-slate-400">No hay ubicación disponible desde la IP o el navegador.</p>
+                    )}
+                    {locationStatus === 'loaded' && googleMapsAddress && (
+                      <div className="rounded-xl bg-white/5 p-3 border border-white/10 break-all">
+                        <code className="text-[12px] leading-tight text-slate-100">{googleMapsAddress}</code>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Two Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -33,7 +33,7 @@ export function useHermesMonitoring(enabled: boolean = true, interval: number = 
   useEffect(() => {
     if (!enabled) return;
 
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval>;
 
     const runMonitoring = async () => {
       setState(prev => ({ ...prev, isMonitoring: true }));

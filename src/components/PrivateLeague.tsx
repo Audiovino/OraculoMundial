@@ -32,6 +32,7 @@ export const PrivateLeague: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Cargar ligas del usuario
   useEffect(() => {
@@ -181,10 +182,8 @@ export const PrivateLeague: React.FC = () => {
           <div className="flex items-center gap-2">
             <Users size={18} className="text-purple-400" />
             <h3 className="text-white font-black text-sm uppercase tracking-wider">Mini-Ligas</h3>
-            <a 
-              href="https://hyperframes-mini-video.vercel.app" 
-              target="_blank" 
-              rel="noreferrer"
+            <button
+              onClick={() => setShowTutorial(prev => !prev)}
               className="flex items-center gap-1.5 px-2 py-1 ml-2 rounded-lg text-[10px] font-bold transition-all"
               style={{
                 backgroundColor: 'rgba(234,179,8,0.15)',
@@ -193,7 +192,7 @@ export const PrivateLeague: React.FC = () => {
               }}
             >
               <PlayCircle size={12} /> Video tutorial
-            </a>
+            </button>
           </div>
           <div className="flex gap-2">
             <motion.button
@@ -229,6 +228,40 @@ export const PrivateLeague: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Tutorial video embed */}
+      <AnimatePresence>
+        {showTutorial && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="rounded-3xl overflow-hidden border border-white/10 bg-slate-950/80"
+          >
+            <div className="flex items-center justify-between gap-3 p-3 bg-slate-900/90 border-b border-white/10">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Video tutorial</p>
+                <h4 className="text-sm font-black text-white">Mini-Ligas</h4>
+              </div>
+              <button
+                onClick={() => setShowTutorial(false)}
+                className="text-slate-400 text-xs font-semibold hover:text-white"
+              >Cerrar</button>
+            </div>
+            <div className="aspect-video bg-black">
+              <iframe
+                title="Tutorial Mini-Ligas"
+                src="https://hyperframes-mini-video.vercel.app"
+                className="w-full h-full"
+                loading="lazy"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Create form */}
       <AnimatePresence>
