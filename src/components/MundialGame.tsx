@@ -1129,7 +1129,7 @@ export const MundialGame: React.FC = () => {
                                                             placeholder="0"
                                                             className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
                                                         />
-                                                        <span className="text-xl font-black text-slate-600">:</span>
+                                                        <span className="text-xl font-black text-slate-600 flex-shrink-0">:</span>
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1138,7 +1138,7 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.awayScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5"
+                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
                                                         />
                                                     </div>
                                                 </div>
@@ -1787,15 +1787,14 @@ export const MundialGame: React.FC = () => {
                                     <X size={20} />
                                 </button>
                             </div>
-                            <div className="aspect-video bg-[#0A0D18] rounded-xl overflow-hidden relative w-full h-full">
+                            <div className="aspect-video bg-[#0A0D18] rounded-xl overflow-hidden relative w-full">
                                 <iframe
                                     title="Tutorial Oráculo"
                                     src={`https://hyperframes-mini-video.vercel.app/?user=${encodeURIComponent(user?.username || 'Invitado')}&pts=${String(totalPoints)}`}
                                     className="absolute top-0 left-0 w-full h-full border-0"
-                                    style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%' }}
+                                    style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%', position: 'absolute' }}
                                     loading="lazy"
-                                    scrolling="no"
-                                    allow="autoplay; fullscreen"
+                                    allow="autoplay; fullscreen; picture-in-picture"
                                     allowFullScreen
                                     sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                                 />

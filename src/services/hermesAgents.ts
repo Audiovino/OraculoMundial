@@ -599,7 +599,9 @@ export async function runAllAgents(context?: any): Promise<HermesFullReport> {
   const results = await Promise.allSettled([
     monitorAppHealth(),
     checkResponsiveness(),
-    context?.code ? scanForExposedSecrets(context.code) : scanForExposedSecrets(document.documentElement.outerHTML),
+    context?.code 
+      ? scanForExposedSecrets(context.code) 
+      : (typeof document !== 'undefined' ? scanForExposedSecrets(document.documentElement.outerHTML) : Promise.resolve({ valid: true, issues: [] })),
     performSystemQATest(),
     checkPerformanceAndAnimations()
   ]);

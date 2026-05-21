@@ -282,7 +282,6 @@ export const PrivateLeague: React.FC = () => {
                 src="https://hyperframes-mini-video.vercel.app/"
                 className="absolute top-0 left-0 w-full h-full border-0"
                 style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%' }}
-                style={{ border: 'none', background: '#0A0D18' }}
                 loading="lazy"
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowFullScreen
