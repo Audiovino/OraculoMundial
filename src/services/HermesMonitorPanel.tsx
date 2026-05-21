@@ -25,7 +25,8 @@ export const HermesMonitorPanel: React.FC = () => {
           overallStatus: data.status,
           health: data.health_data,
           secrets: data.security_data,
-          responsiveness: data.ui_data
+          responsiveness: data.ui_data,
+          qaTest: data.qa_data
         } as HermesFullReport);
       }
     } catch (err) {
@@ -83,7 +84,7 @@ export const HermesMonitorPanel: React.FC = () => {
       </div>
 
       {/* Grid de Agentes */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Agente de Salud */}
         <AgentCard 
           title="Salud y Performance"
@@ -105,6 +106,13 @@ export const HermesMonitorPanel: React.FC = () => {
           data={latestReport?.responsiveness}
           color="emerald"
         />
+        {/* Agente de QA */}
+        <AgentCard 
+          title="Pruebas de QA Logic"
+          icon={<CheckCircle />}
+          data={latestReport?.qaTest}
+          color="purple"
+        />
       </div>
     </div>
   );
@@ -114,7 +122,7 @@ interface AgentCardProps {
   title: string;
   icon: React.ReactNode;
   data?: any;
-  color: 'blue' | 'red' | 'emerald';
+  color: 'blue' | 'red' | 'emerald' | 'purple';
 }
 
 const AgentCard: React.FC<AgentCardProps> = ({ title, icon, data, color }) => {

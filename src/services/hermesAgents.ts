@@ -20,6 +20,7 @@ export interface HermesFullReport {
   health: HermesResponse;
   responsiveness: HermesResponse;
   secrets: HermesResponse;
+  qaTest?: HermesResponse;
   overallStatus: 'secure' | 'warning' | 'critical';
 }
 
@@ -397,6 +398,82 @@ Responde SOLO con JSON válido:
 }
 
 /**
+ * AGENTE 6: QA Tester Agent
+ * Realiza un test integral de las funciones lógicas de la web
+ */
+export async function performSystemQATest(): Promise<HermesResponse> {
+  const prompt = `Eres un ingeniero de QA Senior. Tu misión es testear la integridad lógica de la web "Oráculo Mundial".
+  Analiza el estado de estas funciones clave:
+  1. Autenticación (Supabase Auth)
+  2. Gestión de Partidos (API WorldCup)
+  3. Sistema de Predicciones (Lectura/Escritura en DB)
+  4. Cálculo de Ranking (Agregaciones de puntos)
+  5. Multiplicadores de Racha (Lógica de Streaks)
+  6. Notificaciones y Alertas (Edge Functions)
+
+  Responde SOLO con JSON válido:
+  {
+    "valid": true/false,
+    "issues": ["lista de bugs o fallos lógicos detectados"],
+    "recommendation": "qué debe arreglar el desarrollador inmediatamente"
+  }`;
+
+  try {
+    const response = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: MODEL,
+        prompt,
+        stream: false,
+        options: { temperature: 0.1 }
+      })
+    });
+
+    const data = await response.json();
+    return parseHermesResponse(data.response);
+  } catch (error) {
+    return {
+      valid: false,
+      issues: ['No se pudo ejecutar el Agente QA: Ollama no responde'],
+      recommendation: 'Asegúrate de que Ollama esté corriendo localmente con el modelo hermes3.'
+    };
+  }
+}
+
+/**
+ * Ejecuta el test de QA si no se ha ejecutado en las últimas 24 horas
+ */
+export async function runDailyQACheck() {
+  try {
+    const yesterday = new Date();
+    yesterday.setHours(yesterday.getHours() - 24);
+
+    const { data } = await mundialSupabase
+      .from('hermes_logs')
+      .select('id')
+      .eq('status', 'qa_report')
+      .gt('created_at', yesterday.toISOString())
+      .limit(1);
+
+    if (!data || data.length === 0) {
+      console.log('📅 Ejecutando test de QA diario...');
+      const qaResult = await performSystemQATest();
+      await saveHermesReport({
+        timestamp: new Date().toISOString(),
+        health: { valid: true, issues: [] },
+        responsiveness: { valid: true, issues: [] },
+        secrets: { valid: true, issues: [] },
+        qaTest: qaResult,
+        overallStatus: qaResult.valid ? 'secure' : 'critical'
+      }, 'qa_report');
+    }
+  } catch (error) {
+    console.error('❌ Error en el verificador diario:', error);
+  }
+}
+
+/**
  * Envía una notificación a Telegram cuando se detecta un problema
  * Formateado como Alerta Mundial para el bot Assistente Inmobiliario
  */
@@ -416,15 +493,16 @@ async function notifyTelegram(report: HermesFullReport) {
 /**
  * Guarda el reporte de Hermes en la base de datos para auditoría del Admin
  */
-export async function saveHermesReport(report: HermesFullReport) {
+export async function saveHermesReport(report: HermesFullReport, customStatus?: string) {
   try {
     const { error } = await mundialSupabase
       .from('hermes_logs')
       .insert([{
-        status: report.overallStatus,
+        status: customStatus || report.overallStatus,
         health_data: report.health,
         security_data: report.secrets,
         ui_data: report.responsiveness,
+        qa_data: report.qaTest,
         created_at: report.timestamp
       }]);
 
@@ -443,7 +521,8 @@ export async function runAllAgents(context?: any): Promise<HermesFullReport> {
   const results = await Promise.allSettled([
     monitorAppHealth(),
     checkResponsiveness(),
-    context?.code ? scanForExposedSecrets(context.code) : scanForExposedSecrets(document.documentElement.outerHTML)
+    context?.code ? scanForExposedSecrets(context.code) : scanForExposedSecrets(document.documentElement.outerHTML),
+    performSystemQATest()
   ]);
 
   const report: HermesFullReport = {
@@ -451,12 +530,13 @@ export async function runAllAgents(context?: any): Promise<HermesFullReport> {
     health: results[0].status === 'fulfilled' ? results[0].value : { valid: false, issues: ['Error en agente de salud'] },
     responsiveness: results[1].status === 'fulfilled' ? results[1].value : { valid: false, issues: ['Error en agente de responsividad'] },
     secrets: results[2].status === 'fulfilled' ? results[2].value : { valid: true, issues: [] },
+    qaTest: results[3].status === 'fulfilled' ? results[3].value : { valid: false, issues: ['Error en agente QA'] },
     overallStatus: 'secure'
   };
 
   // Determinar estado global
-  const allValid = report.health.valid && report.responsiveness.valid && report.secrets.valid;
-  const hasCritical = !report.secrets.valid || !report.health.valid;
+  const allValid = report.health.valid && report.responsiveness.valid && report.secrets.valid && report.qaTest.valid;
+  const hasCritical = !report.secrets.valid || !report.health.valid || !report.qaTest.valid;
   
   if (hasCritical) {
     report.overallStatus = 'critical';

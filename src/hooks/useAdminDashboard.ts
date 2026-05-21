@@ -13,6 +13,7 @@ import {
   MatchStats
 } from '../services/worldcupApi';
 import { calculateMultiplier } from './useStreak';
+import { runDailyQACheck } from '../services/hermesAgents';
 
 export interface AdminStats {
   totalUsers: number;
@@ -210,6 +211,9 @@ export const useAdminDashboard = () => {
     loadMatches();
     loadStandings();
     loadTournamentStats();
+    
+    // Disparar chequeo de QA diario
+    runDailyQACheck();
 
     // Recargar cada 5 minutos
     const interval = setInterval(() => {
@@ -328,6 +332,7 @@ export const useAdminDashboard = () => {
 
       // Mapeamos los usuarios con sus estadísticas y racha
       const ranking = users.map(u => ({
+        id: u.id,
         userId: u.username || u.id,
         totalScore: totals[u.id]?.totalScore || 0,
         predictions: totals[u.id]?.predictions || 0,
@@ -351,24 +356,31 @@ export const useAdminDashboard = () => {
     }
   }, []);
 
-  // Enviar notificación a todos los usuarios
-  const sendNotification = useCallback(async (title: string, message: string) => {
+  // Enviar notificación a uno o todos los usuarios
+  const sendNotification = useCallback(async (title: string, message: string, userId?: string) => {
     try {
-      console.log('[Admin] Sending notification to all users...');
-      const { data: users, error: usersError } = await mundialSupabase
-        .from('mundial_users')
-        .select('id');
+      let targetUserIds: string[] = [];
 
-      if (usersError) throw usersError;
+      if (userId) {
+        targetUserIds = [userId];
+      } else {
+        console.log('[Admin] Sending notification to all users...');
+        const { data: users, error: usersError } = await mundialSupabase
+          .from('mundial_users')
+          .select('id');
+
+        if (usersError) throw usersError;
+        targetUserIds = users?.map(u => u.id) || [];
+      }
 
       // Crear notificaciones para cada usuario
-      const notifications = users?.map(user => ({
-        userId: user.id,
+      const notifications = targetUserIds.map(id => ({
+        userId: id,
         title,
         message,
         read: false,
         created_at: new Date().toISOString()
-      })) || [];
+      }));
 
       const { error } = await mundialSupabase
         .from('mundial_notifications')

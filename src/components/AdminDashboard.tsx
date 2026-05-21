@@ -19,7 +19,6 @@ import {
   Phone,
   Eye,
   UserPlus,
-  Activity,
   Target,
   Award,
   Info,
@@ -32,8 +31,8 @@ import {
   ExternalLink,
   Database,
   Shield,
-  Flame, // Icono para usuarios en racha
-  Activity // Ya estaba importado, pero lo mantengo para referencia
+  Flame,
+  Activity
 } from 'lucide-react';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
@@ -569,7 +568,18 @@ const AdminDashboard: React.FC = () => {
                   </thead>
                   <tbody>
                     {ranking.map((player, i) => (
-                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <tr 
+                        key={i} 
+                        className="transition-colors hover:bg-white/5 cursor-pointer" 
+                        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                        onClick={() => {
+                          const u = userList.find(user => user.id === player.id);
+                          if (u) {
+                            setSelectedUser(u);
+                            setActiveTab('settings');
+                          }
+                        }}
+                      >
                         <td className="px-6 py-3">
                           <span className={`text-lg font-black ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-orange-400' : 'text-slate-500'}`}>
                             {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
@@ -821,7 +831,7 @@ const AdminDashboard: React.FC = () => {
                           <button
                             onClick={async () => {
                               if (!dmMessage.trim()) return;
-                              await sendNotification(`Mensaje del Admin`, dmMessage);
+                              await sendNotification(`Mensaje del Admin`, dmMessage, selectedUser.id);
                               setDmMessage('');
                               alert('Mensaje enviado');
                             }}
