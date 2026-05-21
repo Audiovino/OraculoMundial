@@ -381,9 +381,9 @@ Responde SOLO con JSON válido:
  * Detecta si la UI es responsive y accesible en mobile/desktop
  */
 export async function checkResponsiveness(): Promise<HermesResponse> {
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-  const deviceType = getBrowserDeviceType();
+  const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const deviceType = typeof window !== 'undefined' ? getBrowserDeviceType() : 'desktop';
   const isMobile = deviceType === 'mobile';
   const isTablet = deviceType === 'tablet';
   
@@ -398,30 +398,32 @@ export async function checkResponsiveness(): Promise<HermesResponse> {
   ];
 
   const elementSizes: any[] = [];
-  criticalElements.forEach(({ selector, name }) => {
-    const elements = document.querySelectorAll(selector);
-    elements.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      let extraInfo = {};
-      
-      if (el instanceof HTMLVideoElement) {
-        extraInfo = {
-          readyState: el.readyState, // 0 = sin datos, 4 = listo
-          error: el.error ? el.error.code : null,
-          paused: el.paused,
-          src: el.currentSrc
-        };
-      }
+  if (typeof document !== 'undefined') {
+    criticalElements.forEach(({ selector, name }) => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        let extraInfo = {};
+        
+        if (el instanceof HTMLVideoElement) {
+          extraInfo = {
+            readyState: el.readyState,
+            error: el.error ? el.error.code : null,
+            paused: el.paused,
+            src: el.currentSrc
+          };
+        }
 
-      elementSizes.push({
-        name,
-        width: rect.width,
-        height: rect.height,
-        tooSmall: isMobile && (rect.width < 44 || rect.height < 44),
-        ...extraInfo
+        elementSizes.push({
+          name,
+          width: rect.width,
+          height: rect.height,
+          tooSmall: isMobile && (rect.width < 44 || rect.height < 44),
+          ...extraInfo
+        });
       });
     });
-  });
+  }
 
   const prompt = `Eres un agente de UX/UI que verifica responsividad. Analiza:
 
@@ -602,13 +604,17 @@ export async function runAllAgents(context?: any): Promise<HermesFullReport> {
     checkPerformanceAndAnimations()
   ]);
 
+  // Helper to safely extract value from PromiseSettledResult
+  const getVal = (res: PromiseSettledResult<HermesResponse>, fallbackIssues: string[]) => 
+    res.status === 'fulfilled' ? res.value : { valid: false, issues: fallbackIssues };
+
   const report: HermesFullReport = {
     timestamp: new Date().toISOString(),
-    health: results[0].status === 'fulfilled' ? results[0].value : { valid: false, issues: ['Error en agente de salud'] },
-    responsiveness: results[1].status === 'fulfilled' ? results[1].value : { valid: false, issues: ['Error en agente de responsividad'] },
-    secrets: results[2].status === 'fulfilled' ? results[2].value : { valid: true, issues: [] },
-    qaTest: results[3].status === 'fulfilled' ? results[3].value : { valid: false, issues: ['Error en agente QA'] },
-    performance: results[4].status === 'fulfilled' ? results[4].value : { valid: true, issues: [] },
+    health: getVal(results[0] as PromiseSettledResult<HermesResponse>, ['Error en agente de salud']),
+    responsiveness: getVal(results[1] as PromiseSettledResult<HermesResponse>, ['Error en agente de responsividad']),
+    secrets: getVal(results[2] as PromiseSettledResult<HermesResponse>, []),
+    qaTest: getVal(results[3] as PromiseSettledResult<HermesResponse>, ['Error en agente QA']),
+    performance: getVal(results[4] as PromiseSettledResult<HermesResponse>, []),
     overallStatus: 'secure'
   };
 

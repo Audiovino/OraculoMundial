@@ -280,7 +280,7 @@ export const PrivateLeague: React.FC = () => {
               <iframe
                 title="Tutorial Mini-Ligas"
                 src="https://hyperframes-mini-video.vercel.app/"
-                className="w-full h-full border-0 absolute inset-0"
+                className="absolute inset-0 w-full h-full border-0"
                 style={{ border: 'none', background: '#0A0D18' }}
                 loading="lazy"
                 allow="autoplay; fullscreen; picture-in-picture"
