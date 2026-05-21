@@ -1096,7 +1096,7 @@ export const MundialGame: React.FC = () => {
                                                         <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tighter mb-2 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{match.home.name}</h3>
+                                                        <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tighter mb-2 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] break-words">{match.home.name}</h3>
                                                         <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-md">
                                                             <span className="text-xs font-black text-blue-400/90 uppercase tracking-[0.2em]">{match.home.code}</span>
                                                         </div>
@@ -1194,7 +1194,7 @@ export const MundialGame: React.FC = () => {
                                                 {/* Away Team */}
                                                 <div className="flex flex-col-reverse md:flex-row items-center justify-end gap-4 md:gap-6 text-center md:text-right transition-all group-hover:-translate-x-1 duration-500 w-full ml-auto">
                                                     <div className="flex-1 min-w-0 md:flex-none md:text-right">
-                                                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tighter mb-2 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{match.away.name}</h3>
+                                                        <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tighter mb-2 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] break-words">{match.away.name}</h3>
                                                         <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-md">
                                                             <span className="text-xs font-black text-emerald-400/90 uppercase tracking-[0.2em]">{match.away.code}</span>
                                                         </div>
