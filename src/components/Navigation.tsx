@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Home, LogOut, Settings } from 'lucide-react';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { useAdminAuth } from '../hooks/useAdminAuth';
+import { useHermesStatus } from '../hooks/useHermesStatus';
 
 interface NavigationProps {
   currentView: 'game' | 'stadiums' | 'admin';
@@ -13,6 +14,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
   const { user, signOut } = useMundialAuth();
   const { isAdmin } = useAdminAuth();
   const [isHovering, setIsHovering] = useState<string | null>(null);
+  const hermesStatus = useHermesStatus();
 
   return (
     <motion.div
@@ -61,6 +63,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
           onMouseLeave={() => setIsHovering(null)}
           style={{
             display: 'flex',
+            position: 'relative',
             alignItems: 'center',
             gap: '8px',
             padding: '8px 16px',
@@ -144,6 +147,21 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
         >
           <Settings size={16} />
           Admin
+
+          {/* Badge de Alerta Hermes */}
+          {hermesStatus === 'critical' && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#0f0f1e] z-10"
+              style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.8)' }}
+            >
+              <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75" />
+            </motion.span>
+          )}
+          {hermesStatus === 'warning' && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-[#0f0f1e] z-10" />
+          )}
         </motion.button>
 
         {/* User Info */}

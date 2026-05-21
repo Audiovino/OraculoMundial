@@ -4,8 +4,20 @@ import { mundialSupabase } from '../services/mundialSupabaseClient';
 export interface StreakData {
   current: number;
   max: number;
+  multiplier: number;
   lastUpdated: string | null;
 }
+
+/**
+ * Lógica de multiplicadores basada en la racha actual.
+ * Exportada para ser usada en el Ranking del Admin.
+ */
+export const calculateMultiplier = (currentStreak: number): number => {
+  if (currentStreak >= 8) return 2.0;   // Racha épica: Doble puntos
+  if (currentStreak >= 5) return 1.5;   // Racha caliente: 50% extra
+  if (currentStreak >= 3) return 1.2;   // Buena racha: 20% extra
+  return 1.0;                           // Normal
+};
 
 /**
  * Hook para manejar el sistema de rachas del usuario.
@@ -13,7 +25,7 @@ export interface StreakData {
  * Se guarda en localStorage + Supabase.
  */
 export const useStreak = (userId: string | undefined) => {
-  const [streak, setStreak] = useState<StreakData>({ current: 0, max: 0, lastUpdated: null });
+  const [streak, setStreak] = useState<StreakData>({ current: 0, max: 0, multiplier: 1, lastUpdated: null });
   const [loading, setLoading] = useState(true);
 
   // Cargar racha desde localStorage primero (instantáneo)
@@ -44,6 +56,7 @@ export const useStreak = (userId: string | undefined) => {
           const s: StreakData = {
             current: Number(data.streak_actual ?? data.current_streak ?? data.streak ?? 0),
             max: Number(data.streak_maximo ?? data.max_streak ?? data.streak_max ?? 0),
+            multiplier: calculateMultiplier(Number(data.streak_actual ?? 0)),
             lastUpdated: data.ultima_jornada_evaluada ?? data.last_evaluated ?? data.updated_at ?? null,
           };
           setStreak(s);
@@ -77,6 +90,7 @@ export const useStreak = (userId: string | undefined) => {
       const updated: StreakData = {
         current: newCurrent,
         max: newMax,
+        multiplier: calculateMultiplier(newCurrent),
         lastUpdated: new Date().toISOString(),
       };
       localStorage.setItem(`streak_${userId}`, JSON.stringify(updated));

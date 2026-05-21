@@ -5,6 +5,7 @@ import { MundialGame } from './components/MundialGame';
 import StadiumsGrid from './components/StadiumsGrid';
 import Navigation from './components/Navigation';
 import AdminDashboard from './components/AdminDashboard';
+import { HermesSecurityWrapper } from './components/HermesSecurityWrapper';
 import { motion } from 'framer-motion';
 import './App.css';
 
@@ -42,14 +43,16 @@ const AppContent: React.FC = () => {
     }
 
     return (
-        <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
-            <Navigation currentView={currentView} onViewChange={setCurrentView} />
-            <div style={{ paddingTop: '70px' }}>
-                {currentView === 'game' && <MundialGame />}
-                {currentView === 'stadiums' && <StadiumsGrid filter="all" />}
-                {currentView === 'admin' && <AdminDashboard />}
+        <HermesSecurityWrapper>
+            <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
+                <Navigation currentView={currentView} onViewChange={setCurrentView} />
+                <div style={{ paddingTop: '70px' }}>
+                    {currentView === 'game' && <MundialGame />}
+                    {currentView === 'stadiums' && <StadiumsGrid filter="all" />}
+                    {currentView === 'admin' && <AdminDashboard />}
+                </div>
             </div>
-        </div>
+        </HermesSecurityWrapper>
     );
 };
 

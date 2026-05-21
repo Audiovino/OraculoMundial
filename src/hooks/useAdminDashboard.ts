@@ -12,6 +12,7 @@ import {
   StandingsData,
   MatchStats
 } from '../services/worldcupApi';
+import { calculateMultiplier } from './useStreak';
 
 export interface AdminStats {
   totalUsers: number;
@@ -301,6 +302,14 @@ export const useAdminDashboard = () => {
   const getUserRanking = useCallback(async () => {
     try {
       console.log('[Admin] Fetching user ranking...');
+      
+      // Obtenemos los usuarios y sus rachas actuales
+      const { data: users, error: userError } = await mundialSupabase
+        .from('mundial_users')
+        .select('id, username, streak_actual');
+
+      if (userError) throw userError;
+
       const { data, error } = await mundialSupabase
         .from('mundial_predictions')
         .select('user_id, points')
@@ -308,23 +317,23 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
 
-      // Agrupar por usuario y sumar puntos
-      const ranking = data?.reduce((acc: any, pred: any) => {
-        const userId = pred.user_id || pred.userId || 'unknown';
-        const existing = acc.find((r: any) => r.userId === userId);
-        const points = Number(pred.points ?? pred.score ?? 0);
-        if (existing) {
-          existing.totalScore += points;
-          existing.predictions += 1;
-        } else {
-          acc.push({
-            userId,
-            totalScore: points,
-            predictions: 1
-          });
-        }
+      // Agrupamos predicciones por ID de usuario
+      const totals = data?.reduce((acc: Record<string, any>, pred: any) => {
+        const uid = pred.user_id || 'unknown';
+        acc[uid] = acc[uid] || { totalScore: 0, predictions: 0 };
+        acc[uid].totalScore += Number(pred.points ?? 0);
+        acc[uid].predictions += 1;
         return acc;
-      }, []) || [];
+      }, {}) || {};
+
+      // Mapeamos los usuarios con sus estadísticas y racha
+      const ranking = users.map(u => ({
+        userId: u.username || u.id,
+        totalScore: totals[u.id]?.totalScore || 0,
+        predictions: totals[u.id]?.predictions || 0,
+        streak: u.streak_actual || 0,
+        multiplier: calculateMultiplier(u.streak_actual || 0)
+      }));
 
       const sorted = ranking.sort((a: any, b: any) => b.totalScore - a.totalScore);
       console.log('[Admin] Ranking fetched:', sorted.length, 'users');

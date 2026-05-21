@@ -30,7 +30,10 @@ import {
   RefreshCw,
   Copy,
   ExternalLink,
-  Database
+  Database,
+  Shield,
+  Flame, // Icono para usuarios en racha
+  Activity // Ya estaba importado, pero lo mantengo para referencia
 } from 'lucide-react';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
@@ -157,7 +160,7 @@ const AdminDashboard: React.FC = () => {
     sendNotification,
     exportRankingJSON,
     generateWhatsAppMessage
-  } = useAdminDashboard();
+  } = useAdminDashboard(); // Asegúrate de que useAdminDashboard no esté en conflicto con HermesMonitorPanel
 
   const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'api-matches' | 'ranking' | 'standings' | 'analytics' | 'settings'>('overview');
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
@@ -166,6 +169,7 @@ const AdminDashboard: React.FC = () => {
   const [notificationTitle, setNotificationTitle] = useState('');
   const [notificationMessage, setNotificationMessage] = useState('');
   const [ranking, setRanking] = useState<any[]>([]);
+  // Añadimos el estado para el HermesMonitorPanel
   const [userList, setUserList] = useState<any[]>([]);
   const [searchUser, setSearchUser] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -299,7 +303,8 @@ const AdminDashboard: React.FC = () => {
             { id: 'ranking', label: 'Ranking', icon: Trophy, tip: 'Tabla de posiciones de todos los jugadores ordenados por puntos acumulados' },
             { id: 'standings', label: 'Grupos', icon: TrendingUp, tip: 'Tabla de posiciones del Mundial real (datos de API en vivo)' },
             { id: 'analytics', label: 'Análisis', icon: Zap, tip: 'Gráficos y estadísticas avanzadas: burbujas, mapas de calor y tendencias de participación' },
-            { id: 'settings', label: 'Gestión', icon: Settings, tip: 'Gestión de usuarios, mensajes, notificaciones, datos de contacto y exportación' }
+            { id: 'settings', label: 'Gestión', icon: Settings, tip: 'Gestión de usuarios, mensajes, notificaciones, datos de contacto y exportación' },
+            { id: 'hermes', label: 'Monitor Hermes', icon: Shield, tip: 'Monitoreo en tiempo real de seguridad, rendimiento y responsividad de la aplicación con los Agentes Hermes.' }
           ].map(tab => (
             <Tooltip key={tab.id} text={tab.tip}>
               <button
@@ -520,6 +525,13 @@ const AdminDashboard: React.FC = () => {
               <AdminMatchManager />
             </motion.div>
           )}
+          
+          {/* ═══════ HERMES MONITOR TAB ═══════ */}
+          {activeTab === 'hermes' && (
+            <motion.div key="hermes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <HermesMonitorPanel />
+            </motion.div>
+          )}
 
           {/* ═══════ RANKING TAB ═══════ */}
           {activeTab === 'ranking' && (
@@ -563,7 +575,16 @@ const AdminDashboard: React.FC = () => {
                             {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                           </span>
                         </td>
-                        <td className="px-6 py-3 font-bold text-sm">{player.userId}</td>
+                        <td className="px-6 py-3 font-bold text-sm flex items-center gap-2">
+                          {player.userId}
+                          {player.multiplier > 1 && (
+                            <Tooltip text={`Racha de ${player.streak} aciertos: Multiplicador x${player.multiplier}`}>
+                              <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
+                                <Flame size={16} className="text-orange-500 fill-orange-500" />
+                              </motion.span>
+                            </Tooltip>
+                          )}
+                        </td>
                         <td className="px-6 py-3 font-black text-emerald-400">{player.totalScore}</td>
                         <td className="px-6 py-3 text-sm text-slate-400">{player.predictions}</td>
                         <td className="px-6 py-3 w-40">
