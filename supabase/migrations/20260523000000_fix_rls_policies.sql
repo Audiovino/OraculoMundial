@@ -140,8 +140,11 @@ ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 -- Eliminar políticas existentes (si las hay)
 DROP POLICY IF EXISTS "Admins can view admin_users" ON admin_users;
 DROP POLICY IF EXISTS "Users can check own admin status" ON admin_users;
+DROP POLICY IF EXISTS "Admins can insert admin_users" ON admin_users;
 
 -- Política: Usuarios autenticados pueden verificar si son admin (solo su propio registro)
+-- IMPORTANTE: Esta política permite que cualquier usuario autenticado consulte la tabla
+-- pero solo verá su propio registro si existe (es decir, si es admin)
 CREATE POLICY "Users can check own admin status" ON admin_users
   FOR SELECT USING (auth.uid() = user_id);
 
