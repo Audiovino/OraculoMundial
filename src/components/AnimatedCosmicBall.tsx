@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function AnimatedCosmicBall() {
     return (
-        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-purple-950/40 via-indigo-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-purple-500/40">
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-purple-950/40 via-indigo-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-transform duration-500 hover:border-purple-500/40">
             {/* Stars background */}
             <div className="absolute inset-0 bg-[radial-gradient(#ec4899_1.2px,transparent_1.2px)] [background-size:14px_14px] opacity-20 pointer-events-none" />
             
@@ -14,7 +14,7 @@ export default function AnimatedCosmicBall() {
             <div className="absolute w-32 h-24 rounded-full border border-dashed border-indigo-500/20 border-b-pink-500/40 rotate-[35deg] animate-[spin_15s_linear_infinite_reverse] pointer-events-none" />
             
             {/* Cosmic Soccer Ball Oracle SVG */}
-            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(236,72,153,0.7)] group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(236,72,153,0.7)] group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
                 <defs>
                     <linearGradient id="cosmicBallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#f472b6" />

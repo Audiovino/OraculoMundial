@@ -224,6 +224,9 @@ const MiniStadium3D: React.FC<MiniStadium3DProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const interactiveEnabled = interactive && !prefersReducedMotion;
+
     // Scene setup
     const scene = new THREE.Scene();
     sceneRef.current = scene;
@@ -247,8 +250,13 @@ const MiniStadium3D: React.FC<MiniStadium3DProps> = ({
     camera.lookAt(0, 0.5, 0);
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !isMobileDevice(),
+      alpha: true,
+      powerPreference: isMobileDevice() ? 'low-power' : 'high-performance'
+    });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setPixelRatio(isMobileDevice() ? 1 : Math.min(window.devicePixelRatio, 2));
     
     // Optimizar para móvil: deshabilitar sombras
     const lod = getLOD();
@@ -310,25 +318,27 @@ const MiniStadium3D: React.FC<MiniStadium3DProps> = ({
 
     // Mouse interaction
     const onMouseMove = (event: MouseEvent) => {
-      if (!interactive) return;
+      if (!interactiveEnabled) return;
       mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
 
-    window.addEventListener('mousemove', onMouseMove);
+    if (interactiveEnabled) {
+      window.addEventListener('mousemove', onMouseMove);
+    }
 
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
 
-      if (interactive && stadiumGroupRef.current) {
+      if (interactiveEnabled && stadiumGroupRef.current) {
         rotationRef.current.y += (mouseRef.current.x - rotationRef.current.y) * 0.05;
         rotationRef.current.x += (mouseRef.current.y - rotationRef.current.x) * 0.05;
 
         stadiumGroupRef.current.rotation.y = rotationRef.current.y;
         stadiumGroupRef.current.rotation.x = rotationRef.current.x * 0.3;
       } else if (stadiumGroupRef.current) {
-        stadiumGroupRef.current.rotation.y += 0.005;
+        stadiumGroupRef.current.rotation.y += prefersReducedMotion ? 0.002 : 0.005;
       }
 
       renderer.render(scene, camera);
@@ -349,7 +359,9 @@ const MiniStadium3D: React.FC<MiniStadium3DProps> = ({
     window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
+      if (interactiveEnabled) {
+        window.removeEventListener('mousemove', onMouseMove);
+      }
       window.removeEventListener('resize', handleResize);
       containerRef.current?.removeChild(renderer.domElement);
       renderer.dispose();

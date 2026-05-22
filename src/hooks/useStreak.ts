@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 
 export interface StreakData {
@@ -38,13 +38,22 @@ export const useStreak = (userId: string | undefined) => {
   }, [userId]);
 
   // Cargar desde Supabase si hay usuario
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   useEffect(() => {
     if (!userId) return;
     const load = async () => {
       try {
         const { data, error } = await mundialSupabase
           .from('mundial_users')
-          .select('*')
+          .select('streak_actual, streak_maximo, max_streak, current_streak, ultima_jornada_evaluada, last_evaluated, updated_at')
           .eq('id', userId)
           .single();
 
@@ -52,10 +61,10 @@ export const useStreak = (userId: string | undefined) => {
           throw error;
         }
 
-        if (data) {
+        if (data && isMounted.current) {
           const s: StreakData = {
-            current: Number(data.streak_actual ?? data.current_streak ?? data.streak ?? 0),
-            max: Number(data.streak_maximo ?? data.max_streak ?? data.streak_max ?? 0),
+            current: Number(data.streak_actual ?? data.current_streak ?? 0),
+            max: Number(data.streak_maximo ?? data.max_streak ?? 0),
             multiplier: calculateMultiplier(Number(data.streak_actual ?? 0)),
             lastUpdated: data.ultima_jornada_evaluada ?? data.last_evaluated ?? data.updated_at ?? null,
           };
@@ -63,7 +72,7 @@ export const useStreak = (userId: string | undefined) => {
           localStorage.setItem(`streak_${userId}`, JSON.stringify(s));
         }
       } catch (err: any) {
-        console.warn('[useStreak] Could not load streak from Supabase:', err?.message || err);
+        if (import.meta.env.DEV) console.warn('[useStreak] Could not load streak from Supabase:', err?.message || err);
       }
     };
     load();

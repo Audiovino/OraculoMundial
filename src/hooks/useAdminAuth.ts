@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 
@@ -11,42 +11,49 @@ export const useAdminAuth = () => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         const checkAdminStatus = async () => {
-            console.log('[Admin Auth] Checking admin status for user:', user?.id);
-
             if (!user?.id) {
-                console.log('[Admin Auth] No user ID found');
+                if (!isMounted.current) return;
+                if (import.meta.env.DEV) console.debug('[Admin Auth] No user ID found');
                 setIsAdmin(false);
                 setLoading(false);
                 return;
             }
 
             try {
-                // Intentar consultar tabla admin_users
-                console.log('[Admin Auth] Querying admin_users table...');
                 const { data, error: queryError } = await mundialSupabase
                     .from('admin_users')
                     .select('user_id')
                     .eq('user_id', user.id)
                     .single();
 
+                if (!isMounted.current) return;
+
                 if (queryError) {
-                    // Si la tabla no existe o la política falla, no bloqueamos la app.
-                    console.warn('[Admin Auth] Query error:', queryError.code, queryError.message);
+                    if (import.meta.env.DEV) console.debug('[Admin Auth] Query error:', queryError.code, queryError.message);
                     setIsAdmin(false);
                     setError(null);
                 } else {
-                    console.log('[Admin Auth] User IS admin:', data);
+                    if (import.meta.env.DEV) console.debug('[Admin Auth] User admin check result:', data);
                     setIsAdmin(!!data);
                 }
             } catch (err) {
+                if (!isMounted.current) return;
                 console.error('[Admin Auth] Error checking admin status:', err);
                 setError(err instanceof Error ? err.message : 'Unknown error');
                 setIsAdmin(false);
             } finally {
-                setLoading(false);
+                if (isMounted.current) setLoading(false);
             }
         };
 

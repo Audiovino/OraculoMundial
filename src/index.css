@@ -106,8 +106,39 @@ input[type="submit"] {
 
 /* Hardware acceleration para animaciones */
 .animate-smooth {
-  will-change: transform;
+  will-change: transform, opacity;
   transform: translateZ(0);
+}
+
+.transition-safe {
+  transition-property: transform, opacity, color, background-color, border-color, box-shadow;
+  transition-duration: 250ms;
+  transition-timing-function: ease-in-out;
+}
+
+.reduce-motion-mobile .animate-float-slow,
+.reduce-motion-mobile .animate-float-slower,
+.reduce-motion-mobile .animate-float-medium,
+.reduce-motion-mobile .animate-pulse,
+.reduce-motion-mobile .animate-spin,
+.reduce-motion-mobile [class*="animate-[ping"],
+.reduce-motion-mobile [class*="animate-[spin"],
+.reduce-motion-mobile [class*="animate-[bounce"],
+.reduce-motion-mobile [class*="animate-[pulse"],
+.reduce-motion-mobile [class*="animate-[shimmer"] {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Lazy loading de imágenes */

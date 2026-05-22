@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 import { RefreshCw, Database, Edit, Save, X, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,25 +25,31 @@ export const AdminMatchManager: React.FC = () => {
   const [editingMatch, setEditingMatch] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Match>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const isMounted = useRef(true);
 
   useEffect(() => {
+    isMounted.current = true;
     loadMatches();
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const loadMatches = async () => {
+    if (!isMounted.current) return;
     setLoading(true);
     try {
       const { data, error } = await mundialSupabase
         .from('mundial_matches')
-        .select('*')
+        .select('id, date, home_team, away_team, home_logo, away_logo, stage, group_name, home_goals, away_goals, status')
         .order('date', { ascending: true });
 
       if (error) throw error;
-      setMatches(data || []);
+      if (isMounted.current) setMatches(data || []);
     } catch (err: any) {
-      showMessage('error', `Error cargando partidos: ${err.message}`);
+      if (isMounted.current) showMessage('error', `Error cargando partidos: ${err.message}`);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   };
 

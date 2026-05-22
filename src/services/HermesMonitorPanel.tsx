@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { mundialSupabase } from './mundialSupabaseClient';
 import { runAllAgents, HermesFullReport } from './hermesAgents';
 import { Shield, Activity, Smartphone, Lock, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
@@ -9,17 +9,27 @@ export const HermesMonitorPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
 
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const fetchLatestReport = async () => {
+    if (!isMounted.current) return;
     setLoading(true);
     try {
       const { data, error } = await mundialSupabase
         .from('hermes_logs')
-        .select('*')
+        .select('created_at, status, health_data, security_data, ui_data, qa_data')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
-      if (!error && data) {
+      if (!error && data && isMounted.current) {
         setLatestReport({
           timestamp: data.created_at,
           overallStatus: data.status,
@@ -32,15 +42,18 @@ export const HermesMonitorPanel: React.FC = () => {
     } catch (err) {
       console.error('Error fetching Hermes logs:', err);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   };
 
   const handleManualScan = async () => {
+    if (!isMounted.current) return;
     setIsScanning(true);
     const report = await runAllAgents();
-    setLatestReport(report);
-    setIsScanning(false);
+    if (isMounted.current) {
+      setLatestReport(report);
+      setIsScanning(false);
+    }
   };
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function AnimatedClockStadium() {
     return (
-        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-emerald-950/40 via-teal-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-emerald-500/40">
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-emerald-950/40 via-teal-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-transform duration-500 hover:border-emerald-500/40">
             {/* Glowing radar scan sweep */}
             <div className="absolute w-32 h-32 rounded-full bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent origin-center animate-[spin_5s_linear_infinite] pointer-events-none" />
             

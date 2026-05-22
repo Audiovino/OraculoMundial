@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown, PlayCircle } from 'lucide-react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
@@ -33,11 +33,16 @@ export const PrivateLeague: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
+  const isMounted = useRef(true);
 
-  // Cargar ligas del usuario
   useEffect(() => {
-    if (!user?.id) return;
-    loadLeagues();
+    isMounted.current = true;
+    if (user?.id) {
+      loadLeagues();
+    }
+    return () => {
+      isMounted.current = false;
+    };
   }, [user?.id]);
 
   const loadLeagues = async () => {
@@ -46,15 +51,17 @@ export const PrivateLeague: React.FC = () => {
       // Intentar cargar desde Supabase
       const { data, error } = await mundialSupabase
         .from('private_leagues')
-        .select('*')
+        .select('id, nombre, codigo_invitacion, creador_id')
         .eq('creador_id', user.id);
 
-      if (!error && data) {
+      if (!error && data && isMounted.current) {
         setLeagues(data);
+      } else if (!error && data) {
+        return;
       } else {
-        console.warn('[PrivateLeague] loadLeagues Supabase error:', error);
+        if (import.meta.env.DEV) console.warn('[PrivateLeague] loadLeagues Supabase error:', error);
         const local = localStorage.getItem(`leagues_${user.id}`);
-        if (local) setLeagues(JSON.parse(local));
+        if (local && isMounted.current) setLeagues(JSON.parse(local));
       }
     } catch (supabaseError) {
       console.warn('[PrivateLeague] loadLeagues caught error:', supabaseError);
@@ -124,12 +131,12 @@ export const PrivateLeague: React.FC = () => {
     try {
       const { data, error } = await mundialSupabase
         .from('private_leagues')
-        .select('*')
+        .select('id, nombre, codigo_invitacion, creador_id')
         .eq('codigo_invitacion', joinCode.toUpperCase())
         .single();
 
       if (error || !data) {
-        console.warn('[PrivateLeague] joinLeague Supabase lookup error:', error);
+        if (import.meta.env.DEV) console.warn('[PrivateLeague] joinLeague Supabase lookup error:', error);
         setError('Código inválido. Verificá que esté bien escrito.');
         setLoading(false);
         return;

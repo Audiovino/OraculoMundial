@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users } from 'lucide-react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
@@ -26,6 +26,15 @@ export const CommunityBar: React.FC<CommunityBarProps> = ({ matchId, userPredict
     userPrediction.homeScore !== '' &&
     userPrediction.awayScore !== '';
 
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   useEffect(() => {
     if (!hasPrediction) return;
 
@@ -34,11 +43,11 @@ export const CommunityBar: React.FC<CommunityBarProps> = ({ matchId, userPredict
       try {
         const { data, error } = await mundialSupabase
           .from('mundial_predictions')
-          .select('*')
+          .select('prediction')
           .eq('match_id', matchId);
 
         if (error || !data || data.length === 0) {
-          setDist({ local: 52, empate: 23, visitante: 25, total: data?.length || 0 });
+          if (isMounted.current) setDist({ local: 52, empate: 23, visitante: 25, total: data?.length || 0 });
           return;
         }
 

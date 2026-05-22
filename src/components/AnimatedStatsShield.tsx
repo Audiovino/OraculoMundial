@@ -3,7 +3,7 @@ import { Sparkles } from 'lucide-react';
 
 export default function AnimatedStatsShield() {
     return (
-        <div className="w-full max-w-[120px] aspect-[3/4] relative flex flex-col items-center justify-between p-3 bg-gradient-to-br from-indigo-900/60 via-slate-950 to-[#0A0D1A] rounded-[24px] border-2 border-indigo-500/40 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.7)] shrink-0 transition-all duration-500 hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+        <div className="w-full max-w-[120px] aspect-[3/4] relative flex flex-col items-center justify-between p-3 bg-gradient-to-br from-indigo-900/60 via-slate-950 to-[#0A0D1A] rounded-[24px] border-2 border-indigo-500/40 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.7)] shrink-0 transition-transform duration-500 hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]">
             {/* Holographic glowing swipe */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2.5s_infinite] pointer-events-none" />
             

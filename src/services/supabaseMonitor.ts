@@ -60,7 +60,7 @@ export class SupabaseMonitor {
         try {
           const { count, error } = await mundialSupabase
             .from(table)
-            .select('*', { count: 'exact', head: true });
+            .select('id', { count: 'exact', head: true });
 
           if (!error && count !== null) {
             metrics.rowsUsed[table] = count;

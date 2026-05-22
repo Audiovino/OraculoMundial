@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 
 export function useHermesStatus() {
   const [status, setStatus] = useState<'secure' | 'warning' | 'critical' | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -14,7 +22,7 @@ export function useHermesStatus() {
           .limit(1)
           .maybeSingle();
         
-        if (!error && data) {
+        if (!error && data && isMounted.current) {
           setStatus(data.status as any);
         }
       } catch (err) {
@@ -28,12 +36,16 @@ export function useHermesStatus() {
     const channel = mundialSupabase
       .channel('hermes_realtime_alerts')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hermes_logs' } as any, (payload: any) => {
-        setStatus(payload.new.status);
+        if (isMounted.current) setStatus(payload.new.status);
       })
       .subscribe();
 
     return () => {
-      mundialSupabase.removeChannel(channel);
+      if (channel?.unsubscribe) {
+        channel.unsubscribe();
+      } else {
+        mundialSupabase.removeChannel(channel);
+      }
     };
   }, []);
 

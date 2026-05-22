@@ -185,6 +185,8 @@ const AdminDashboard: React.FC = () => {
 
   // Load users for user management and preload rankings automatically
   useEffect(() => {
+    let isMounted = true;
+
     const loadUsers = async () => {
       try {
         let allUsers: any[] = [];
@@ -192,10 +194,10 @@ const AdminDashboard: React.FC = () => {
         const pageSize = 1000;
         let hasMore = true;
 
-        while (hasMore) {
+        while (hasMore && isMounted) {
           const { data, error: err } = await mundialSupabase
             .from('mundial_users')
-            .select('*')
+            .select('id, username, email, created_at')
             .order('created_at', { ascending: false })
             .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -212,12 +214,17 @@ const AdminDashboard: React.FC = () => {
             hasMore = false;
           }
         }
-        setUserList(allUsers);
+        if (isMounted) setUserList(allUsers);
       } catch (err) {
         console.error('[Admin] loadUsers caught error:', err);
       }
     };
     loadUsers();
+
+    return () => {
+      isMounted = false;
+    };
+
 
     // Preload rankings so the table is instantly populated on mount
     getUserRanking().then(data => setRanking(data)).catch(() => {});

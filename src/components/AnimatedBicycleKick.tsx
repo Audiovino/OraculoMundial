@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function AnimatedBicycleKick() {
     return (
-        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-blue-900/40 via-indigo-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-blue-500/40">
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-blue-900/40 via-indigo-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-transform duration-500 hover:border-blue-500/40">
             {/* Background Grid */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:16px_16px] opacity-30 pointer-events-none" />
             
@@ -14,7 +14,7 @@ export default function AnimatedBicycleKick() {
             <div className="absolute w-16 h-16 bg-blue-500/30 rounded-full blur-[20px] group-hover:bg-blue-400/40 transition-colors duration-500 pointer-events-none" />
             
             {/* Real Visual SVG: Soccer Ball */}
-            <svg viewBox="0 0 24 24" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-500 animate-[bounce_3s_ease-in-out_infinite]">
+            <svg viewBox="0 0 24 24" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] group-hover:scale-110 group-hover:-translate-y-1 transition-transform duration-500 animate-[bounce_3s_ease-in-out_infinite]">
                 <defs>
                     <linearGradient id="ballGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#93c5fd" />

@@ -3,7 +3,7 @@ import { Sparkles } from 'lucide-react';
 
 export default function AnimatedTrophyCelebration() {
     return (
-        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-amber-950/30 via-yellow-950/10 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-all duration-500 hover:border-amber-500/40">
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-amber-950/30 via-yellow-950/10 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-transform duration-500 hover:border-amber-500/40">
             {/* Sparkle background stars */}
             <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1.2px,transparent_1.2px)] [background-size:16px_16px] opacity-15 pointer-events-none" />
             
@@ -18,7 +18,7 @@ export default function AnimatedTrophyCelebration() {
             <div className="absolute w-16 h-16 bg-amber-500/30 rounded-full blur-[20px] group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
             
             {/* Realistic Golden Cup SVG */}
-            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(245,158,11,0.7)] group-hover:scale-110 group-hover:rotate-2 transition-all duration-500">
+            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(245,158,11,0.7)] group-hover:scale-110 group-hover:rotate-2 transition-transform duration-500">
                 <defs>
                     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#ffe066" />

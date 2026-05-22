@@ -6,7 +6,11 @@ import * as THREE from 'three';
  * Evita cualquier incompatibilidad de versiones entre @react-three/fiber/drei y Three.js,
  * garantizando estabilidad total en produccion y un rendimiento impecable (120 FPS).
  */
-export const MundialScene: React.FC = () => {
+interface MundialSceneProps {
+    isMobile: boolean;
+}
+
+const MundialScene: React.FC<MundialSceneProps> = ({ isMobile }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -28,15 +32,15 @@ export const MundialScene: React.FC = () => {
         );
         camera.position.z = 8;
 
-        // Renderer con alpha habilitado para fondo transparente y antialiasing optimizado
+        // Renderer con alpha habilitado para fondo transparente y antialiasing adaptativo
         const renderer = new THREE.WebGLRenderer({
             canvas: canvas,
             alpha: true,
-            antialias: true,
-            powerPreference: "high-performance"
+            antialias: !isMobile,
+            powerPreference: isMobile ? 'low-power' : 'high-performance'
         });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
 
         // --- 2. ILUMINACIÓN ---
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
@@ -53,17 +57,18 @@ export const MundialScene: React.FC = () => {
         scene.add(dirLight2);
 
         // --- 3. SISTEMA DE PARTÍCULAS (STARDUST / ESTRELLAS) ---
-        const starsCount = 2000;
+        const starsCount = isMobile ? 450 : 2000;
         const starsGeometry = new THREE.BufferGeometry();
         const starsPositions = new Float32Array(starsCount * 3);
         const starsSpeeds = new Float32Array(starsCount);
 
         for (let i = 0; i < starsCount * 3; i += 3) {
             // Distribuir estrellas en un cubo grande alrededor de la escena
-            starsPositions[i] = (Math.random() - 0.5) * 150;
-            starsPositions[i + 1] = (Math.random() - 0.5) * 150;
-            starsPositions[i + 2] = (Math.random() - 0.5) * 100 - 30; // Detrás y adelante
-            starsSpeeds[i / 3] = 0.05 + Math.random() * 0.05;
+            const spread = isMobile ? 80 : 150;
+            starsPositions[i] = (Math.random() - 0.5) * spread;
+            starsPositions[i + 1] = (Math.random() - 0.5) * spread;
+            starsPositions[i + 2] = (Math.random() - 0.5) * (isMobile ? 40 : 100) - 30;
+            starsSpeeds[i / 3] = 0.02 + Math.random() * (isMobile ? 0.02 : 0.05);
         }
 
         starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
@@ -186,7 +191,7 @@ export const MundialScene: React.FC = () => {
             `
         });
 
-        const ballGeo = new THREE.SphereGeometry(1.5, 64, 64);
+        const ballGeo = new THREE.SphereGeometry(1.5, isMobile ? 24 : 64, isMobile ? 24 : 64);
         const ballMesh = new THREE.Mesh(ballGeo, soccerBallMaterial);
         ballGroup.add(ballMesh);
 
@@ -224,21 +229,38 @@ export const MundialScene: React.FC = () => {
         };
         window.addEventListener('resize', handleResize);
 
+        const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+        const animationQuality = prefersReducedMotion ? 'reduced' : isMobile ? 'mobile' : 'normal';
+
         // Variables para la animación de flotación y rotación
         let clock = new THREE.Clock();
 
-        const animate = () => {
-            const requestID = requestAnimationFrame(animate);
+        let animationID: number;
+        let lastFrameTime = 0;
+        const frameBudget = animationQuality === 'normal' ? 16 : 50;
 
-            const delta = clock.getDelta();
+        const animate = (timestamp: number) => {
+            animationID = requestAnimationFrame(animate);
+            if (timestamp - lastFrameTime < frameBudget) {
+                return;
+            }
+            lastFrameTime = timestamp;
+
+            const delta = Math.min(clock.getDelta(), 0.06);
             const elapsedTime = clock.getElapsedTime();
+            const spinSpeed = animationQuality === 'normal' ? 0.15 : 0.06;
+            const tiltSpeed = animationQuality === 'normal' ? 0.08 : 0.03;
+            const floatSpeed = animationQuality === 'normal' ? 1.5 : 0.8;
+            const floatHeight = animationQuality === 'normal' ? 0.15 : 0.08;
+            const starSpeed = animationQuality === 'normal' ? 0.02 : 0.005;
+            const starTilt = animationQuality === 'normal' ? 0.01 : 0.002;
 
             // Rotación base continua
-            ballGroup.rotation.y += delta * 0.15;
-            ballGroup.rotation.x += delta * 0.08;
+            ballGroup.rotation.y += delta * spinSpeed;
+            ballGroup.rotation.x += delta * tiltSpeed;
 
             // Efecto de flotación senoidal suave (Float)
-            ballGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.15;
+            ballGroup.position.y = Math.sin(elapsedTime * floatSpeed) * floatHeight;
 
             // Interpolación del scroll para suavidad (Lerp)
             currentScroll += (targetScroll - currentScroll) * 0.08;
@@ -260,13 +282,13 @@ export const MundialScene: React.FC = () => {
             ballGroup.rotation.z = scrollProgress * Math.PI * 2;
 
             // Rotar sutilmente el fondo de partículas de estrellas
-            stars.rotation.y += delta * 0.02;
-            stars.rotation.x += delta * 0.01;
+            stars.rotation.y += delta * starSpeed;
+            stars.rotation.x += delta * starTilt;
 
             renderer.render(scene, camera);
         };
 
-        const animationID = requestAnimationFrame(animate);
+        animationID = requestAnimationFrame(animate);
 
         // --- 6. LIMPIEZA / DESTRUCCIÓN ---
         return () => {
@@ -301,3 +323,5 @@ export const MundialScene: React.FC = () => {
         </div>
     );
 };
+
+export default MundialScene;

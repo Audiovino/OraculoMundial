@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 import {
   getAllMatches,
@@ -42,6 +42,14 @@ export const useAdminDashboard = () => {
   const [tournamentStats, setTournamentStats] = useState<MatchStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Cargar estadísticas del dashboard
   const loadDashboardStats = useCallback(async () => {
@@ -53,17 +61,17 @@ export const useAdminDashboard = () => {
 
       // Obtener cantidad exacta de usuarios registrados
       let totalUsersCount = 0;
-      let predictions = [];
-      let activity = [];
+      let predictions: any[] = [];
+      let activity: any[] = [];
 
       try {
         const { count, error: usersError } = await mundialSupabase
           .from('mundial_users')
-          .select('*', { count: 'exact', head: true });
+          .select('id', { count: 'exact', head: true });
 
         if (!usersError && count !== null) {
           totalUsersCount = count;
-          console.log('[Admin] Total registered users count:', totalUsersCount);
+          if (import.meta.env.DEV) console.debug('[Admin] Total registered users count:', totalUsersCount);
         }
       } catch (err) {
         console.warn('[Admin] Could not load total registered users count:', err);
@@ -78,7 +86,7 @@ export const useAdminDashboard = () => {
         while (hasMore) {
           const { data: predictionsData, error: predictionsError } = await mundialSupabase
             .from('mundial_predictions')
-            .select('*')
+            .select('user_id, match_id, prediction, points, created_at')
             .range(page * pageSize, (page + 1) * pageSize - 1);
 
           if (predictionsError) {
@@ -103,7 +111,7 @@ export const useAdminDashboard = () => {
       try {
         const { data: activityData, error: activityError } = await mundialSupabase
           .from('mundial_predictions')
-          .select('*')
+          .select('user_id, match_id, prediction, points, created_at')
           .order('created_at', { ascending: false })
           .limit(10);
 
@@ -132,34 +140,42 @@ export const useAdminDashboard = () => {
 
       const topPlayer = Object.values(rankingByUser).sort((a: any, b: any) => b.totalPoints - a.totalPoints)[0] || null;
 
-      setStats({
-        totalUsers: totalUsersCount,
-        totalPredictions: predictions.length,
-        completedPredictions: completedPreds.length,
-        pendingPredictions: pendingPreds.length,
-        averageScore: avgScore,
-        topPlayer,
-        recentActivity: activity
-      });
+      if (isMounted.current) {
+        setStats({
+          totalUsers: totalUsersCount,
+          totalPredictions: predictions.length,
+          completedPredictions: completedPreds.length,
+          pendingPredictions: pendingPreds.length,
+          averageScore: avgScore,
+          topPlayer,
+          recentActivity: activity
+        });
+      }
 
-      console.log('[Admin] Dashboard stats loaded successfully');
+      if (import.meta.env.DEV) {
+        console.debug('[Admin] Dashboard stats loaded successfully');
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error loading dashboard stats';
       console.error('[Admin] Error:', message);
-      setError(message);
-      
-      // Mostrar estadísticas vacías pero funcionales
-      setStats({
-        totalUsers: 0,
-        totalPredictions: 0,
-        completedPredictions: 0,
-        pendingPredictions: 0,
-        averageScore: 0,
-        topPlayer: null,
-        recentActivity: []
-      });
+      if (isMounted.current) {
+        setError(message);
+        
+        // Mostrar estadísticas vacías pero funcionales
+        setStats({
+          totalUsers: 0,
+          totalPredictions: 0,
+          completedPredictions: 0,
+          pendingPredictions: 0,
+          averageScore: 0,
+          topPlayer: null,
+          recentActivity: []
+        });
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -284,7 +300,7 @@ export const useAdminDashboard = () => {
       // Recalcular puntajes de predicciones
       const { data: predictions, error: predictionsError } = await mundialSupabase
         .from('mundial_predictions')
-        .select('*')
+        .select('id, prediction')
         .eq('match_id', matchId);
 
       if (predictionsError) throw predictionsError;
@@ -292,8 +308,8 @@ export const useAdminDashboard = () => {
       // Actualizar cada predicción con el nuevo puntaje
       for (const prediction of predictions || []) {
         const score = calculatePredictionScore(
-          prediction.homeScore ?? prediction.prediction?.split('-')?.[0] ?? '',
-          prediction.awayScore ?? prediction.prediction?.split('-')?.[1] ?? '',
+          prediction.prediction?.split('-')?.[0] ?? '',
+          prediction.prediction?.split('-')?.[1] ?? '',
           homeGoals,
           awayGoals
         );
