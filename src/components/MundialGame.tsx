@@ -1123,25 +1123,25 @@ export const MundialGame: React.FC = () => {
                                         
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none" />
 
-                                        <div className="relative z-10 flex justify-between items-center mb-8">
-                                            <div className="flex items-center gap-3">
-                                                <div className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full">
-                                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic">GRUPO {match.group}</span>
+                                        <div className="relative z-10 flex justify-between items-center mb-4 lg:mb-8">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <div className="flex items-center justify-center w-14 h-14 bg-blue-500/10 border border-blue-500/30 rounded-full flex-shrink-0">
+                                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic text-center leading-tight">GRUPO<br/>{match.group}</span>
                                                 </div>
                                                 {/* Weather badge */}
-                                                <div className="flex items-center gap-1 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-                                                    <span className="text-base leading-none">{sky.weather}</span>
-                                                    <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">{sky.weatherLabel}</span>
+                                                <div className="flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 rounded-full">
+                                                    <span className="text-sm leading-none">{sky.weather}</span>
+                                                    <span className="text-[9px] font-black text-white/50 uppercase tracking-widest hidden sm:inline">{sky.weatherLabel}</span>
                                                 </div>
                                                 {match.status === 'live' && (
-                                                    <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
+                                                    <div className="flex items-center gap-1 px-2 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
                                                         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                                        <span className="text-[10px] font-black text-red-500 uppercase tracking-tighter">EN VIVO</span>
+                                                        <span className="text-[9px] font-black text-red-500 uppercase tracking-tighter">EN VIVO</span>
                                                     </div>
                                                 )}
                                                 {isShowCountdown && <MatchCountdown kickoff={kickoff} />}
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-right hidden lg:block">
                                                 <div className="flex items-center justify-end gap-2 text-white/40 mb-1">
                                                     <Calendar className="w-3.5 h-3.5" />
                                                     <p className="text-[10px] font-black uppercase tracking-widest">{match.date}</p>
@@ -1153,19 +1153,31 @@ export const MundialGame: React.FC = () => {
                                             </div>
                                         </div>
 
+                                        {/* Mobile: date + venue row below header */}
+                                        <div className="lg:hidden flex items-center gap-3 mb-3 px-1">
+                                            <div className="flex items-center gap-1 text-white/40">
+                                                <Calendar className="w-3 h-3 flex-shrink-0" />
+                                                <p className="text-[9px] font-black uppercase tracking-widest">{match.date}</p>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-gray-500 min-w-0">
+                                                <MapPin className="w-3 h-3 flex-shrink-0" />
+                                                <p className="text-[9px] font-medium uppercase truncate">{match.venue}</p>
+                                            </div>
+                                        </div>
+
                                         <div className="relative z-10 flex flex-col gap-6">
-                                            {/* Mobile Ultra-Compact Layout: Both Teams Visible */}
-                                            <div className="lg:hidden flex flex-col gap-2 w-full px-1">
-                                                {/* Main Scoreboard Row - Single Line */}
-                                                <div className="flex items-center justify-center gap-1 w-full">
-                                                    {/* Home Flag + Code */}
-                                                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                                                        <img src={match.home.flag} alt="" className="w-8 h-5 rounded object-cover shadow-md border border-white/20" />
-                                                        <span className="text-[7px] font-black text-white uppercase tracking-tight">{match.home.code}</span>
+                                            {/* Mobile Layout: Both Teams Visible */}
+                                            <div className="lg:hidden flex flex-col gap-3 w-full">
+                                                {/* Main Scoreboard Row */}
+                                                <div className="flex items-center justify-between gap-2 w-full px-1">
+                                                    {/* Home Team */}
+                                                    <div className="flex flex-col items-center gap-1 flex-shrink-0 w-[30%]">
+                                                        <img src={match.home.flag} alt={match.home.name} className="w-14 h-9 rounded-lg object-cover shadow-md border border-white/20" />
+                                                        <span className="text-[10px] font-black text-white uppercase tracking-tight text-center leading-tight line-clamp-2 w-full">{match.home.name}</span>
                                                     </div>
 
-                                                    {/* Score Inputs - Minimal */}
-                                                    <div className="flex items-center justify-center gap-0.5 px-1 py-0.5 bg-white/5 rounded border border-white/10 flex-shrink-0">
+                                                    {/* Score Inputs */}
+                                                    <div className="flex items-center justify-center gap-1 px-2 py-1.5 bg-white/5 rounded-xl border border-white/10 flex-shrink-0">
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1174,9 +1186,9 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.homeScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-8 h-8 bg-slate-950/90 border border-white/20 rounded text-center text-base font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
+                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-lg font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
                                                         /> 
-                                                        <span className="text-sm font-black text-slate-600 px-0.5">:</span>
+                                                        <span className="text-base font-black text-slate-500 px-0.5">:</span>
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1185,14 +1197,14 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.awayScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-8 h-8 bg-slate-950/90 border border-white/20 rounded text-center text-base font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5"
+                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-lg font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5"
                                                         /> 
                                                     </div>
 
-                                                    {/* Away Code + Flag */}
-                                                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                                                        <img src={match.away.flag} alt="" className="w-8 h-5 rounded object-cover shadow-md border border-white/20" />
-                                                        <span className="text-[7px] font-black text-white uppercase tracking-tight">{match.away.code}</span>
+                                                    {/* Away Team */}
+                                                    <div className="flex flex-col items-center gap-1 flex-shrink-0 w-[30%]">
+                                                        <img src={match.away.flag} alt={match.away.name} className="w-14 h-9 rounded-lg object-cover shadow-md border border-white/20" />
+                                                        <span className="text-[10px] font-black text-white uppercase tracking-tight text-center leading-tight line-clamp-2 w-full">{match.away.name}</span>
                                                     </div>
                                                 </div>
 
