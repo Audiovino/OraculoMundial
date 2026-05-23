@@ -1154,7 +1154,7 @@ export const MundialGame: React.FC = () => {
                                         </div>
 
                                         <div className="relative z-10 flex flex-col gap-6">
-                                            {/* Mobile Ultra-Compact Layout: [Flag] [Code] [Score] [Code] [Flag] */}
+                                            {/* Mobile Ultra-Compact Layout: Both Teams Visible */}
                                             <div className="lg:hidden flex flex-col gap-2 w-full px-1">
                                                 {/* Main Scoreboard Row - Single Line */}
                                                 <div className="flex items-center justify-center gap-1 w-full">

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test HyperFrames Iframe</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0A0D18;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #c084fc;
+        }
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .status.loading {
+            background: rgba(234,179,8,0.15);
+            color: #facc15;
+        }
+        .status.success {
+            background: rgba(34,197,94,0.15);
+            color: #4ade80;
+        }
+        .status.error {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+        }
+        .console-log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #000;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #666;
+            padding-left: 10px;
+        }
+        .log-entry.info { border-color: #60a5fa; color: #60a5fa; }
+        .log-entry.success { border-color: #4ade80; color: #4ade80; }
+        .log-entry.error { border-color: #f87171; color: #f87171; }
+        .log-entry.warning { border-color: #facc15; color: #facc15; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test HyperFrames Iframe Loading</h1>
+        
+        <!-- Test 1: Current Implementation -->
+        <div class="test-section">
+            <h2>Test 1: Current Implementation (with sandbox)</h2>
+            <div class="iframe-container">
+                <iframe
+                    id="iframe1"
+                    title="Test 1 - Current"
+                    src="https://hyperframes-mini-video.vercel.app/"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                ></iframe>
+            </div>
+            <div id="status1" class="status loading">⏳ Cargando...</div>
+        </div>
+
+        <!-- Test 2: Without sandbox -->
+        <div class="test-section">
+            <h2>Test 2: Without Sandbox Attribute</h2>
+            <div class="iframe-container">
+                <iframe
+                    id="iframe2"
+                    title="Test 2 - No Sandbox"
+                    src="https://hyperframes-mini-video.vercel.app/"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+            </div>
+            <div id="status2" class="status loading">⏳ Cargando...</div>
+        </div>
+
+        <!-- Test 3: Minimal sandbox -->
+        <div class="test-section">
+            <h2>Test 3: Minimal Sandbox (allow-scripts only)</h2>
+            <div class="iframe-container">
+                <iframe
+                    id="iframe3"
+                    title="Test 3 - Minimal Sandbox"
+                    src="https://hyperframes-mini-video.vercel.app/"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen
+                    sandbox="allow-scripts"
+                ></iframe>
+            </div>
+            <div id="status3" class="status loading">⏳ Cargando...</div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="test-section">
+            <h2>📋 Console Log</h2>
+            <div id="console-log" class="console-log">
+                <div class="log-entry info">Iniciando tests...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Console logging
+        const consoleLog = document.getElementById('console-log');
+        
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleLog.appendChild(entry);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Test iframe loading
+        function setupIframeTest(iframeId, statusId, testName) {
+            const iframe = document.getElementById(iframeId);
+            const status = document.getElementById(statusId);
+            
+            iframe.addEventListener('load', () => {
+                status.className = 'status success';
+                status.textContent = '✅ Iframe cargado correctamente';
+                log(`${testName}: Iframe loaded successfully`, 'success');
+                
+                // Try to access iframe content (will fail if CORS blocks it)
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    log(`${testName}: Content accessible - ${iframeDoc.title || 'No title'}`, 'success');
+                } catch (e) {
+                    log(`${testName}: Content blocked by CORS (expected) - ${e.message}`, 'warning');
+                }
+            });
+            
+            iframe.addEventListener('error', (e) => {
+                status.className = 'status error';
+                status.textContent = '❌ Error al cargar iframe';
+                log(`${testName}: Iframe failed to load - ${e.message || 'Unknown error'}`, 'error');
+            });
+            
+            // Timeout check
+            setTimeout(() => {
+                if (status.className.includes('loading')) {
+                    status.className = 'status error';
+                    status.textContent = '⏱️ Timeout - No se cargó en 10 segundos';
+                    log(`${testName}: Timeout after 10 seconds`, 'error');
+                }
+            }, 10000);
+        }
+
+        // Setup all tests
+        setupIframeTest('iframe1', 'status1', 'Test 1 (Current)');
+        setupIframeTest('iframe2', 'status2', 'Test 2 (No Sandbox)');
+        setupIframeTest('iframe3', 'status3', 'Test 3 (Minimal)');
+
+        // Log initial state
+        log('Tests initialized', 'info');
+        log('Testing URL: https://hyperframes-mini-video.vercel.app/', 'info');
+        
+        // Capture console errors
+        window.addEventListener('error', (e) => {
+            log(`Global error: ${e.message}`, 'error');
+        });
+        
+        // Check for CSP violations
+        document.addEventListener('securitypolicyviolation', (e) => {
+            log(`CSP Violation: ${e.violatedDirective} - ${e.blockedURI}`, 'error');
+        });
+    </script>
+</body>
+</html>

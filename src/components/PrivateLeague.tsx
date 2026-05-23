@@ -35,7 +35,6 @@ export const PrivateLeague: React.FC = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(true);
   const [iframeError, setIframeError] = useState(false);
-  const videoUrl = import.meta.env.VITE_SUPABASE_VIDEO_URL || '/videos/futbolm.mp4';
 
   // Cargar ligas del usuario
   useEffect(() => {
@@ -301,20 +300,35 @@ export const PrivateLeague: React.FC = () => {
                     <div className="text-3xl">⚠️</div>
                     <p className="text-sm text-gray-300">No se pudo cargar el video</p>
                     <p className="text-xs text-gray-500">Intenta recargar la página o verifica tu conexión</p>
-                    <button
-                      onClick={() => {
-                        setIframeLoading(true);
-                        setIframeError(false);
-                      }}
-                      className="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                      style={{
-                        backgroundColor: 'rgba(168,85,247,0.2)',
-                        color: '#c084fc',
-                        border: '1px solid rgba(168,85,247,0.3)'
-                      }}
-                    >
-                      Reintentar
-                    </button>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => {
+                          setIframeLoading(true);
+                          setIframeError(false);
+                        }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                        style={{
+                          backgroundColor: 'rgba(168,85,247,0.2)',
+                          color: '#c084fc',
+                          border: '1px solid rgba(168,85,247,0.3)'
+                        }}
+                      >
+                        Reintentar
+                      </button>
+                      <a
+                        href="https://hyperframes-mini-video.vercel.app/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-blue-500/30"
+                        style={{
+                          backgroundColor: 'rgba(59,130,246,0.2)',
+                          color: '#60a5fa',
+                          border: '1px solid rgba(59,130,246,0.3)'
+                        }}
+                      >
+                        Abrir en nueva pestaña
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
@@ -329,12 +343,11 @@ export const PrivateLeague: React.FC = () => {
                   background: '#0A0D18',
                   opacity: iframeLoading ? 0 : 1,
                   transition: 'opacity 0.3s ease-in-out',
-                  objectFit: 'contain',
                   display: 'block'
                 }}
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowFullScreen
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                sandbox="allow-scripts allow-popups allow-forms"
                 onLoad={() => {
                   setIframeLoading(false);
                   setIframeError(false);
@@ -343,6 +356,7 @@ export const PrivateLeague: React.FC = () => {
                   setIframeLoading(false);
                   setIframeError(true);
                   console.error('[PrivateLeague] Iframe failed to load from HyperFrames');
+                  console.error('[PrivateLeague] Check for X-Frame-Options or CSP restrictions');
                 }}
               />
             </div>

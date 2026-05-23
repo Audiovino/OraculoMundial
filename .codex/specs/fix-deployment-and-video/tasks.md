@@ -27,8 +27,8 @@
 **URL**: `https://hyperframes-mini-video.vercel.app/`
 
 **Steps**:
-- [ ] Verify HyperFrames deployment is active
-- [ ] Check if iframe loads in browser console
+- [x] Verify HyperFrames deployment is active
+- [x] Check if iframe loads in browser console
 - [ ] Add fallback error handling if needed
 - [ ] Test on mobile device
 
