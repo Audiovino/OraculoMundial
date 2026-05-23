@@ -1195,10 +1195,9 @@ export const MundialGame: React.FC = () => {
                                                         <span className="text-[7px] font-black text-white uppercase tracking-tight">{match.away.code}</span>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                                {/* Action Buttons */}
-                                                <div className="flex flex-col gap-3">
+                                                {/* Action Buttons - INSIDE mobile container */}
+                                                <div className="flex flex-col gap-3 mt-2">
                                                     <motion.button
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={() => handleSaveStatus(match.id)}
@@ -1408,6 +1407,7 @@ export const MundialGame: React.FC = () => {
                                                     </div>
                                                 </div>
                                             )}
+                                        </div>
                                         </div>
 
                                         <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent w-full opacity-0 group-hover:opacity-100 transition-opacity" />

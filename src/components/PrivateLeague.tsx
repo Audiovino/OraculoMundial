@@ -33,8 +33,6 @@ export const PrivateLeague: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
-  const [iframeLoading, setIframeLoading] = useState(true);
-  const [iframeError, setIframeError] = useState(false);
 
   // Cargar ligas del usuario
   useEffect(() => {
@@ -231,134 +229,80 @@ export const PrivateLeague: React.FC = () => {
         </div>
       </div>
 
-      {/* Tutorial video embed */}
+      {/* Tutorial steps */}
       <AnimatePresence>
         {showTutorial && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1, 
-              y: 0,
-              boxShadow: [
-                '0 0 20px rgba(139, 92, 246, 0.1), 0 10px 30px rgba(0,0,0,0.5)',
-                '0 0 35px rgba(139, 92, 246, 0.3), 0 10px 35px rgba(0,0,0,0.5)',
-                '0 0 20px rgba(139, 92, 246, 0.1), 0 10px 30px rgba(0,0,0,0.5)'
-              ]
-            }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            whileHover={{ 
-              scale: 1.015,
-              borderColor: 'rgba(139, 92, 246, 0.4)',
-              transition: { duration: 0.3 }
-            }}
-            transition={{
-              boxShadow: {
-                repeat: Infinity,
-                duration: 3,
-                ease: 'easeInOut'
-              },
-              default: {
-                type: 'spring',
-                damping: 25,
-                stiffness: 120
-              }
-            }}
-            className="rounded-3xl overflow-hidden border border-white/10 bg-[#0A0D18] relative"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 15 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+            className="rounded-3xl overflow-hidden border border-white/10 bg-[#0A0D18]"
           >
             <div className="flex items-center justify-between gap-3 p-3 bg-[#0d111d] border-b border-white/10">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Video tutorial</p>
-                <h4 className="text-sm font-black text-white font-sans">Tus Grupos</h4>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Cómo funciona</p>
+                <h4 className="text-sm font-black text-white">Tus Grupos</h4>
               </div>
               <button
-                onClick={() => {
-                  setShowTutorial(false);
-                  setIframeLoading(true);
-                  setIframeError(false);
-                }}
+                onClick={() => setShowTutorial(false)}
                 className="text-slate-400 text-xs font-semibold hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
               >
                 Cerrar
               </button>
             </div>
-            <div className="aspect-video bg-[#0A0D18] relative w-full overflow-hidden">
-              {/* Loading state */}
-              {iframeLoading && !iframeError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#0A0D18] z-10">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-xs text-gray-400">Cargando video...</p>
-                  </div>
+            <div className="p-4 flex flex-col gap-4">
+              {/* Step 1 */}
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black"
+                  style={{ background: 'rgba(168,85,247,0.2)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.3)' }}>
+                  01
                 </div>
-              )}
-              
-              {/* Error state */}
-              {iframeError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#0A0D18] z-10">
-                  <div className="flex flex-col items-center gap-3 text-center px-4">
-                    <div className="text-3xl">⚠️</div>
-                    <p className="text-sm text-gray-300">No se pudo cargar el video</p>
-                    <p className="text-xs text-gray-500">Intenta recargar la página o verifica tu conexión</p>
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => {
-                          setIframeLoading(true);
-                          setIframeError(false);
-                        }}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                        style={{
-                          backgroundColor: 'rgba(168,85,247,0.2)',
-                          color: '#c084fc',
-                          border: '1px solid rgba(168,85,247,0.3)'
-                        }}
-                      >
-                        Reintentar
-                      </button>
-                      <a
-                        href="https://hyperframes-mini-video.vercel.app/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-blue-500/30"
-                        style={{
-                          backgroundColor: 'rgba(59,130,246,0.2)',
-                          color: '#60a5fa',
-                          border: '1px solid rgba(59,130,246,0.3)'
-                        }}
-                      >
-                        Abrir en nueva pestaña
-                      </a>
-                    </div>
-                  </div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-black">CREÁ TU LIGA</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Elegí un nombre y listo. Vos sos el administrador. Se crea en segundos.</p>
+                  <img
+                    src="https://hyperframes-mini-video.vercel.app/crear_liga.png"
+                    alt="Crear Liga"
+                    className="mt-2 w-full rounded-xl border border-white/10 object-cover"
+                    style={{ maxHeight: '120px', objectFit: 'cover' }}
+                  />
                 </div>
-              )}
-              
-              {/* Video Player - Using HyperFrames iframe */}
-              <iframe
-                title="Tutorial Tus Grupos"
-                src="https://hyperframes-mini-video.vercel.app/"
-                className="absolute inset-0 w-full h-full border-0"
-                style={{ 
-                  border: 'none', 
-                  background: '#0A0D18',
-                  opacity: iframeLoading ? 0 : 1,
-                  transition: 'opacity 0.3s ease-in-out',
-                  display: 'block'
-                }}
-                allow="autoplay; fullscreen; picture-in-picture"
-                allowFullScreen
-                sandbox="allow-scripts allow-popups allow-forms"
-                onLoad={() => {
-                  setIframeLoading(false);
-                  setIframeError(false);
-                }}
-                onError={() => {
-                  setIframeLoading(false);
-                  setIframeError(true);
-                  console.error('[PrivateLeague] Iframe failed to load from HyperFrames');
-                  console.error('[PrivateLeague] Check for X-Frame-Options or CSP restrictions');
-                }}
-              />
+              </div>
+              {/* Step 2 */}
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black"
+                  style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' }}>
+                  02
+                </div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-black">COMPARTÍ EL CÓDIGO</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Al crear la liga recibís un código único. Pasalo por WhatsApp o redes.</p>
+                  <img
+                    src="https://hyperframes-mini-video.vercel.app/share_code.png"
+                    alt="Compartir Código"
+                    className="mt-2 w-full rounded-xl border border-white/10 object-cover"
+                    style={{ maxHeight: '120px', objectFit: 'cover' }}
+                  />
+                </div>
+              </div>
+              {/* Step 3 */}
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black"
+                  style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' }}>
+                  03
+                </div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-black">TUS AMIGOS SE UNEN</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Ingresan el código, se suman y ya están compitiendo en tu tabla.</p>
+                  <img
+                    src="https://hyperframes-mini-video.vercel.app/unirse_liga.png"
+                    alt="Unirse a Liga"
+                    className="mt-2 w-full rounded-xl border border-white/10 object-cover"
+                    style={{ maxHeight: '120px', objectFit: 'cover' }}
+                  />
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
