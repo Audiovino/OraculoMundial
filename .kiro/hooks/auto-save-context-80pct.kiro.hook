@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Auto-Save Context at 80%",
+  "description": "Automatically saves session to Obsidian when approaching context limit (80% tokens used)",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "powershell -NoProfile -Command \"cd c:\\Proyectos\\OraculoMundial; .\\scripts\\context-saver.ps1 -SessionName 'auto-save-$(Get-Date -Format yyyy-MM-dd-HHmm)' -Workspace 'c:\\Proyectos\\OraculoMundial'\""
+  },
+  "workspaceFolderName": "OraculoMundial",
+  "shortName": "auto-save-context-80pct"
+}

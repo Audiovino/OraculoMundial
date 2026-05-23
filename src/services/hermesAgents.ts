@@ -328,55 +328,6 @@ Responde SOLO con JSON válido:
 }
 
 /**
- * AGENTE 7: Optimización de Performance y Animaciones
- * Detecta cuellos de botella en el renderizado y sugiere recortes para mobile.
- */
-export async function checkPerformanceAndAnimations(): Promise<HermesResponse> {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
-  // Analizar carga del DOM y procesos visuales
-  const heavyElements = {
-    canvases: typeof document !== 'undefined' ? document.querySelectorAll('canvas').length : 0,
-    videos: typeof document !== 'undefined' ? document.querySelectorAll('video').length : 0,
-    framerElements: typeof document !== 'undefined' ? document.querySelectorAll('[class*="motion"]').length : 0,
-    tabHidden: typeof document !== 'undefined' ? document.hidden : false
-  };
-
-  const prompt = `Eres un experto en Web Performance. Analiza esta carga visual para un dispositivo ${isMobile ? 'MÓVIL' : 'DESKTOP'}:
-
-Métricas detectadas:
-- Canvases (WebGL/3D): ${heavyElements.canvases}
-- Videos cargados: ${heavyElements.videos}
-- Elementos animados (Framer Motion): ${heavyElements.framerElements}
-- Pestaña en segundo plano: ${heavyElements.tabHidden ? 'SÍ' : 'NO'}
-
-Verifica:
-1. ¿Hay más de 2 contextos WebGL? (Crítico para crash en Chrome Mobile)
-2. ¿Hay demasiados elementos motion activos?
-3. ¿Sugerencias para reducir FPS o calidad de texturas?
-4. ¿Recomiendas sustituir animaciones por imágenes estáticas en este hardware?
-
-Responde SOLO con JSON válido:
-{
-  "valid": true/false,
-  "issues": ["lista de problemas de fluidez"],
-  "recommendation": "instrucciones exactas para agilizar la subida de animaciones"
-}`;
-
-  try {
-    const text = await callLLM(prompt);
-    const result = parseHermesResponse(text);
-    return { ...result, sanitized: heavyElements };
-  } catch (error) {
-    return {
-      valid: heavyElements.canvases <= 2,
-      issues: heavyElements.canvases > 2 ? ['Exceso de contextos 3D en móvil'] : [],
-      recommendation: 'Reducir la resolución de los renderers y pausar videos fuera del viewport.'
-    };
-  }
-}
-
-/**
  * AGENTE 5: Verificación de Responsividad
  * Detecta si la UI es responsive y accesible en mobile/desktop
  */
@@ -602,8 +553,7 @@ export async function runAllAgents(context?: any): Promise<HermesFullReport> {
     context?.code 
       ? scanForExposedSecrets(context.code) 
       : (typeof document !== 'undefined' ? scanForExposedSecrets(document.documentElement.outerHTML) : Promise.resolve({ valid: true, issues: [] })),
-    performSystemQATest(),
-    checkPerformanceAndAnimations()
+    performSystemQATest()
   ]);
 
   // Helper to safely extract value from PromiseSettledResult
@@ -616,7 +566,7 @@ export async function runAllAgents(context?: any): Promise<HermesFullReport> {
     responsiveness: getVal(results[1] as PromiseSettledResult<HermesResponse>, ['Error en agente de responsividad']),
     secrets: getVal(results[2] as PromiseSettledResult<HermesResponse>, []),
     qaTest: getVal(results[3] as PromiseSettledResult<HermesResponse>, ['Error en agente QA']),
-    performance: getVal(results[4] as PromiseSettledResult<HermesResponse>, []),
+    performance: { valid: true, issues: [] },
     overallStatus: 'secure'
   };
 

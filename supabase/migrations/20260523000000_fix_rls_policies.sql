@@ -47,11 +47,11 @@ CREATE POLICY "Users can view all profiles" ON mundial_users
 
 -- Política: Usuarios pueden actualizar su propio perfil
 CREATE POLICY "Users can update own profile" ON mundial_users
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE USING (auth.uid()::text = id);
 
 -- Política: Usuarios pueden insertar su propio perfil
 CREATE POLICY "Users can insert own profile" ON mundial_users
-  FOR INSERT WITH CHECK (auth.uid() = id);
+  FOR INSERT WITH CHECK (auth.uid()::text = id);
 
 -- ============================================================================
 -- MUNDIAL_PREDICTIONS - Predicciones de partidos
@@ -120,7 +120,7 @@ DROP POLICY IF EXISTS "System can insert notifications" ON mundial_notifications
 
 -- Política: Usuarios pueden leer sus propias notificaciones
 CREATE POLICY "Users can read own notifications" ON mundial_notifications
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid()::text = user_id);
 
 -- Política: Sistema puede insertar notificaciones (para admin/functions)
 CREATE POLICY "System can insert notifications" ON mundial_notifications
@@ -128,7 +128,7 @@ CREATE POLICY "System can insert notifications" ON mundial_notifications
 
 -- Política: Usuarios pueden actualizar sus propias notificaciones (marcar como leída)
 CREATE POLICY "Users can update own notifications" ON mundial_notifications
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid()::text = user_id);
 
 -- ============================================================================
 -- ADMIN_USERS - Tabla de administradores
@@ -146,7 +146,7 @@ DROP POLICY IF EXISTS "Admins can insert admin_users" ON admin_users;
 -- IMPORTANTE: Esta política permite que cualquier usuario autenticado consulte la tabla
 -- pero solo verá su propio registro si existe (es decir, si es admin)
 CREATE POLICY "Users can check own admin status" ON admin_users
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid()::text = user_id);
 
 -- ============================================================================
 -- Índices para mejorar performance

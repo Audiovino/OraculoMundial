@@ -1,0 +1,12 @@
+{
+  "cline.provider": "ollama",
+  "cline.ollama.baseUrl": "http://localhost:11434",
+  "cline.ollama.model": "qwen2:7b",
+  "cline.contextWindow": 8000,
+  "cline.warningThreshold": 0.8,
+  "cline.autoSaveContext": true,
+  "cline.autoSaveCommand": "powershell -NoProfile -Command \"cd ${workspaceFolder}; .\\scripts\\context-saver.ps1 -SessionName 'cline-auto-$(Get-Date -Format yyyy-MM-dd-HHmm)'\"",
+  "cline.maxTokensPerRequest": 4000,
+  "cline.enableContextPersistence": true,
+  "cline.contextPersistencePath": "${workspaceFolder}/.cline-context"
+}

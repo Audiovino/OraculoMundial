@@ -1,0 +1,113 @@
+{
+  "name": "Context Handoff — Auto-Save to Obsidian",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd c:\\Proyectos\\OraculoMundial && .\\scripts\\context-saver.ps1 -SessionName 'n8n-auto-$(Get-Date -Format yyyy-MM-dd-HHmm)'"
+      },
+      "name": "Save Context",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:11434/api/generate",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "model": "hermes3",
+          "prompt": "Resumen de la sesión guardada: {{$node[\"Save Context\"].json.output}}",
+          "stream": false
+        }
+      },
+      "name": "Generate Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "path": "C:\\Proyectos\\Propgear-AI\\Propgear-Notas\\Sesiones-Kiro\\n8n-summary.md",
+        "content": "# Context Handoff Summary\n\n**Timestamp:** {{$now.toISOString()}}\n\n## Resumen\n{{$node[\"Generate Summary\"].json.response}}\n\n## Archivos Modificados\n{{$node[\"Save Context\"].json.output}}"
+      },
+      "name": "Save Summary",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "message": "✅ Context guardado en Obsidian\n\n📁 Sesión: {{$node[\"Save Context\"].json.output}}\n\n📊 Resumen: {{$node[\"Generate Summary\"].json.response}}"
+      },
+      "name": "Notify",
+      "type": "n8n-nodes-base.sendMessage",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Save Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Context": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Summary": {
+      "main": [
+        [
+          {
+            "node": "Save Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Summary": {
+      "main": [
+        [
+          {
+            "node": "Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "instanceId": "n8n-context-handoff"
+  },
+  "pinData": {}
+}

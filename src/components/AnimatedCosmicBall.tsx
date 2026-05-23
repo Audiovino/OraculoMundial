@@ -1,20 +1,20 @@
 import React from 'react';
 
-export default function AnimatedCosmicBall() {
+const AnimatedCosmicBall = React.memo(function AnimatedCosmicBall() {
     return (
-        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-purple-950/40 via-indigo-950/20 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-transform duration-500 hover:border-purple-500/40">
-            {/* Stars background */}
-            <div className="absolute inset-0 bg-[radial-gradient(#ec4899_1.2px,transparent_1.2px)] [background-size:14px_14px] opacity-20 pointer-events-none" />
+        <div className="w-full max-w-[150px] aspect-square relative flex items-center justify-center bg-gradient-to-br from-purple-950/25 to-transparent rounded-[32px] border border-white/10 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transition-transform duration-500 hover:border-purple-500/40">
+            {/* Stars background - Simplified */}
+            <div className="absolute inset-0 bg-[radial-gradient(#ec4899_1.2px,transparent_1.2px)] [background-size:14px_14px] opacity-15 pointer-events-none" />
             
-            {/* Glowing Purple/Pink Nebulae */}
-            <div className="absolute w-20 h-20 bg-gradient-to-tr from-purple-500/30 to-pink-500/20 rounded-full blur-[15px] animate-pulse pointer-events-none" />
+            {/* Glowing Purple/Pink Nebulae - Reduced */}
+            <div className="absolute w-20 h-20 bg-gradient-to-tr from-purple-500/20 to-pink-500/15 rounded-full blur-[10px] animate-pulse pointer-events-none" />
             
-            {/* Orbit paths */}
-            <div className="absolute w-36 h-14 rounded-full border border-purple-500/20 border-t-purple-500/60 rotate-[-15deg] animate-[spin_10s_linear_infinite] pointer-events-none" />
-            <div className="absolute w-32 h-24 rounded-full border border-dashed border-indigo-500/20 border-b-pink-500/40 rotate-[35deg] animate-[spin_15s_linear_infinite_reverse] pointer-events-none" />
+            {/* Orbit paths - Slower */}
+            <div className="absolute w-36 h-14 rounded-full border border-purple-500/15 border-t-purple-500/40 rotate-[-15deg] animate-[spin_20s_linear_infinite] pointer-events-none" />
+            <div className="absolute w-32 h-24 rounded-full border border-dashed border-indigo-500/15 border-b-pink-500/30 rotate-[35deg] animate-[spin_25s_linear_infinite_reverse] pointer-events-none" />
             
             {/* Cosmic Soccer Ball Oracle SVG */}
-            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(236,72,153,0.7)] group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
+            <svg viewBox="0 0 100 100" className="w-20 h-20 z-10 drop-shadow-[0_0_15px_rgba(236,72,153,0.7)] group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500" style={{ willChange: 'transform' }}>
                 <defs>
                     <linearGradient id="cosmicBallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#f472b6" />
@@ -22,17 +22,17 @@ export default function AnimatedCosmicBall() {
                         <stop offset="100%" stopColor="#312e81" />
                     </linearGradient>
                     <radialGradient id="nebulaGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.6" />
                         <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
                     </radialGradient>
                 </defs>
                 
                 {/* Glowing Core */}
                 <circle cx="50" cy="50" r="38" fill="url(#cosmicBallGrad)" />
-                <circle cx="50" cy="50" r="38" fill="url(#nebulaGlow)" opacity="0.3" />
+                <circle cx="50" cy="50" r="38" fill="url(#nebulaGlow)" opacity="0.2" />
                 
                 {/* Constellation Star Lines on Soccer Ball */}
-                <g stroke="#ffffff" strokeWidth="1" fill="none" opacity="0.8">
+                <g stroke="#ffffff" strokeWidth="1" fill="none" opacity="0.7">
                     {/* Central Star Pentagon */}
                     <polygon points="50,30 65,41 59,58 41,58 35,41" strokeWidth="1.5" className="animate-pulse" />
                     {/* Glowing Vertices (Constellation stars) */}
@@ -51,9 +51,11 @@ export default function AnimatedCosmicBall() {
                 </g>
             </svg>
             
-            {/* Dynamic floating sparkles */}
-            <div className="absolute w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24] animate-[ping_2s_infinite] top-6 left-10 pointer-events-none" />
-            <div className="absolute w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_#60a5fa] animate-[ping_3s_infinite_reverse] bottom-8 right-8 pointer-events-none" />
+            {/* Dynamic floating sparkles - Reduced */}
+            <div className="absolute w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24] animate-[ping_2s_infinite] top-6 left-10 pointer-events-none opacity-60" />
+            <div className="absolute w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_#60a5fa] animate-[ping_3s_infinite_reverse] bottom-8 right-8 pointer-events-none opacity-60" />
         </div>
     );
-}
+});
+
+export default AnimatedCosmicBall;

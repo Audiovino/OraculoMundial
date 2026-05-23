@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown, PlayCircle } from 'lucide-react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
@@ -33,16 +33,11 @@ export const PrivateLeague: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
-  const isMounted = useRef(true);
 
+  // Cargar ligas del usuario
   useEffect(() => {
-    isMounted.current = true;
-    if (user?.id) {
-      loadLeagues();
-    }
-    return () => {
-      isMounted.current = false;
-    };
+    if (!user?.id) return;
+    loadLeagues();
   }, [user?.id]);
 
   const loadLeagues = async () => {
@@ -51,17 +46,15 @@ export const PrivateLeague: React.FC = () => {
       // Intentar cargar desde Supabase
       const { data, error } = await mundialSupabase
         .from('private_leagues')
-        .select('id, nombre, codigo_invitacion, creador_id')
+        .select('*')
         .eq('creador_id', user.id);
 
-      if (!error && data && isMounted.current) {
+      if (!error && data) {
         setLeagues(data);
-      } else if (!error && data) {
-        return;
       } else {
-        if (import.meta.env.DEV) console.warn('[PrivateLeague] loadLeagues Supabase error:', error);
+        console.warn('[PrivateLeague] loadLeagues Supabase error:', error);
         const local = localStorage.getItem(`leagues_${user.id}`);
-        if (local && isMounted.current) setLeagues(JSON.parse(local));
+        if (local) setLeagues(JSON.parse(local));
       }
     } catch (supabaseError) {
       console.warn('[PrivateLeague] loadLeagues caught error:', supabaseError);
@@ -131,12 +124,12 @@ export const PrivateLeague: React.FC = () => {
     try {
       const { data, error } = await mundialSupabase
         .from('private_leagues')
-        .select('id, nombre, codigo_invitacion, creador_id')
+        .select('*')
         .eq('codigo_invitacion', joinCode.toUpperCase())
         .single();
 
       if (error || !data) {
-        if (import.meta.env.DEV) console.warn('[PrivateLeague] joinLeague Supabase lookup error:', error);
+        console.warn('[PrivateLeague] joinLeague Supabase lookup error:', error);
         setError('Código inválido. Verificá que esté bien escrito.');
         setLoading(false);
         return;
@@ -288,7 +281,7 @@ export const PrivateLeague: React.FC = () => {
                 title="Tutorial Mini-Ligas"
                 src="https://hyperframes-mini-video.vercel.app/"
                 className="absolute top-0 left-0 w-full h-full border-0"
-                style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%' }}
+                style={{ border: 'none', background: '#0A0D18' }}
                 loading="lazy"
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowFullScreen

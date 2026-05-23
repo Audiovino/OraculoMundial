@@ -134,10 +134,11 @@ export function useSupabaseQuery<T>(
 // ✅ PATRÓN 3: Operaciones CRUD Seguras con Manejo de Errores
 // ============================================================================
 
-const supabase = createClient(
-  process.env.REACT_APP_SUPABASE_URL!,
-  process.env.REACT_APP_SUPABASE_ANON_KEY!
-);
+// Nota: El cliente de Supabase debe ser inicializado en el contexto de la aplicación
+// const supabase = createClient(
+//   process.env.REACT_APP_SUPABASE_URL!,
+//   process.env.REACT_APP_SUPABASE_ANON_KEY!
+// );
 
 interface Usuario {
   id: string;
@@ -147,7 +148,7 @@ interface Usuario {
 }
 
 // 🟢 LECTURA: Obtener usuarios con límite y manejo de errores
-export async function obtenerUsuarios(limite: number = 10): Promise<Usuario[]> {
+export async function obtenerUsuarios(supabase: any, limite: number = 10): Promise<Usuario[]> {
   try {
     const { data, error } = await supabase
       .from('usuarios')
@@ -170,6 +171,7 @@ export async function obtenerUsuarios(limite: number = 10): Promise<Usuario[]> {
 
 // 🟡 INSERCIÓN: Crear usuario con validación
 export async function crearUsuario(
+  supabase: any,
   nombre: string,
   email: string
 ): Promise<Usuario | null> {
@@ -199,6 +201,7 @@ export async function crearUsuario(
 
 // 🔴 ACTUALIZACIÓN: Actualizar usuario con reintentos
 export async function actualizarUsuario(
+  supabase: any,
   id: string,
   updates: Partial<Usuario>
 ): Promise<Usuario | null> {
@@ -223,7 +226,7 @@ export async function actualizarUsuario(
 }
 
 // 🔵 ELIMINACIÓN: Borrar usuario (con confirmación)
-export async function eliminarUsuario(id: string): Promise<boolean> {
+export async function eliminarUsuario(supabase: any, id: string): Promise<boolean> {
   try {
     const { error } = await supabase
       .from('usuarios')
@@ -250,6 +253,7 @@ export async function eliminarUsuario(id: string): Promise<boolean> {
  * CRÍTICO: Limpia suscripción al desmontar componente
  */
 export function useSupabaseRealtimeSubscription<T>(
+  supabase: any,
   table: string,
   onChanges: (changes: T[]) => void
 ) {
@@ -262,12 +266,12 @@ export function useSupabaseRealtimeSubscription<T>(
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table }, // Escuchar INSERT, UPDATE, DELETE
-        (payload) => {
+        (payload: any) => {
           console.debug(`[Hermes] Cambio detectado en ${table}:`, payload);
           onChanges([payload.new as T]);
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         if (status === 'SUBSCRIBED') {
           console.debug(`[Hermes] Suscripción activa para ${table}`);
         } else if (status === 'CLOSED') {
@@ -280,7 +284,7 @@ export function useSupabaseRealtimeSubscription<T>(
       console.debug(`[Hermes] Cancelando suscripción para ${table}`);
       channel.unsubscribe();
     };
-  }, [table, onChanges]);
+  }, [supabase, table, onChanges]);
 }
 
 // ============================================================================
@@ -311,46 +315,46 @@ export class NetworkErrorHandler {
     console.error(`[Hermes] Error en ${context}:`, error);
     
     // Aquí puedes enviar a Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === 'production') {
-      // Enviar a servicio de logging
-      // await sendToLoggingService({ context, error });
-    }
+    // if (process.env.NODE_ENV === 'production') {
+    //   // Enviar a servicio de logging
+    //   // await sendToLoggingService({ context, error });
+    // }
   }
 }
 
 // ============================================================================
 // ✅ EJEMPLO DE USO EN COMPONENTE REACT
 // ============================================================================
-
-import React from 'react';
-
-export function UsuariosComponent() {
-  const { data: usuarios, loading, error } = useSupabaseQuery(
-    'usuarios_list',
-    () => obtenerUsuarios(20),
-    { cacheSeconds: 30 }
-  );
-
-  // Suscribirse a cambios en tiempo real
-  useSupabaseRealtimeSubscription('usuarios', (changes) => {
-    console.log('Nuevos cambios:', changes);
-    // Aquí actualizar state local
-  });
-
-  if (loading) return <div>Cargando usuarios...</div>;
-  if (error) {
-    const userMsg = NetworkErrorHandler.getUserMessage(error);
-    return <div>Error: {userMsg}</div>;
-  }
-
-  return (
-    <ul>
-      {usuarios?.map((usuario) => (
-        <li key={usuario.id}>{usuario.nombre}</li>
-      ))}
-    </ul>
-  );
-}
+// 
+// import React from 'react';
+//
+// export function UsuariosComponent() {
+//   const { data: usuarios, loading, error } = useSupabaseQuery(
+//     'usuarios_list',
+//     () => obtenerUsuarios(20),
+//     { cacheSeconds: 30 }
+//   );
+//
+//   // Suscribirse a cambios en tiempo real
+//   useSupabaseRealtimeSubscription('usuarios', (changes) => {
+//     console.log('Nuevos cambios:', changes);
+//     // Aquí actualizar state local
+//   });
+//
+//   if (loading) return <div>Cargando usuarios...</div>;
+//   if (error) {
+//     const userMsg = NetworkErrorHandler.getUserMessage(error);
+//     return <div>Error: {userMsg}</div>;
+//   }
+//
+//   return (
+//     <ul>
+//       {usuarios?.map((usuario) => (
+//         <li key={usuario.id}>{usuario.nombre}</li>
+//       ))}
+//     </ul>
+//   );
+// }
 
 // ============================================================================
 // 📋 CHECKLIST DE IMPLEMENTACIÓN

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Context Handoff Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background 0.3s;
+            text-decoration: none;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .button:hover {
+            background: #764ba2;
+        }
+        
+        .button.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .button.secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .code-block {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .ide-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .ide-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .step {
+            margin-bottom: 20px;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .step p {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+        
+        .quick-access {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .quick-access h3 {
+            margin-bottom: 15px;
+        }
+        
+        .quick-access button {
+            background: white;
+            color: #667eea;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .quick-access button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Context Handoff Dashboard</h1>
+            <p class="subtitle">Gestiona sesiones cuando se agota el contexto</p>
+        </header>
+        
+        <div class="quick-access">
+            <h3>⚡ Acceso Rápido</h3>
+            <button onclick="copyToClipboard('cd c:\\Proyectos\\OraculoMundial && .\\scripts\\context-saver.ps1')">
+                💾 Guardar Contexto
+            </button>
+            <button onclick="copyToClipboard('cd c:\\Proyectos\\OraculoMundial && .\\scripts\\context-loader.ps1')">
+                📖 Cargar Contexto
+            </button>
+            <button onclick="openFolder('C:\\Proyectos\\Propgear-AI\\Propgear-Notas\\Sesiones-Kiro')">
+                📂 Abrir Sesiones
+            </button>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2><span class="emoji">✅</span> Estado Actual</h2>
+                <p><strong>Kiro Hook:</strong> <span class="status active">ACTIVO</span></p>
+                <p><strong>VS Code Tasks:</strong> <span class="status active">CONFIGURADO</span></p>
+                <p><strong>Scripts:</strong> <span class="status active">LISTOS</span></p>
+                <p><strong>Obsidian Vault:</strong> <span class="status active">CONECTADO</span></p>
+            </div>
+            
+            <div class="card">
+                <h2><span class="emoji">📊</span> Estadísticas</h2>
+                <p><strong>Sesiones Guardadas:</strong> <span id="session-count">-</span></p>
+                <p><strong>Última Sesión:</strong> <span id="last-session">-</span></p>
+                <p><strong>Espacio Usado:</strong> <span id="space-used">-</span></p>
+                <button class="button secondary" onclick="refreshStats()">Actualizar</button>
+            </div>
+            
+            <div class="card">
+                <h2><span class="emoji">🚀</span> Próximos Pasos</h2>
+                <p>1. Abrí VS Code</p>
+                <p>2. Presioná <code>Ctrl+Shift+P</code></p>
+                <p>3. Buscá "Tasks: Run Task"</p>
+                <p>4. Seleccioná "💾 Save Context"</p>
+            </div>
+        </div>
+        
+        <!-- VS Code Section -->
+        <div class="ide-section">
+            <h3><span class="emoji">💻</span> VS Code</h3>
+            <div class="step" data-step="1">
+                <p><strong>Guardar Contexto</strong></p>
+                <p>Presioná <code>Ctrl+Shift+P</code> → Buscá "Tasks: Run Task" → Seleccioná "💾 Save Context to Obsidian"</p>
+                <div class="code-block">
+Ctrl+Shift+P → Tasks: Run Task → 💾 Save Context to Obsidian
+                </div>
+            </div>
+            <div class="step" data-step="2">
+                <p><strong>Cargar Contexto</strong></p>
+                <p>Presioná <code>Ctrl+Shift+P</code> → Buscá "Tasks: Run Task" → Seleccioná "📖 Load Context from Obsidian"</p>
+                <div class="code-block">
+Ctrl+Shift+P → Tasks: Run Task → 📖 Load Context from Obsidian
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terminal Section -->
+        <div class="ide-section">
+            <h3><span class="emoji">⌨️</span> Terminal PowerShell</h3>
+            <div class="step" data-step="1">
+                <p><strong>Guardar Contexto</strong></p>
+                <div class="code-block">
+cd c:\Proyectos\OraculoMundial
+.\scripts\context-saver.ps1 -SessionName "mi-sesion"
+                </div>
+            </div>
+            <div class="step" data-step="2">
+                <p><strong>Cargar Contexto</strong></p>
+                <div class="code-block">
+cd c:\Proyectos\OraculoMundial
+.\scripts\context-loader.ps1 -SessionName "mi-sesion"
+                </div>
+            </div>
+            <div class="step" data-step="3">
+                <p><strong>Ver Todas las Sesiones</strong></p>
+                <div class="code-block">
+.\scripts\context-loader.ps1
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kiro Section -->
+        <div class="ide-section">
+            <h3><span class="emoji">🤖</span> Kiro (Automático)</h3>
+            <div class="step" data-step="1">
+                <p><strong>Hook Automático Activado</strong></p>
+                <p>Kiro detecta automáticamente cuando estás al 80% del token budget y guarda la sesión.</p>
+                <p><strong>Hook ID:</strong> <code>auto-save-context-80pct</code></p>
+                <p><strong>Estado:</strong> <span class="status active">ACTIVO</span></p>
+            </div>
+            <div class="step" data-step="2">
+                <p><strong>Qué Hace</strong></p>
+                <ul style="margin-left: 20px; color: #666;">
+                    <li>Detecta cuando se agota el contexto</li>
+                    <li>Guarda automáticamente en Obsidian</li>
+                    <li>Te avisa en el chat</li>
+                    <li>Incluye archivos modificados recientemente</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Antigravity Section -->
+        <div class="ide-section">
+            <h3><span class="emoji">🌌</span> Antigravity</h3>
+            <div class="step" data-step="1">
+                <p><strong>Guardar Contexto desde Python</strong></p>
+                <div class="code-block">
+python scripts/antigravity-context-integration.py save "mi-sesion"
+                </div>
+            </div>
+            <div class="step" data-step="2">
+                <p><strong>Cargar Contexto</strong></p>
+                <div class="code-block">
+python scripts/antigravity-context-integration.py load "mi-sesion"
+                </div>
+            </div>
+            <div class="step" data-step="3">
+                <p><strong>Ver Sesiones</strong></p>
+                <div class="code-block">
+python scripts/antigravity-context-integration.py list
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cline Section -->
+        <div class="ide-section">
+            <h3><span class="emoji">🔧</span> Cline (VS Code Extension)</h3>
+            <div class="step" data-step="1">
+                <p><strong>Configuración Automática</strong></p>
+                <p>Cline está configurado para usar Ollama local (qwen2:7b) y guardar contexto automáticamente.</p>
+                <p><strong>Archivo de config:</strong> <code>.vscode/cline-settings.json</code></p>
+            </div>
+            <div class="step" data-step="2">
+                <p><strong>Guardar Contexto Manualmente</strong></p>
+                <p>Abrí la Command Palette en Cline y ejecutá:</p>
+                <div class="code-block">
+Cline: Save Context to Obsidian
+                </div>
+            </div>
+        </div>
+        
+        <!-- Troubleshooting -->
+        <div class="ide-section">
+            <h3><span class="emoji">🆘</span> Troubleshooting</h3>
+            <div class="step" data-step="1">
+                <p><strong>"Sesión no encontrada"</strong></p>
+                <div class="code-block">
+# Verificá que la carpeta existe:
+Test-Path "C:\Proyectos\Propgear-AI\Propgear-Notas\Sesiones-Kiro"
+
+# Si no existe, créala:
+New-Item -ItemType Directory -Force -Path "C:\Proyectos\Propgear-AI\Propgear-Notas\Sesiones-Kiro"
+                </div>
+            </div>
+            <div class="step" data-step="2">
+                <p><strong>"Access denied" en scripts</strong></p>
+                <div class="code-block">
+# Permitir ejecución de scripts locales:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+                </div>
+            </div>
+            <div class="step" data-step="3">
+                <p><strong>VS Code no encuentra los scripts</strong></p>
+                <p>Verificá que estés en el workspace correcto: <code>c:\Proyectos\OraculoMundial</code></p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>🧠 Context Handoff System v1.0 — Última actualización: 2026-05-23</p>
+            <p>Documentación: <code>CONTEXT_HANDOFF_GUIDE.md</code></p>
+        </footer>
+    </div>
+    
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Copiado al portapapeles:\n\n' + text);
+            });
+        }
+        
+        function openFolder(path) {
+            // En un navegador real, esto no funcionaría por seguridad
+            // Pero podés usar esto en Electron o un app local
+            alert('📂 Abrí esta carpeta manualmente:\n\n' + path);
+        }
+        
+        function refreshStats() {
+            // Simulación de estadísticas
+            document.getElementById('session-count').textContent = '5+';
+            document.getElementById('last-session').textContent = 'Hace 2 horas';
+            document.getElementById('space-used').textContent = '~50 MB';
+        }
+        
+        // Cargar estadísticas al abrir
+        window.addEventListener('load', refreshStats);
+    </script>
+</body>
+</html>

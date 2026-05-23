@@ -5,7 +5,7 @@ import { ASTRO_PREDICTIONS } from '../data/AstroData';
 import { WORLD_CUP_SCHEDULES, TIMEZONE_INFO } from '../data/WorldCupSchedules';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { mundialSupabase, MundialRanking, MundialPrediction } from '../services/mundialSupabaseClient';
-import { MundialScene } from './scene/MundialScene';
+import MundialScene from './scene/MundialScene';
 import { getStadiumByVenue } from '../data/StadiumsData';
 import RealisticStadium3D from './scene/RealisticStadium3D';
 import * as THREE from 'three';
@@ -21,12 +21,12 @@ import { useVisibleElement } from '../hooks/useVisibleElement';
 // Lazy load MiniStadium3D para optimización en móvil
 const MiniStadium3D = React.lazy(() => import('./scene/MiniStadium3D'));
 
-// Lazy load componentes animados del header para optimización
-const AnimatedBicycleKick = React.lazy(() => import('./AnimatedBicycleKick'));
-const AnimatedTrophyCelebration = React.lazy(() => import('./AnimatedTrophyCelebration'));
-const AnimatedStatsShield = React.lazy(() => import('./AnimatedStatsShield'));
-const AnimatedCosmicBall = React.lazy(() => import('./AnimatedCosmicBall'));
-const AnimatedClockStadium = React.lazy(() => import('./AnimatedClockStadium'));
+// Importar componentes animados directamente (sin lazy loading para mejor performance)
+import AnimatedBicycleKick from './AnimatedBicycleKick';
+import AnimatedTrophyCelebration from './AnimatedTrophyCelebration';
+import AnimatedStatsShield from './AnimatedStatsShield';
+import AnimatedCosmicBall from './AnimatedCosmicBall';
+import AnimatedClockStadium from './AnimatedClockStadium';
 
 // ---------------------------------------------------------
 // REVISIÓN VISUAL: BALÓN DE FÚTBOL 3D REAL EN EL ENCABEZADO
@@ -531,6 +531,8 @@ export const MundialGame: React.FC = () => {
     // Monitor de seguridad Hermes para protección de datos
     const { validateField, getSecurityStatus } = useSecurityMonitor();
 
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
     const [showVideoModal, setShowVideoModal] = useState(false);
     // Auth guard and general setup
     const role = 'encargado';
@@ -808,7 +810,7 @@ export const MundialGame: React.FC = () => {
             </div>
 
             {/* 3D Interactive Background (Classic Soccer Ball & Stardust) */}
-            <MundialScene />
+            <MundialScene isMobile={isMobile} />
             
             <div className="max-w-4xl mx-auto space-y-6 relative z-10 py-6 px-4">
                 {/* Header Card */}
@@ -1108,7 +1110,7 @@ export const MundialGame: React.FC = () => {
 
                                         <div className="relative z-10 flex flex-col gap-6">
                                             {/* Mobile Compact Layout: Both teams + score in one view */}
-                                            <div className="lg:hidden flex flex-col gap-4">
+                                            <div className="lg:hidden flex flex-col gap-6">
                                                 {/* Scoreboard Row: Perfect symmetry for Chrome Mobile */}
                                                 <div className="flex items-center justify-between gap-1.5">
                                                     {/* Home Team - Compact */}
@@ -1128,7 +1130,7 @@ export const MundialGame: React.FC = () => {
                                                             onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                             placeholder="0"
                                                             className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
-                                                        />
+                                                        /> 
                                                         <span className="text-xl font-black text-slate-600 flex-shrink-0">:</span>
                                                         <input
                                                             type="text"
@@ -1139,7 +1141,7 @@ export const MundialGame: React.FC = () => {
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
                                                             className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
-                                                        />
+                                                        /> 
                                                     </div>
                                                 </div>
                                             </div>
@@ -1792,8 +1794,8 @@ export const MundialGame: React.FC = () => {
                                 <iframe
                                     title="Tutorial Oráculo"
                                     src={`https://hyperframes-mini-video.vercel.app/?user=${encodeURIComponent(user?.username || 'Invitado')}&pts=${String(totalPoints)}`}
-                                    className="absolute inset-0 w-full h-full border-0"
-                                    style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+                                    className="absolute top-0 left-0 w-full h-full border-0"
+                                    style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%', position: 'absolute' }}
                                     loading="lazy"
                                     allow="autoplay; fullscreen; picture-in-picture"
                                     allowFullScreen
