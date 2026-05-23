@@ -6,6 +6,19 @@
 
 const WC_API_BASE = 'https://wc2026api.com/api';
 
+// Logger condicional - desactivado en producción
+const logger = {
+  log: (msg: string, ...args: any[]) => {
+    if (import.meta.env.DEV) console.log(msg, ...args);
+  },
+  warn: (msg: string, ...args: any[]) => {
+    if (import.meta.env.DEV) console.warn(msg, ...args);
+  },
+  error: (msg: string, ...args: any[]) => {
+    console.error(msg, ...args); // Errores siempre se loguean
+  }
+};
+
 export interface Match {
   id: string;
   homeTeam: string;
@@ -53,7 +66,7 @@ export interface MatchStats {
  */
 export const getAllMatches = async (): Promise<Match[]> => {
   try {
-    console.log('[API] Fetching all matches from WC2026 API...');
+    logger.log('[API] Fetching all matches from WC2026 API...');
     const response = await fetch(`${WC_API_BASE}/matches`, {
       method: 'GET',
       headers: {
@@ -62,15 +75,15 @@ export const getAllMatches = async (): Promise<Match[]> => {
     });
     
     if (!response.ok) {
-      console.warn(`[API] WC2026 API returned status ${response.status}`);
+      logger.warn(`[API] WC2026 API returned status ${response.status}`);
       return getDemoMatches();
     }
     
     const data = await response.json();
-    console.log('[API] Matches fetched successfully:', data.matches?.length || 0);
+    logger.log('[API] Matches fetched successfully:', data.matches?.length || 0);
     return data.matches || getDemoMatches();
   } catch (error) {
-    console.error('[API] Error fetching matches:', error);
+    logger.error('[API] Error fetching matches:', error);
     return getDemoMatches();
   }
 };
@@ -79,7 +92,7 @@ export const getAllMatches = async (): Promise<Match[]> => {
  * Datos de demostración si la API no responde
  */
 const getDemoMatches = (): Match[] => {
-  console.log('[API] Using demo matches (API unavailable)');
+  logger.log('[API] Using demo matches (API unavailable)');
   return [
     {
       id: 'demo_1',
@@ -125,7 +138,7 @@ export const getMatchesByStatus = async (status: 'scheduled' | 'live' | 'complet
     const allMatches = await getAllMatches();
     return allMatches.filter(m => m.status === status);
   } catch (error) {
-    console.error('[API] Error filtering matches:', error);
+    logger.error('[API] Error filtering matches:', error);
     return [];
   }
 };
@@ -144,7 +157,7 @@ export const getUpcomingMatches = async (): Promise<Match[]> => {
       return matchDate >= now && matchDate <= sevenDaysLater && m.status === 'scheduled';
     });
   } catch (error) {
-    console.error('[API] Error fetching upcoming matches:', error);
+    logger.error('[API] Error fetching upcoming matches:', error);
     return [];
   }
 };
@@ -156,7 +169,7 @@ export const getLiveMatches = async (): Promise<Match[]> => {
   try {
     return await getMatchesByStatus('live');
   } catch (error) {
-    console.error('[API] Error fetching live matches:', error);
+    logger.error('[API] Error fetching live matches:', error);
     return [];
   }
 };
@@ -168,7 +181,7 @@ export const getCompletedMatches = async (): Promise<Match[]> => {
   try {
     return await getMatchesByStatus('completed');
   } catch (error) {
-    console.error('[API] Error fetching completed matches:', error);
+    logger.error('[API] Error fetching completed matches:', error);
     return [];
   }
 };
@@ -178,7 +191,7 @@ export const getCompletedMatches = async (): Promise<Match[]> => {
  */
 export const getStandings = async (): Promise<StandingsData[]> => {
   try {
-    console.log('[API] Fetching standings from WC2026 API...');
+    logger.log('[API] Fetching standings from WC2026 API...');
     const response = await fetch(`${WC_API_BASE}/standings`, {
       method: 'GET',
       headers: {
@@ -187,15 +200,15 @@ export const getStandings = async (): Promise<StandingsData[]> => {
     });
     
     if (!response.ok) {
-      console.warn(`[API] WC2026 API standings returned status ${response.status}`);
+      logger.warn(`[API] WC2026 API standings returned status ${response.status}`);
       return getDemoStandings();
     }
     
     const data = await response.json();
-    console.log('[API] Standings fetched successfully:', data.standings?.length || 0);
+    logger.log('[API] Standings fetched successfully:', data.standings?.length || 0);
     return data.standings || getDemoStandings();
   } catch (error) {
-    console.error('[API] Error fetching standings:', error);
+    logger.error('[API] Error fetching standings:', error);
     return getDemoStandings();
   }
 };
@@ -204,7 +217,7 @@ export const getStandings = async (): Promise<StandingsData[]> => {
  * Datos de demostración para standings
  */
 const getDemoStandings = (): StandingsData[] => {
-  console.log('[API] Using demo standings (API unavailable)');
+  logger.log('[API] Using demo standings (API unavailable)');
   return [
     {
       group: 'A',

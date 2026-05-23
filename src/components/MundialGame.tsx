@@ -5,7 +5,7 @@ import { ASTRO_PREDICTIONS } from '../data/AstroData';
 import { WORLD_CUP_SCHEDULES, TIMEZONE_INFO } from '../data/WorldCupSchedules';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { mundialSupabase, MundialRanking, MundialPrediction } from '../services/mundialSupabaseClient';
-const MundialScene = React.lazy(() => import('./scene/MundialScene'));
+import { MundialScene } from './scene/MundialScene';
 import { getStadiumByVenue } from '../data/StadiumsData';
 import RealisticStadium3D from './scene/RealisticStadium3D';
 import * as THREE from 'three';
@@ -17,18 +17,6 @@ import PrivateLeague from './PrivateLeague';
 import { useStreak } from '../hooks/useStreak';
 import { useSecurityMonitor } from '../hooks/useSecurityMonitor';
 import { useVisibleElement } from '../hooks/useVisibleElement';
-
-const FETCH_TIMEOUT_MS = 9000;
-
-async function fetchWithTimeout<T>(promiseFactory: () => PromiseLike<T>, timeoutMs = FETCH_TIMEOUT_MS): Promise<T> {
-    let timeoutId: number;
-    return await Promise.race([
-        promiseFactory(),
-        new Promise<T>((_, reject) => {
-            timeoutId = window.setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
-        })
-    ]).finally(() => window.clearTimeout(timeoutId));
-}
 
 // Lazy load MiniStadium3D para optimización en móvil
 const MiniStadium3D = React.lazy(() => import('./scene/MiniStadium3D'));
@@ -506,7 +494,7 @@ function ShareButtons({ user, totalPoints }: ShareButtonsProps) {
         <div className="space-y-4">
             <button
                 onClick={handleWhatsApp}
-                className="w-full py-4 bg-[#25D366] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:scale-105 hover:brightness-110 active:scale-95 transition-safe flex items-center justify-center gap-2"
+                className="w-full py-4 bg-[#25D366] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:scale-105 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -544,8 +532,6 @@ export const MundialGame: React.FC = () => {
     const { validateField, getSecurityStatus } = useSecurityMonitor();
 
     const [showVideoModal, setShowVideoModal] = useState(false);
-    const [isMobileViewport, setIsMobileViewport] = useState(false);
-    const [showScene, setShowScene] = useState(false);
     // Auth guard and general setup
     const role = 'encargado';
     const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
@@ -563,14 +549,6 @@ export const MundialGame: React.FC = () => {
     const [selectedGroup, setSelectedGroup] = useState<string>('');
     const [selectedScheduleGroup, setSelectedScheduleGroup] = useState<string>('');
     const [selectedAstroGroup, setSelectedAstroGroup] = useState<string>('');
-    const isMounted = useRef(true);
-
-    useEffect(() => {
-        isMounted.current = true;
-        return () => {
-            isMounted.current = false;
-        };
-    }, []);
 
     // Verificación inicial de seguridad al montar el componente
     useEffect(() => {
@@ -597,28 +575,6 @@ export const MundialGame: React.FC = () => {
     });
 
     useEffect(() => {
-        const checkViewport = () => setIsMobileViewport(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-        checkViewport();
-        window.addEventListener('resize', checkViewport, { passive: true });
-        const raf = requestAnimationFrame(() => setShowScene(true));
-        return () => {
-            window.removeEventListener('resize', checkViewport);
-            cancelAnimationFrame(raf);
-        };
-    }, []);
-
-    useEffect(() => {
-        if (typeof document !== 'undefined') {
-            document.body.classList.toggle('reduce-motion-mobile', isMobileViewport);
-        }
-        return () => {
-            if (typeof document !== 'undefined') {
-                document.body.classList.remove('reduce-motion-mobile');
-            }
-        };
-    }, [isMobileViewport]);
-
-    useEffect(() => {
         const loadPredictions = async () => {
             try {
                 // First load from localStorage to be instantaneous
@@ -628,15 +584,10 @@ export const MundialGame: React.FC = () => {
                 }
 
                 if (user) {
-                    const { data, error } = await fetchWithTimeout(() =>
-                        mundialSupabase
-                            .from('mundial_predictions')
-                            .select('match_id, prediction, points')
-                            .eq('user_id', user.id)
-                            .limit(200) as unknown as PromiseLike<{ data: any; error: any }>
-                    );
-
-                    if (!isMounted.current) return;
+                    const { data, error } = await mundialSupabase
+                        .from('mundial_predictions')
+                        .select('*')
+                        .eq('user_id', user.id);
 
                     if (!error && data) {
                         const predMap: Record<string, Prediction> = {};
@@ -659,22 +610,18 @@ export const MundialGame: React.FC = () => {
                         });
                         
                         // Merge Supabase predictions with local ones
-                        if (isMounted.current) {
-                            setPredictions(prev => {
-                                const newPreds = { ...prev, ...predMap };
-                                localStorage.setItem('mundial_predictions', JSON.stringify(newPreds));
-                                return newPreds;
-                            });
-                            setTotalPoints(points);
-                        }
+                        setPredictions(prev => {
+                            const newPreds = { ...prev, ...predMap };
+                            localStorage.setItem('mundial_predictions', JSON.stringify(newPreds));
+                            return newPreds;
+                        });
+                        setTotalPoints(points);
                     }
                 }
             } catch (err) {
                 console.warn('[MundialGame] Error loading predictions:', err);
             } finally {
-                if (isMounted.current) {
-                    setLoading(false);
-                }
+                setLoading(false);
             }
         };
 
@@ -684,15 +631,11 @@ export const MundialGame: React.FC = () => {
     useEffect(() => {
         const loadRanking = async () => {
             try {
-                const { data, error } = await fetchWithTimeout(() =>
-                    mundialSupabase
-                        .from('mundial_rankings')
-                        .select('id, user_id, username, total_points, position, games_played, updated_at')
-                        .order('position', { ascending: true })
-                        .limit(10) as unknown as PromiseLike<{ data: any; error: any }>
-                );
-
-                if (!isMounted.current) return;
+                const { data, error } = await mundialSupabase
+                    .from('mundial_rankings')
+                    .select('*')
+                    .order('position', { ascending: true })
+                    .limit(10);
 
                 if (error) {
                     console.warn('[MundialGame] Ranking not available:', error.message || error);
@@ -702,9 +645,7 @@ export const MundialGame: React.FC = () => {
                 setRanking(data || []);
             } catch (err) {
                 console.warn('[MundialGame] Error loading ranking:', err);
-                if (isMounted.current) {
-                    setRanking([]);
-                }
+                setRanking([]);
             }
         };
 
@@ -795,9 +736,7 @@ export const MundialGame: React.FC = () => {
                 setSavingMatchId(null);
             }
         } else {
-            if (import.meta.env.DEV) {
-                console.debug('Saved prediction locally.');
-            }
+            console.log('Saved prediction locally.');
         }
     };
 
@@ -861,7 +800,7 @@ export const MundialGame: React.FC = () => {
                 </div>
                 <button
                     onClick={signOut}
-                    className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-red-500/10 hover:border-red-500/30 transition-safe shadow-[0_4px_15px_rgba(0,0,0,0.4)]"
+                    className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.4)]"
                     title="Cerrar sesión"
                 >
                     <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-400 transition-colors" />
@@ -869,11 +808,7 @@ export const MundialGame: React.FC = () => {
             </div>
 
             {/* 3D Interactive Background (Classic Soccer Ball & Stardust) */}
-            {showScene ? (
-                <MundialScene isMobile={isMobileViewport} />
-            ) : (
-                <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" />
-            )}
+            <MundialScene />
             
             <div className="max-w-4xl mx-auto space-y-6 relative z-10 py-6 px-4">
                 {/* Header Card */}
@@ -930,14 +865,14 @@ export const MundialGame: React.FC = () => {
                                         videoEl.play().catch(() => {});
                                     }
                                 }}
-                                className="w-full sm:w-auto px-6 py-4 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-safe group hover:bg-indigo-600 hover:text-white"
+                                className="w-full sm:w-auto px-6 py-4 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-all group hover:bg-indigo-600 hover:text-white"
                             >
                                 <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                 Ver Video Demo
                             </button>
                             <button
                                 onClick={handleShare}
-                                className="w-full sm:w-auto px-6 py-4 bg-white text-slate-950 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-safe shadow-xl group hover:bg-amber-400 hover:text-white"
+                                className="w-full sm:w-auto px-6 py-4 bg-white text-slate-950 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-all shadow-xl group hover:bg-amber-400 hover:text-white"
                             >
                                 <Share2 className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                                 Compartir
@@ -1130,7 +1065,7 @@ export const MundialGame: React.FC = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.1, duration: 0.6 }}
                                         whileHover={{ scale: 1.02, translateY: -6 }}
-                                        className="relative p-3 sm:p-10 hover:border-blue-500/50 group overflow-hidden backdrop-blur-lg rounded-[32px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-safe duration-700"
+                                        className="relative p-3 sm:p-10 hover:border-blue-500/50 group overflow-hidden backdrop-blur-lg rounded-[32px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700"
                                         style={{ background: 'rgba(10,13,24,0.7)' }}
                                     >
                                         {/* Base Background matching Web aesthetic */}
@@ -1173,8 +1108,8 @@ export const MundialGame: React.FC = () => {
 
                                         <div className="relative z-10 flex flex-col gap-6">
                                             {/* Mobile Compact Layout: Both teams + score in one view */}
-                                            <div className="lg:hidden flex flex-col gap-4">  </div>
-                                            {/* Scoreboard Row: Perfect symmetry for Chrome Mobile */}
+                                            <div className="lg:hidden flex flex-col gap-4">
+                                                {/* Scoreboard Row: Perfect symmetry for Chrome Mobile */}
                                                 <div className="flex items-center justify-between gap-1.5">
                                                     {/* Home Team - Compact */}
                                                     <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
@@ -1193,7 +1128,7 @@ export const MundialGame: React.FC = () => {
                                                             onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                             placeholder="0"
                                                             className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
-                                                        /> 
+                                                        />
                                                         <span className="text-xl font-black text-slate-600 flex-shrink-0">:</span>
                                                         <input
                                                             type="text"
@@ -1204,9 +1139,10 @@ export const MundialGame: React.FC = () => {
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
                                                             className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
-                                                        /> 
+                                                        />
                                                     </div>
                                                 </div>
+                                            </div>
 
                                                 {/* Action Buttons */}
                                                 <div className="flex flex-col gap-3">
@@ -1856,8 +1792,8 @@ export const MundialGame: React.FC = () => {
                                 <iframe
                                     title="Tutorial Oráculo"
                                     src={`https://hyperframes-mini-video.vercel.app/?user=${encodeURIComponent(user?.username || 'Invitado')}&pts=${String(totalPoints)}`}
-                                    className="absolute top-0 left-0 w-full h-full border-0"
-                                    style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%', position: 'absolute' }}
+                                    className="absolute inset-0 w-full h-full border-0"
+                                    style={{ border: 'none', background: '#0A0D18', width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
                                     loading="lazy"
                                     allow="autoplay; fullscreen; picture-in-picture"
                                     allowFullScreen

@@ -1,0 +1,16 @@
+- [ ] Expandir scripts/hermes_fullstack_analyser.py:
+  - [ ] Agregar heurísticas de conectividad: fetch sin timeout/AbortController, endpoints remotos sin control, riesgo de fire-and-forget sin await, etc.
+  - [ ] Agregar heurísticas de Edge/Vercel cold-start: invocaciones a funciones desde el cliente y/o ausencia de runtime edge en config (si detectables por patrones).
+  - [ ] Mejorar salida JSON con categorías: connectivity_risks / supabase_query_risks / edge_cold_start_risks.
+  - [ ] Mantener modo lectura y opciones existentes (--json, --prompt).
+- [ ] Ajustar src/services/hermesAgents.ts para estabilidad móvil:
+  - [ ] Envolver fetch en AbortController/AbortSignal.timeout para Ollama/Zhipu/healthchecks/video HEAD.
+  - [ ] Reducir paralelismo en móvil (opcional) o secuenciar agentes LLM/DOM para evitar saturación.
+  - [ ] Evitar operaciones costosas en el thread principal durante el escaneo manual (si aplica).
+- [ ] Ajustar src/services/supabaseMonitor.ts:
+  - [ ] Añadir timeouts por consulta (AbortController) y fallback/skip si falla.
+  - [ ] Reducir coste si es posible (evitar exact count repetido si no es necesario).
+- [ ] Ejecutar verificación:
+  - [ ] python scripts/hermes_fullstack_analyser.py ./src --json
+  - [ ] npm run build (o test equivalente)
+- [ ] (Si falla build/lint) corregir errores TS/ESLint.
