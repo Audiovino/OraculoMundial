@@ -45,18 +45,30 @@ export const AdminMatchManager: React.FC = () => {
   useEffect(() => {
     isMounted.current = true;
     loadMatches();
-    loadSyncConfig();
     
-    // Iniciar sincronización automática
-    if (syncConfig.autoSyncEnabled) {
-      startAutoSync();
-    }
-
     return () => {
       isMounted.current = false;
       if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
     };
   }, []);
+
+  // Cargar config y iniciar auto-sync en un efecto separado
+  useEffect(() => {
+    loadSyncConfig();
+  }, []);
+
+  // Iniciar auto-sync cuando cambie la configuración
+  useEffect(() => {
+    if (syncConfig.autoSyncEnabled) {
+      startAutoSync();
+    } else {
+      stopAutoSync();
+    }
+    
+    return () => {
+      if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
+    };
+  }, [syncConfig.autoSyncEnabled, syncConfig.syncIntervalMinutes]);
 
   const loadMatches = async () => {
     if (!isMounted.current) return;
@@ -93,18 +105,24 @@ export const AdminMatchManager: React.FC = () => {
   };
 
   const startAutoSync = () => {
-    if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
+    // Limpiar intervalo anterior si existe
+    if (syncIntervalRef.current) {
+      clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = null;
+    }
+
+    console.log('[AutoSync] Iniciando sincronización automática...');
 
     const performSync = async () => {
       console.log('[AutoSync] Ejecutando sincronización automática...');
       await syncFromAPI(true);
     };
 
-    // Ejecutar inmediatamente
-    performSync();
-
-    // Luego cada X minutos
+    // NO ejecutar inmediatamente, solo programar
+    // Esto evita el loop infinito
     syncIntervalRef.current = setInterval(performSync, syncConfig.syncIntervalMinutes * 60 * 1000);
+    
+    console.log(`[AutoSync] Programado cada ${syncConfig.syncIntervalMinutes} minutos`);
   };
 
   const stopAutoSync = () => {
@@ -390,9 +408,10 @@ NO incluyas explicaciones, solo el JSON.`
             onClick={loadMatches}
             disabled={loading}
             className="flex items-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-xl font-semibold transition-all"
+            title="Recargar la tabla de partidos desde la base de datos (no sincroniza desde API)"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
-            Recargar
+            Recargar Tabla
           </button>
 
           <button

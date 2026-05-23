@@ -144,17 +144,27 @@ VITE_ZHIPU_API_KEY=tu_api_key_aqui
 ## 🎯 CASOS DE USO
 
 ### **Caso 1: Torneo en vivo**
-- Activa sincronización automática cada 5 minutos
-- Los resultados se cargan automáticamente
+- Activa sincronización automática cada 5-15 minutos
+- Los resultados se cargan automáticamente desde API-Football o GLM-4
 - Los puntos se calculan en tiempo real
 - Los usuarios ven el ranking actualizado
 
-### **Caso 2: Torneo sin conexión a API**
+### **Caso 2: Sincronización manual**
+- Haz clic en "Sincronizar Ahora" para forzar una descarga inmediata
+- Útil cuando necesitas actualizar resultados urgentemente
+- No afecta la sincronización automática
+
+### **Caso 3: Recargar tabla**
+- Haz clic en "Recargar Tabla" para actualizar la vista desde la base de datos
+- NO descarga desde API, solo refresca lo que ya está guardado
+- Útil después de editar manualmente un partido
+
+### **Caso 4: Torneo sin conexión a API**
 - Usa "Scraping con GLM-4" manualmente
 - O edita los resultados manualmente
 - Los puntos se calculan igual
 
-### **Caso 3: Corrección de errores**
+### **Caso 5: Corrección de errores**
 - Haz clic en "Editar" en el partido
 - Modifica el resultado
 - Los puntos se recalculan automáticamente
@@ -162,6 +172,12 @@ VITE_ZHIPU_API_KEY=tu_api_key_aqui
 ---
 
 ## 🐛 SOLUCIÓN DE PROBLEMAS
+
+### **Problema: Botón "Recargar Tabla" queda en loop**
+- ✅ **Solución**: Este problema está arreglado en la última versión
+- El botón ahora solo recarga la tabla desde la base de datos
+- NO inicia sincronización automática
+- Si persiste, desactiva la sincronización automática en "Configuración"
 
 ### **Error: "Edge Function no disponible"**
 - ✅ Solución: El sistema usa GLM-4 Flash automáticamente
@@ -205,11 +221,11 @@ El panel muestra:
 
 | Acción | Botón | Resultado |
 |--------|-------|-----------|
-| Sincronizar ahora | "Sincronizar Ahora" | Descarga resultados inmediatamente |
-| Scraping manual | "Scraping con GLM-4" | Busca resultados en web |
-| Editar resultado | "Editar" (lápiz) | Modifica goles y estado |
-| Recargar tabla | "Recargar" | Actualiza vista sin sincronizar |
-| Configurar automático | "Configuración" | Activa/desactiva y ajusta intervalo |
+| Sincronizar ahora | "Sincronizar Ahora" | Descarga resultados desde API-Football o GLM-4 inmediatamente |
+| Scraping manual | "Scraping con GLM-4" | Busca resultados en web con IA |
+| Recargar tabla | "Recargar Tabla" | Actualiza vista desde base de datos (NO sincroniza) |
+| Editar resultado | "Editar" (lápiz) | Modifica goles y estado manualmente |
+| Configurar automático | "Configuración" | Activa/desactiva y ajusta intervalo de sincronización |
 
 ---
 
