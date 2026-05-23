@@ -184,7 +184,7 @@ export const PrivateLeague: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users size={18} className="text-purple-400" />
-            <h3 className="text-white font-black text-sm uppercase tracking-wider">Mini-Ligas</h3>
+            <h3 className="text-white font-black text-sm uppercase tracking-wider">Tus Grupos</h3>
             <button
               onClick={() => setShowTutorial(prev => !prev)}
               className="flex items-center gap-1.5 px-2 py-1 ml-2 rounded-lg text-[10px] font-bold transition-all"
@@ -227,7 +227,7 @@ export const PrivateLeague: React.FC = () => {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <p className="text-[11px] uppercase tracking-[0.24em] text-gray-400">Qué hace</p>
           <p className="mt-2 text-sm leading-6 text-gray-200">
-            Mini-Ligas es una competencia privada para tus pronósticos del Mundial. Crear una liga permite invitar a amigos con un código y comparar solo sus resultados entre ustedes. No cambia los partidos: usa los mismos pronósticos que ya ingresás en la app.
+            Tus Grupos es una competencia privada para tus pronósticos del Mundial. Crear un grupo permite invitar a amigos con un código y comparar solo sus resultados entre ustedes. No cambia los partidos: usa los mismos pronósticos que ya ingresás en la app.
           </p>
         </div>
       </div>
@@ -270,7 +270,7 @@ export const PrivateLeague: React.FC = () => {
             <div className="flex items-center justify-between gap-3 p-3 bg-[#0d111d] border-b border-white/10">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Video tutorial</p>
-                <h4 className="text-sm font-black text-white font-sans">Mini-Ligas</h4>
+                <h4 className="text-sm font-black text-white font-sans">Tus Grupos</h4>
               </div>
               <button
                 onClick={() => {
@@ -319,14 +319,10 @@ export const PrivateLeague: React.FC = () => {
                 </div>
               )}
               
-              {/* Video Player */}
-              <video
-                title="Tutorial Mini-Ligas"
-                src={videoUrl}
-                controls
-                autoPlay
-                playsInline
-                muted
+              {/* Video Player - Using HyperFrames iframe */}
+              <iframe
+                title="Tutorial Tus Grupos"
+                src="https://hyperframes-mini-video.vercel.app/"
                 className="absolute top-0 left-0 w-full h-full border-0"
                 style={{ 
                   border: 'none', 
@@ -334,14 +330,17 @@ export const PrivateLeague: React.FC = () => {
                   opacity: iframeLoading ? 0 : 1,
                   transition: 'opacity 0.3s ease-in-out'
                 }}
-                onLoadedData={() => {
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                onLoad={() => {
                   setIframeLoading(false);
                   setIframeError(false);
                 }}
                 onError={() => {
                   setIframeLoading(false);
                   setIframeError(true);
-                  console.error('[PrivateLeague] Video failed to load from:', videoUrl);
+                  console.error('[PrivateLeague] Iframe failed to load from HyperFrames');
                 }}
               />
             </div>

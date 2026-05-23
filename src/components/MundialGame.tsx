@@ -1154,18 +1154,18 @@ export const MundialGame: React.FC = () => {
                                         </div>
 
                                         <div className="relative z-10 flex flex-col gap-6">
-                                            {/* Mobile Compact Layout: Both teams + score in one view - FIXED */}
-                                            <div className="lg:hidden flex flex-col gap-4 w-full">
-                                                {/* Scoreboard Row: Perfect symmetry for Chrome Mobile */}
-                                                <div className="flex items-center justify-between gap-1 w-full">
-                                                    {/* Home Team - Compact */}
-                                                    <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                                                        <img src={match.home.flag} alt="" className="w-9 h-6 rounded-lg object-cover shadow-lg border border-white/15 flex-shrink-0" />
-                                                        <h3 className="text-[9px] font-black text-white uppercase text-center leading-tight w-full break-words line-clamp-2">{match.home.name}</h3>
+                                            {/* Mobile Ultra-Compact Layout: [Flag] [Code] [Score] [Code] [Flag] */}
+                                            <div className="lg:hidden flex flex-col gap-2 w-full px-1">
+                                                {/* Main Scoreboard Row - Single Line */}
+                                                <div className="flex items-center justify-center gap-1 w-full">
+                                                    {/* Home Flag + Code */}
+                                                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                                                        <img src={match.home.flag} alt="" className="w-8 h-5 rounded object-cover shadow-md border border-white/20" />
+                                                        <span className="text-[7px] font-black text-white uppercase tracking-tight">{match.home.code}</span>
                                                     </div>
 
-                                                    {/* Score Inputs Center Area */}
-                                                    <div className="flex items-center justify-center gap-1.5 px-1.5 py-1.5 bg-white/5 rounded-lg border border-white/5 flex-shrink-0">
+                                                    {/* Score Inputs - Minimal */}
+                                                    <div className="flex items-center justify-center gap-0.5 px-1 py-0.5 bg-white/5 rounded border border-white/10 flex-shrink-0">
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1174,9 +1174,9 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.homeScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
+                                                            className="w-8 h-8 bg-slate-950/90 border border-white/20 rounded text-center text-base font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
                                                         /> 
-                                                        <span className="text-lg font-black text-slate-600 flex-shrink-0">:</span>
+                                                        <span className="text-sm font-black text-slate-600 px-0.5">:</span>
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1185,14 +1185,14 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.awayScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
+                                                            className="w-8 h-8 bg-slate-950/90 border border-white/20 rounded text-center text-base font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5"
                                                         /> 
                                                     </div>
 
-                                                    {/* Away Team - Compact */}
-                                                    <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                                                        <img src={match.away.flag} alt="" className="w-9 h-6 rounded-lg object-cover shadow-lg border border-white/15 flex-shrink-0" />
-                                                        <h3 className="text-[9px] font-black text-white uppercase text-center leading-tight w-full break-words line-clamp-2">{match.away.name}</h3>
+                                                    {/* Away Code + Flag */}
+                                                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                                                        <img src={match.away.flag} alt="" className="w-8 h-5 rounded object-cover shadow-md border border-white/20" />
+                                                        <span className="text-[7px] font-black text-white uppercase tracking-tight">{match.away.code}</span>
                                                     </div>
                                                 </div>
                                             </div>

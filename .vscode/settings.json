@@ -20,5 +20,6 @@
     "fs",
     "http",
     "net"
-  ]
+  ],
+  "typescript.autoClosingTags": false
 }

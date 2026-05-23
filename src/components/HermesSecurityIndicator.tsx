@@ -93,7 +93,12 @@ export const HermesSecurityIndicator: React.FC = () => {
                 </div>
                 {issues.length > 0 && (
                   <div className="mt-2 p-2 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                    <p className="text-xs text-orange-300 font-medium">⚠️ {issues.length} problema(s) detectado(s)</p>
+                    <p className="text-xs text-orange-300 font-medium mb-2">⚠️ {issues.length} problema(s) detectado(s):</p>
+                    <ul className="text-xs text-orange-200 space-y-1 list-disc list-inside">
+                      {issues.map((issue, idx) => (
+                        <li key={idx} className="break-words">{issue}</li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
