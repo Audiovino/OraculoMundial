@@ -56,12 +56,17 @@ export const AdminMatchManager: React.FC = () => {
   const syncFromAPI = async () => {
     setSyncing(true);
     try {
-      // Llamar a la Edge Function de Supabase
-      const { data, error } = await mundialSupabase.functions.invoke('sync-matches');
-
-      if (error) throw error;
+      // Intentar llamar a la Edge Function, pero con fallback
+      try {
+        const { data, error } = await mundialSupabase.functions.invoke('sync-matches');
+        if (error) throw error;
+        showMessage('success', data.message || 'Sincronización exitosa desde API-Football');
+      } catch (edgeError: any) {
+        // Si la Edge Function falla, mostrar mensaje pero permitir continuar
+        console.warn('Edge Function error:', edgeError);
+        showMessage('error', `Error en sincronización: ${edgeError.message || 'Edge Function no disponible'}`);
+      }
       
-      showMessage('success', data.message || 'Sincronización exitosa desde API-Football');
       await loadMatches();
     } catch (err: any) {
       showMessage('error', `Error en sincronización: ${err.message}`);
@@ -73,13 +78,18 @@ export const AdminMatchManager: React.FC = () => {
   const scrapeWithHermes = async () => {
     setScraping(true);
     try {
-      // Llamar a Ollama local (hermes3) para scraping
-      const response = await fetch('http://localhost:11434/api/generate', {
+      // Usar GLM-4 Flash (cloud) en lugar de Ollama local
+      const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_ZHIPU_API_KEY || ''}`
+        },
         body: JSON.stringify({
-          model: 'hermes3',
-          prompt: `Actúa como un scraper web. Busca los resultados más recientes del Mundial 2026 en sitios confiables como FIFA.com, ESPN, o Google Sports. 
+          model: 'glm-4-flash',
+          messages: [{
+            role: 'user',
+            content: `Actúa como un scraper web. Busca los resultados más recientes del Mundial 2026 en sitios confiables como FIFA.com, ESPN, o Google Sports. 
           
 Devuelve SOLO un JSON válido con este formato:
 {
@@ -95,13 +105,18 @@ Devuelve SOLO un JSON válido con este formato:
   ]
 }
 
-NO incluyas explicaciones, solo el JSON.`,
-          stream: false
+NO incluyas explicaciones, solo el JSON.`
+          }]
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
       const data = await response.json();
-      const scrapedData = JSON.parse(data.response);
+      const content = data.choices?.[0]?.message?.content || '';
+      const scrapedData = JSON.parse(content);
 
       // Insertar los partidos scrapeados
       if (scrapedData.matches && scrapedData.matches.length > 0) {
@@ -116,7 +131,7 @@ NO incluyas explicaciones, solo el JSON.`,
 
         if (error) throw error;
 
-        showMessage('success', `${scrapedData.matches.length} partidos scrapeados con Hermes`);
+        showMessage('success', `${scrapedData.matches.length} partidos scrapeados con GLM-4`);
         await loadMatches();
       } else {
         showMessage('error', 'No se encontraron partidos en el scraping');

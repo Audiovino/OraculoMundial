@@ -29,6 +29,78 @@ import AnimatedCosmicBall from './AnimatedCosmicBall';
 import AnimatedClockStadium from './AnimatedClockStadium';
 
 // ---------------------------------------------------------
+// VIDEO MODAL BUTTON COMPONENT
+// ---------------------------------------------------------
+function VideoModalButton() {
+    const [showModal, setShowModal] = useState(false);
+    const videoUrl = import.meta.env.VITE_SUPABASE_VIDEO_URL || '/videos/futbolm.mp4';
+
+    return (
+        <>
+            <button
+                onClick={() => setShowModal(true)}
+                className="w-full sm:w-auto px-6 py-4 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-all group hover:bg-indigo-600 hover:text-white"
+            >
+                <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                Ver Video Demo
+            </button>
+
+            <AnimatePresence>
+                {showModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowModal(false)}
+                        className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            onClick={e => e.stopPropagation()}
+                            className="relative w-full max-w-4xl rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+                            style={{ background: 'linear-gradient(135deg, rgba(15,15,30,0.95), rgba(20,20,40,0.95))' }}
+                        >
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/40">
+                                <div>
+                                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Video Demo</p>
+                                    <h3 className="text-sm font-black text-white">Oráculo Mundial 2026</h3>
+                                </div>
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            {/* Video Container */}
+                            <div className="aspect-video bg-black relative overflow-hidden">
+                                <video
+                                    key={videoUrl}
+                                    src={videoUrl}
+                                    controls
+                                    autoPlay
+                                    playsInline
+                                    muted
+                                    className="w-full h-full object-contain"
+                                    style={{ background: '#000' }}
+                                    onError={(e) => {
+                                        console.error('Video error:', e);
+                                    }}
+                                />
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
+    );
+}
+
+// ---------------------------------------------------------
 // REVISIÓN VISUAL: BALÓN DE FÚTBOL 3D REAL EN EL ENCABEZADO
 // ---------------------------------------------------------
 function HeaderSoccerBall3D() {
@@ -844,34 +916,7 @@ export const MundialGame: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center gap-4">
-                            <button
-                                onClick={() => {
-                                    const modal = document.createElement('div');
-                                    modal.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 p-4';
-                                    modal.innerHTML = `
-                                    <div class="relative max-w-4xl w-full bg-gray-900 rounded-2xl p-2 border border-white/10 shadow-2xl">
-                                        <button class="absolute -top-12 right-0 text-white p-2 hover:bg-white/10 rounded-full" onclick="this.parentElement.parentElement.remove()">
-                                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                        </button>
-                                        <div class="aspect-video bg-black rounded-xl overflow-hidden">
-                                            <video src="/videos/futbolm.mp4" controls playsinline muted autoplay loop x-webkit-airplay="allow" style="width:100%;height:100%;object-fit:contain"></video>
-                                        </div>
-                                    </div>
-                                `;
-                                    document.body.appendChild(modal);
-                                    const videoEl = modal.querySelector('video');
-                                    if (videoEl) {
-                                        videoEl.setAttribute('playsinline', '');
-                                        videoEl.setAttribute('webkit-playsinline', '');
-                                        videoEl.load();
-                                        videoEl.play().catch(() => {});
-                                    }
-                                }}
-                                className="w-full sm:w-auto px-6 py-4 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-all group hover:bg-indigo-600 hover:text-white"
-                            >
-                                <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                Ver Video Demo
-                            </button>
+                            <VideoModalButton />
                             <button
                                 onClick={handleShare}
                                 className="w-full sm:w-auto px-6 py-4 bg-white text-slate-950 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:-translate-y-1 transition-all shadow-xl group hover:bg-amber-400 hover:text-white"
@@ -1110,17 +1155,17 @@ export const MundialGame: React.FC = () => {
 
                                         <div className="relative z-10 flex flex-col gap-6">
                                             {/* Mobile Compact Layout: Both teams + score in one view */}
-                                            <div className="lg:hidden flex flex-col gap-6">
+                                            <div className="lg:hidden flex flex-col gap-4">
                                                 {/* Scoreboard Row: Perfect symmetry for Chrome Mobile */}
-                                                <div className="flex items-center justify-between gap-1.5">
+                                                <div className="flex items-center justify-between gap-1 w-full">
                                                     {/* Home Team - Compact */}
                                                     <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                                                        <img src={match.home.flag} alt="" className="w-10 h-7 rounded-lg object-cover shadow-lg border border-white/15" />
-                                                        <h3 className="text-[10px] font-black text-white uppercase text-center leading-tight w-full break-words">{match.home.name}</h3>
+                                                        <img src={match.home.flag} alt="" className="w-9 h-6 rounded-lg object-cover shadow-lg border border-white/15 flex-shrink-0" />
+                                                        <h3 className="text-[9px] font-black text-white uppercase text-center leading-tight w-full break-words line-clamp-2">{match.home.name}</h3>
                                                     </div>
 
                                                     {/* Score Inputs Center Area */}
-                                                    <div className="flex items-center justify-center gap-2 px-2 py-2 bg-white/5 rounded-xl border border-white/5">
+                                                    <div className="flex items-center justify-center gap-1.5 px-1.5 py-1.5 bg-white/5 rounded-lg border border-white/5 flex-shrink-0">
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1129,9 +1174,9 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.homeScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
+                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-xl font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
                                                         /> 
-                                                        <span className="text-xl font-black text-slate-600 flex-shrink-0">:</span>
+                                                        <span className="text-lg font-black text-slate-600 flex-shrink-0">:</span>
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1140,8 +1185,14 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.awayScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-xl text-center text-2xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
+                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-xl font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5 flex-shrink-0"
                                                         /> 
+                                                    </div>
+
+                                                    {/* Away Team - Compact */}
+                                                    <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+                                                        <img src={match.away.flag} alt="" className="w-9 h-6 rounded-lg object-cover shadow-lg border border-white/15 flex-shrink-0" />
+                                                        <h3 className="text-[9px] font-black text-white uppercase text-center leading-tight w-full break-words line-clamp-2">{match.away.name}</h3>
                                                     </div>
                                                 </div>
                                             </div>

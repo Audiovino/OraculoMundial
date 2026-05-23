@@ -33,6 +33,9 @@ export const PrivateLeague: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(true);
+  const [iframeError, setIframeError] = useState(false);
+  const videoUrl = import.meta.env.VITE_SUPABASE_VIDEO_URL || '/videos/futbolm.mp4';
 
   // Cargar ligas del usuario
   useEffect(() => {
@@ -270,22 +273,76 @@ export const PrivateLeague: React.FC = () => {
                 <h4 className="text-sm font-black text-white font-sans">Mini-Ligas</h4>
               </div>
               <button
-                onClick={() => setShowTutorial(false)}
+                onClick={() => {
+                  setShowTutorial(false);
+                  setIframeLoading(true);
+                  setIframeError(false);
+                }}
                 className="text-slate-400 text-xs font-semibold hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
               >
                 Cerrar
               </button>
             </div>
             <div className="aspect-video bg-[#0A0D18] relative w-full overflow-hidden">
-              <iframe
+              {/* Loading state */}
+              {iframeLoading && !iframeError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#0A0D18] z-10">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-xs text-gray-400">Cargando video...</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Error state */}
+              {iframeError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#0A0D18] z-10">
+                  <div className="flex flex-col items-center gap-3 text-center px-4">
+                    <div className="text-3xl">⚠️</div>
+                    <p className="text-sm text-gray-300">No se pudo cargar el video</p>
+                    <p className="text-xs text-gray-500">Intenta recargar la página o verifica tu conexión</p>
+                    <button
+                      onClick={() => {
+                        setIframeLoading(true);
+                        setIframeError(false);
+                      }}
+                      className="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                      style={{
+                        backgroundColor: 'rgba(168,85,247,0.2)',
+                        color: '#c084fc',
+                        border: '1px solid rgba(168,85,247,0.3)'
+                      }}
+                    >
+                      Reintentar
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Video Player */}
+              <video
                 title="Tutorial Mini-Ligas"
-                src="https://hyperframes-mini-video.vercel.app/"
+                src={videoUrl}
+                controls
+                autoPlay
+                playsInline
+                muted
                 className="absolute top-0 left-0 w-full h-full border-0"
-                style={{ border: 'none', background: '#0A0D18' }}
-                loading="lazy"
-                allow="autoplay; fullscreen; picture-in-picture"
-                allowFullScreen
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                style={{ 
+                  border: 'none', 
+                  background: '#0A0D18',
+                  opacity: iframeLoading ? 0 : 1,
+                  transition: 'opacity 0.3s ease-in-out'
+                }}
+                onLoadedData={() => {
+                  setIframeLoading(false);
+                  setIframeError(false);
+                }}
+                onError={() => {
+                  setIframeLoading(false);
+                  setIframeError(true);
+                  console.error('[PrivateLeague] Video failed to load from:', videoUrl);
+                }}
               />
             </div>
           </motion.div>
