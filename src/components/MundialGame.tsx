@@ -1112,7 +1112,7 @@ export const MundialGame: React.FC = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.1, duration: 0.6 }}
                                         whileHover={{ scale: 1.02, translateY: -6 }}
-                                        className="relative p-3 sm:p-10 hover:border-blue-500/50 group overflow-hidden backdrop-blur-lg rounded-[32px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700"
+                                        className="relative p-3 sm:p-10 hover:border-blue-500/50 group lg:overflow-hidden backdrop-blur-lg rounded-[32px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700"
                                         style={{ background: 'rgba(10,13,24,0.7)' }}
                                     >
                                         {/* Base Background matching Web aesthetic */}
@@ -1154,8 +1154,8 @@ export const MundialGame: React.FC = () => {
                                         </div>
 
                                         <div className="relative z-10 flex flex-col gap-6">
-                                            {/* Mobile Compact Layout: Both teams + score in one view */}
-                                            <div className="lg:hidden flex flex-col gap-4">
+                                            {/* Mobile Compact Layout: Both teams + score in one view - FIXED */}
+                                            <div className="lg:hidden flex flex-col gap-4 w-full">
                                                 {/* Scoreboard Row: Perfect symmetry for Chrome Mobile */}
                                                 <div className="flex items-center justify-between gap-1 w-full">
                                                     {/* Home Team - Compact */}
