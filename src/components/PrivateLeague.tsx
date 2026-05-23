@@ -323,12 +323,14 @@ export const PrivateLeague: React.FC = () => {
               <iframe
                 title="Tutorial Tus Grupos"
                 src="https://hyperframes-mini-video.vercel.app/"
-                className="absolute top-0 left-0 w-full h-full border-0"
+                className="absolute inset-0 w-full h-full border-0"
                 style={{ 
                   border: 'none', 
                   background: '#0A0D18',
                   opacity: iframeLoading ? 0 : 1,
-                  transition: 'opacity 0.3s ease-in-out'
+                  transition: 'opacity 0.3s ease-in-out',
+                  objectFit: 'contain',
+                  display: 'block'
                 }}
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowFullScreen
