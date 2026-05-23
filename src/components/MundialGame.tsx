@@ -1123,45 +1123,39 @@ export const MundialGame: React.FC = () => {
                                         
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none" />
 
-                                        <div className="relative z-10 flex justify-between items-center mb-4 lg:mb-8">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <div className="flex items-center justify-center w-14 h-14 bg-blue-500/10 border border-blue-500/30 rounded-full flex-shrink-0">
-                                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic text-center leading-tight">GRUPO<br/>{match.group}</span>
+                                        {/* Unified header: 2 rows, consistent across all matches */}
+                                        <div className="relative z-10 mb-3">
+                                            {/* Row 1: Group + Weather + Live */}
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="flex items-center justify-center w-12 h-12 bg-blue-500/10 border border-blue-500/30 rounded-full flex-shrink-0">
+                                                    <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest italic text-center leading-tight">GRUPO<br/>{match.group}</span>
                                                 </div>
-                                                {/* Weather badge */}
                                                 <div className="flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 rounded-full">
                                                     <span className="text-sm leading-none">{sky.weather}</span>
                                                     <span className="text-[9px] font-black text-white/50 uppercase tracking-widest hidden sm:inline">{sky.weatherLabel}</span>
                                                 </div>
                                                 {match.status === 'live' && (
                                                     <div className="flex items-center gap-1 px-2 py-1 bg-red-500/10 border border-red-500/30 rounded-full">
-                                                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                                                         <span className="text-[9px] font-black text-red-500 uppercase tracking-tighter">EN VIVO</span>
                                                     </div>
                                                 )}
-                                                {isShowCountdown && <MatchCountdown kickoff={kickoff} />}
                                             </div>
-                                            <div className="text-right hidden lg:block">
-                                                <div className="flex items-center justify-end gap-2 text-white/40 mb-1">
-                                                    <Calendar className="w-3.5 h-3.5" />
-                                                    <p className="text-[10px] font-black uppercase tracking-widest">{match.date}</p>
+                                            {/* Row 2: Countdown | Date | Venue — always visible */}
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {isShowCountdown && (
+                                                    <div className="flex-shrink-0">
+                                                        <MatchCountdown kickoff={kickoff} />
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-1 text-white/50">
+                                                    <Calendar className="w-3 h-3 flex-shrink-0" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest">{match.date}</span>
                                                 </div>
-                                                <div className="flex items-center justify-end gap-2 text-gray-500">
-                                                    <MapPin className="w-3.5 h-3.5" />
-                                                    <p className="text-[10px] font-medium uppercase truncate max-w-[150px]">{match.venue}</p>
+                                                <div className="flex items-center gap-1 text-gray-500 min-w-0">
+                                                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                                                    <span className="text-[9px] font-medium uppercase truncate max-w-[140px]">{match.venue}</span>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Mobile: date + venue row below header */}
-                                        <div className="lg:hidden flex items-center gap-3 mb-3 px-1">
-                                            <div className="flex items-center gap-1 text-white/40">
-                                                <Calendar className="w-3 h-3 flex-shrink-0" />
-                                                <p className="text-[9px] font-black uppercase tracking-widest">{match.date}</p>
-                                            </div>
-                                            <div className="flex items-center gap-1 text-gray-500 min-w-0">
-                                                <MapPin className="w-3 h-3 flex-shrink-0" />
-                                                <p className="text-[9px] font-medium uppercase truncate">{match.venue}</p>
                                             </div>
                                         </div>
 
@@ -1800,7 +1794,7 @@ export const MundialGame: React.FC = () => {
 
                         <div className="space-y-6">
                             {WORLD_CUP_SCHEDULES
-                                .filter(g => !selectedScheduleGroup || g.id === `group-${selectedScheduleGroup.toLowerCase()}` || g.name.includes(`GRUPO ${selectedScheduleGroup}`))
+                                .filter(g => !selectedScheduleGroup || g.id === `group_${selectedScheduleGroup.toLowerCase()}` || g.name.includes(`GRUPO ${selectedScheduleGroup}`))
                                 .map((group) => (
                                 <div key={group.id} className="bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden staggered-item">
                                     <div className="p-4 bg-emerald-500/10 border-b border-white/5">
