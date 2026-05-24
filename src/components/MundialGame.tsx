@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Medal, User, Users, Save, ChevronDown, Calendar, Flag, Share2, Download, X, Sparkles, Clock, Search, ChevronLeft, ChevronRight, MapPin, Play, LogOut, BarChart3, Check, Loader2, Zap } from 'lucide-react';
 import { ASTRO_PREDICTIONS } from '../data/AstroData';
@@ -641,15 +641,14 @@ export const MundialGame: React.FC = () => {
     const uniqueTeams = Array.from(new Set(WC_MATCHES.flatMap(m => [m.home.name, m.away.name]))).sort();
     const uniqueGroups = Array.from(new Set(WC_MATCHES.map(m => m.group))).sort();
 
-    const filteredMatches = WC_MATCHES.filter(match => {
-        const matchesDate = !selectedDate || match.date === selectedDate;
-        const matchesTeam = !selectedTeam || match.home.name === selectedTeam || match.away.name === selectedTeam;
-        const matchesGroup = !selectedGroup || match.group === selectedGroup;
-        return matchesDate && matchesTeam && matchesGroup;
-    });
-
-    // Debug temporal para verificar filtrado
-    console.log(`Filtro activo - Grupo: "${selectedGroup}", Partidos encontrados: ${filteredMatches.length}`);
+    const filteredMatches = useMemo(() => {
+        return WC_MATCHES.filter(match => {
+            const matchesDate = !selectedDate || match.date === selectedDate;
+            const matchesTeam = !selectedTeam || match.home.name === selectedTeam || match.away.name === selectedTeam;
+            const matchesGroup = !selectedGroup || match.group === selectedGroup;
+            return matchesDate && matchesTeam && matchesGroup;
+        });
+    }, [selectedDate, selectedTeam, selectedGroup]);
 
     useEffect(() => {
         const loadPredictions = async () => {
