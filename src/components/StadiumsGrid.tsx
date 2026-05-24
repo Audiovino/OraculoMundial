@@ -158,7 +158,7 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
   };
 
   return (
-    <div ref={containerRef} className="w-full aspect-[16/10.5] relative group" style={{ perspective: '1200px' }}>
+    <div ref={containerRef} className="w-full aspect-[16/11] sm:aspect-[16/10.5] relative group" style={{ perspective: '1200px' }}>
       <style>{`
         .backface-hidden {
           backface-visibility: hidden;
@@ -269,14 +269,14 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
               e.stopPropagation();
               setIsFlipped(true);
             }}
-            className="h-[76px] bg-slate-900/90 hover:bg-slate-800/90 border-t border-white/5 px-4 py-3 flex items-center justify-between transition-colors duration-200"
+            className="h-[80px] sm:h-[76px] bg-slate-900/90 hover:bg-slate-800/90 border-t border-white/5 px-4 py-3 flex items-center justify-between transition-colors duration-200"
           >
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] tracking-wider uppercase font-bold text-slate-400 flex items-center gap-1.5">
+              <div className="text-[11px] sm:text-[10px] tracking-wider uppercase font-bold text-slate-400 flex items-center gap-1.5">
                 <span>{countryFlag}</span>
                 <span className="truncate">{stadium.city}, {stadium.country}</span>
               </div>
-              <h3 className="text-base font-bold text-white truncate tracking-tight mt-0.5" style={{ color: '#ffffff' }}>
+              <h3 className="text-lg sm:text-base font-bold text-white truncate tracking-tight mt-0.5" style={{ color: '#ffffff' }}>
                 {stadium.name}
               </h3>
             </div>
@@ -413,14 +413,14 @@ const StadiumsGrid: React.FC<StadiumsGridProps> = ({ filter = 'all' }) => {
   });
 
   return (
-    <div className="min-h-screen bg-[#0A0D18] text-white py-12 px-6">
+    <div className="min-h-screen bg-[#0A0D18] text-white py-6 px-3 sm:py-12 sm:px-6">
       {/* Glow Effects */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-40 right-1/4 w-[600px] h-[600px] bg-red-500/3 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto relative z-10">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 sm:mb-12">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -449,7 +449,7 @@ const StadiumsGrid: React.FC<StadiumsGridProps> = ({ filter = 'all' }) => {
         </div>
 
         {/* Filter Navigation */}
-        <div className="flex justify-center gap-2 mb-10 flex-wrap">
+        <div className="flex justify-center gap-2 mb-6 sm:mb-10 flex-wrap">
           {[
             { label: 'Todos los Estadios', value: 'all', emoji: '🏟️' },
             { label: 'México', value: 'mexico', emoji: '🇲🇽' },
@@ -477,7 +477,7 @@ const StadiumsGrid: React.FC<StadiumsGridProps> = ({ filter = 'all' }) => {
         {/* Grid Container */}
         <motion.div 
           layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8"
         >
           <AnimatePresence mode="popLayout">
             {filteredStadiums.map(stadium => (

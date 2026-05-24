@@ -645,6 +645,12 @@ export const MundialGame: React.FC = () => {
         const matchesDate = !selectedDate || match.date === selectedDate;
         const matchesTeam = !selectedTeam || match.home.name === selectedTeam || match.away.name === selectedTeam;
         const matchesGroup = !selectedGroup || match.group === selectedGroup;
+        
+        // DEBUG: Log para diagnosticar el problema del filtro
+        if (selectedGroup && selectedGroup !== '') {
+            console.log(`🔍 DEBUG Filtro - Grupo seleccionado: "${selectedGroup}", Match group: "${match.group}", Coincide: ${match.group === selectedGroup}`);
+        }
+        
         return matchesDate && matchesTeam && matchesGroup;
     });
 
@@ -1056,7 +1062,10 @@ export const MundialGame: React.FC = () => {
                                 <Trophy className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <select
                                     value={selectedGroup}
-                                    onChange={(e) => setSelectedGroup(e.target.value)}
+                                    onChange={(e) => {
+                                        console.log(`🔍 DEBUG Dropdown - Valor seleccionado: "${e.target.value}"`);
+                                        setSelectedGroup(e.target.value);
+                                    }}
                                     className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm font-bold appearance-none focus:border-blue-500 focus:outline-none cursor-pointer"
                                 >
                                     <option value="">🔤 Todos los grupos</option>
