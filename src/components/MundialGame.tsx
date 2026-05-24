@@ -1162,18 +1162,35 @@ export const MundialGame: React.FC = () => {
                                         </div>
 
                                         <div className="relative z-10 flex flex-col gap-6">
-                                            {/* Mobile Layout: Both Teams Visible */}
-                                            <div className="lg:hidden flex flex-col gap-3 w-full">
+                                            {/* Mobile Layout: Both Teams Visible - Fixed Proportions */}
+                                            <div className="lg:hidden flex flex-col gap-3 w-full px-2">
+                                                {/* Mobile Header: Group + Date + Venue */}
+                                                <div className="flex items-center justify-between gap-2 mb-2">
+                                                    <div className="flex items-center justify-center w-14 h-14 bg-blue-500/10 border border-blue-500/30 rounded-full flex-shrink-0">
+                                                        <span className="text-[11px] font-black text-blue-400 uppercase tracking-widest text-center leading-tight">GRUPO<br/>{match.group}</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-1 min-w-0 flex-1">
+                                                        <div className="flex items-center gap-1 text-white/70">
+                                                            <Calendar className="w-3 h-3 flex-shrink-0" />
+                                                            <span className="text-[11px] font-bold uppercase tracking-wide">{match.date}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-gray-400 min-w-0">
+                                                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                                                            <span className="text-[10px] font-medium uppercase truncate">{match.venue}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                                 {/* Main Scoreboard Row */}
-                                                <div className="flex items-center justify-between gap-2 w-full px-1">
-                                                    {/* Home Team */}
-                                                    <div className="flex flex-col items-center gap-1 flex-shrink-0 w-[30%]">
-                                                        <img src={match.home.flag} alt={match.home.name} className="w-14 h-9 rounded-lg object-cover shadow-md border border-white/20" />
-                                                        <span className="text-[10px] font-black text-white uppercase tracking-tight text-center leading-tight line-clamp-2 w-full">{match.home.name}</span>
+                                                <div className="flex items-center gap-3 w-full">
+                                                    {/* Home Team - Wider */}
+                                                    <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                                                        <img src={match.home.flag} alt={match.home.name} className="w-18 h-12 rounded-lg object-cover shadow-md border border-white/20" />
+                                                        <span className="text-[12px] font-bold text-white text-center leading-tight w-full truncate px-1">{match.home.name}</span>
                                                     </div>
 
-                                                    {/* Score Inputs */}
-                                                    <div className="flex items-center justify-center gap-1 px-2 py-1.5 bg-white/5 rounded-xl border border-white/10 flex-shrink-0">
+                                                    {/* Score Inputs - Compact */}
+                                                    <div className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-xl border border-white/10 flex-shrink-0">
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1182,9 +1199,9 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.homeScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-lg font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
+                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-lg text-center text-lg font-black text-white focus:border-blue-500 focus:outline-none placeholder:opacity-5"
                                                         /> 
-                                                        <span className="text-base font-black text-slate-500 px-0.5">:</span>
+                                                        <span className="text-lg font-black text-slate-400 px-1">:</span>
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
@@ -1193,14 +1210,14 @@ export const MundialGame: React.FC = () => {
                                                             value={predictions[match.id]?.awayScore ?? ''}
                                                             onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                                             placeholder="0"
-                                                            className="w-10 h-10 bg-slate-950/90 border border-white/20 rounded-lg text-center text-lg font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5"
+                                                            className="w-12 h-12 bg-slate-950/90 border border-white/20 rounded-lg text-center text-lg font-black text-white focus:border-emerald-500 focus:outline-none placeholder:opacity-5"
                                                         /> 
                                                     </div>
 
-                                                    {/* Away Team */}
-                                                    <div className="flex flex-col items-center gap-1 flex-shrink-0 w-[30%]">
-                                                        <img src={match.away.flag} alt={match.away.name} className="w-14 h-9 rounded-lg object-cover shadow-md border border-white/20" />
-                                                        <span className="text-[10px] font-black text-white uppercase tracking-tight text-center leading-tight line-clamp-2 w-full">{match.away.name}</span>
+                                                    {/* Away Team - Wider */}
+                                                    <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                                                        <img src={match.away.flag} alt={match.away.name} className="w-18 h-12 rounded-lg object-cover shadow-md border border-white/20" />
+                                                        <span className="text-[12px] font-bold text-white text-center leading-tight w-full truncate px-1">{match.away.name}</span>
                                                     </div>
                                                 </div>
 
