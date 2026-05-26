@@ -14,13 +14,17 @@ Tu panel de administrador ahora tiene **3 formas de obtener resultados de partid
 
 ### 1. Variables de Entorno
 
-Asegúrate de tener estas variables en tu proyecto de Supabase:
+Asegúrate de tener estas variables configuradas:
 
 ```bash
-# En Supabase Dashboard > Settings > Edge Functions > Secrets
+# En Supabase (Edge Functions > Secrets)
 API_SPORTS_KEY=tu_api_key_de_api_football
 SUPABASE_URL=https://rthdnwkwocojijyfcrtr.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+
+# En Vercel (Settings > Environment Variables)
+VITE_GROQ_API_KEY=tu_api_key_de_groq
+VITE_AI_PROVIDER=cloud # O "local" para forzar Ollama
 ```
 
 ### 2. Desplegar Edge Function

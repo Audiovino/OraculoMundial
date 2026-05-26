@@ -187,50 +187,52 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
         </motion.button>
 
         {/* Admin */}
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => onViewChange('admin')}
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '5px',
-            padding: '16px 10px',
-            backgroundColor:
-              currentView === 'admin'
-                ? 'rgba(168, 85, 247, 0.85)'
-                : 'rgba(255, 255, 255, 0.07)',
-            color: '#ffffff',
-            border: currentView === 'admin' ? '1px solid rgba(168,85,247,0.5)' : '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            transition: 'all 0.3s ease',
-            whiteSpace: 'nowrap',
-            minWidth: 0,
-            position: 'relative',
-          }}
-          title="Admin Panel"
-        >
-          <Settings size={13} />
-          Admin
-          {/* Hermes badge */}
-          {hermesStatus === 'critical' && (
-            <motion.span
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-[#0f0f1e] z-10"
-              style={{ boxShadow: '0 0 8px rgba(239,68,68,0.8)' }}
-            >
-              <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75" />
-            </motion.span>
-          )}
-          {hermesStatus === 'warning' && (
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border border-[#0f0f1e] z-10" />
-          )}
-        </motion.button>
+        {isAdmin && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onViewChange('admin')}
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '5px',
+              padding: '16px 10px',
+              backgroundColor:
+                currentView === 'admin'
+                  ? 'rgba(168, 85, 247, 0.85)'
+                  : 'rgba(255, 255, 255, 0.07)',
+              color: '#ffffff',
+              border: currentView === 'admin' ? '1px solid rgba(168,85,247,0.5)' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              transition: 'all 0.3s ease',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+              position: 'relative',
+            }}
+            title="Admin Panel"
+          >
+            <Settings size={13} />
+            Admin
+            {/* Hermes badge */}
+            {hermesStatus === 'critical' && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-[#0f0f1e] z-10"
+                style={{ boxShadow: '0 0 8px rgba(239,68,68,0.8)' }}
+              >
+                <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75" />
+              </motion.span>
+            )}
+            {hermesStatus === 'warning' && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border border-[#0f0f1e] z-10" />
+            )}
+          </motion.button>
+        )}
       </div>
 
       {/* ─── DESKTOP: Single row nav buttons (md+) ─── */}
@@ -309,50 +311,51 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
         </motion.button>
 
         {/* Admin */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => onViewChange('admin')}
-          onMouseEnter={() => setIsHovering('admin')}
-          onMouseLeave={() => setIsHovering(null)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor:
-              currentView === 'admin'
-                ? 'rgba(168, 85, 247, 0.8)'
-                : isHovering === 'admin'
-                ? 'rgba(168, 85, 247, 0.3)'
-                : 'rgba(255, 255, 255, 0.1)',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            transition: 'all 0.3s ease',
-            position: 'relative',
-          }}
-          title="Admin Panel"
-        >
-          <Settings size={16} />
-          Admin
-          {hermesStatus === 'critical' && (
-            <motion.span
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#0f0f1e] z-10"
-              style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.8)' }}
-            >
-              <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75" />
-            </motion.span>
-          )}
-          {hermesStatus === 'warning' && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-[#0f0f1e] z-10" />
-          )}
-        </motion.button>
+        {isAdmin && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onViewChange('admin')}
+            onMouseEnter={() => setIsHovering('admin')}
+            onMouseLeave={() => setIsHovering(null)}
+            style={{
+              display: 'flex',
+              position: 'relative',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              backgroundColor:
+                currentView === 'admin'
+                  ? 'rgba(168, 85, 247, 0.8)'
+                  : isHovering === 'admin'
+                  ? 'rgba(168, 85, 247, 0.3)'
+                  : 'rgba(255, 255, 255, 0.1)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            <Settings size={16} />
+            Admin
+            {hermesStatus === 'critical' && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#0f0f1e] z-10"
+                style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.8)' }}
+              >
+                <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75" />
+              </motion.span>
+            )}
+            {hermesStatus === 'warning' && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-[#0f0f1e] z-10" />
+            )}
+          </motion.button>
+        )}
 
         {/* User Info */}
         <div

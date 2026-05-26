@@ -1,0 +1,134 @@
+<div data-composition-id="spectacular-demo" data-width="1080" data-height="1920" style="background: #000; width: 1080px; height: 1920px; overflow: hidden; position: relative;">
+  <style>
+    .particle {
+      position: absolute;
+      width: 8px; height: 8px;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .subtitle-text {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.4);
+      padding: 10px 30px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      z-index: 200;
+    }
+    .cta-button-3d {
+      background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+      color: white;
+      padding: 20px 50px;
+      border-radius: 25px;
+      font-size: 40px;
+      font-weight: 900;
+      text-transform: uppercase;
+      box-shadow: 0 20px 50px rgba(168, 85, 247, 0.4);
+    }
+  </style>
+  <!-- Luces de fondo dinámicas -->
+  <div id="ambient-light" style="position:absolute; width:100%; height:100%; background: radial-gradient(circle at 50% 50%, #2e1065 0%, #000 70%); opacity: 0.5;"></div>
+
+  <!-- Audio de estadio (Sincronizado con Hermes) -->
+  <audio id="stadium-fx" src="https://assets.mixkit.co/sfx/preview/mixkit-stadium-crowd-cheering-loop-518.mp3" preload="auto"></audio>
+  <audio id="confetti-fx" src="https://assets.mixkit.co/sfx/preview/mixkit-party-popper-explosion-1570.mp3" preload="auto"></audio>
+
+  <!-- Contenedor del Mockup 3D -->
+  <div id="phone-wrapper" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10;">
+    <div class="iphone-frame" style="position: relative; width: 480px; height: 980px; background: #1a1a1a; border: 16px solid #222; border-radius: 75px; overflow: hidden; box-shadow: 0 100px 200px rgba(0,0,0,0.9);">
+      <!-- El video capturado por Playwright -->
+      <video 
+        id="demo-video" 
+        src="../demos/video_generado.webm" 
+        style="width: 100%; height: 100%; object-fit: cover;"
+      ></video>
+    </div>
+  </div>
+
+  <!-- Textos Flotantes (Cualidades del producto) -->
+  <div id="label-1" class="feature-label" style="position:absolute; left:200px; top:400px; color:white; font-family:sans-serif; opacity:0;">
+    <h1 style="font-size:60px; font-weight:900; margin:0;">Real-Time</h1>
+    <p style="color:#a855f7; font-size:24px;">Community Predictions</p>
+  </div>
+
+  <div id="label-2" class="feature-label" style="position:absolute; right:200px; bottom:300px; color:white; font-family:sans-serif; opacity:0;">
+    <h1 style="font-size:60px; font-weight:900; margin:0;">Global Ranking</h1>
+    <p style="color:#10b981; font-size:24px;">Compete with fans worldwide</p>
+  </div>
+
+  <script>
+    window.__timelines = window.__timelines || {};
+
+    function launchConfetti() {
+      document.getElementById('confetti-fx').play();
+      const colors = ['#a855f7', '#10b981', '#facc15', '#3b82f6', '#ef4444'];
+      for(let i=0; i<80; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        p.style.left = '50%';
+        p.style.top = '50%';
+        document.body.appendChild(p);
+
+        gsap.to(p, {
+          x: (Math.random() - 0.5) * 1500,
+          y: (Math.random() - 0.5) * 1000,
+          rotation: Math.random() * 720,
+          opacity: 0,
+          scale: Math.random() * 2.5,
+          duration: 2.5,
+          ease: "power4.out",
+          onComplete: () => p.remove()
+        });
+      }
+    }
+
+    const tl = gsap.timeline({ paused: true });
+
+    // Animación de entrada estilo Apple
+    tl.from("#phone-wrapper", { duration: 2, y: 1200, rotationX: 45, scale: 0.4, ease: "expo.out", onStart: () => document.getElementById('stadium-fx').play() });
+
+    // Zoom 1: A las predicciones
+    tl.to("#phone-wrapper", { duration: 1.5, x: -280, rotationY: 15, ease: "power4.inOut" }, "+=0.5");
+    tl.to("#label-1", { duration: 1, opacity: 1, x: 50 }, "<");
+
+    // Zoom 2: Al ranking de jugadores con Confeti
+    tl.to("#label-1", { opacity: 0 }, "+=2");
+    tl.add(() => launchConfetti(), ">"); // Disparo de confeti
+    tl.to("#phone-wrapper", { duration: 2, x: 350, rotationY: -15, scale: 1.15, ease: "power4.inOut" });
+    tl.to("#label-2", { duration: 1, opacity: 1, y: -50 }, "<");
+
+    // Cierre épico: Regreso al centro y fin de video
+    tl.to("#label-2", { opacity: 0 }, "+=2");
+    tl.to("#phone-wrapper", { duration: 1.5, x: 0, y: 0, rotationY: 0, scale: 1, ease: "back.inOut(1.7)" });
+
+    // Registro final de la duración para HyperFrames
+    tl.to({}, { duration: 1 }); 
+
+    window.__timelines["spectacular-demo"] = tl;
+
+    // 🚀 EXPOSICIÓN CRÍTICA PARA EL RENDERIZADOR:
+    window.__hf = {
+      duration: () => tl.duration(),
+      seek: (t) => {
+        // Sincronizamos el video interno con el tiempo del renderizador
+        const video = document.getElementById('demo-video');
+        if (video) {
+            // El video grabado empieza en el segundo 0 de la línea de tiempo real
+            // pero aquí lo ajustamos al progreso de GSAP
+            video.currentTime = t; 
+        }
+        tl.time(t);
+      }
+    };
+  </script>
+</div>

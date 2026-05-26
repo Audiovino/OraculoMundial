@@ -140,6 +140,29 @@ export function useSupabaseQuery<T>(
 //   process.env.REACT_APP_SUPABASE_ANON_KEY!
 // );
 
+ // 🟠 REGISTRO: Método resiliente para evitar el error "No user returned from signup"
+ export async function registroResiliente(supabase: any, email: string, pass: string) {
+   try {
+     const { data, error } = await supabase.auth.signUp({
+       email,
+       password: pass,
+     });
+
+     if (error) throw error;
+
+     // Validación estricta del Agente Hermes
+     if (!data.user) {
+       throw new Error("El servidor no devolvió un perfil válido. Verifica si el correo requiere confirmación.");
+     }
+
+     return data;
+   } catch (err) {
+     const error = err instanceof Error ? err : new Error(String(err));
+     console.error('[Hermes] Fallo en Registro:', error.message);
+     throw error;
+   }
+ }
+
 interface Usuario {
   id: string;
   nombre: string;

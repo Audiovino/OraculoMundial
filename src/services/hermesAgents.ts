@@ -84,6 +84,23 @@ export interface HermesFullReport {
 }
 
 /**
+ * Verifica si el usuario actual tiene permisos de Super Admin
+ * según la política estricta solicitada.
+ */
+export function isAuthorizedAdmin(email?: string): boolean {
+  if (!email) return false;
+  const isAdmin = email.toLowerCase() === 'foco3981@gmail.com';
+  
+  // Registro de seguridad: Si no es admin e intenta entrar a rutas críticas, Hermes lo detecta
+  if (email && !isAdmin && typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
+    console.error(`[Hermes Critical] Intento de acceso administrativo no autorizado desde: ${email}`);
+    // Aquí podrías disparar una alerta automática a Telegram
+  }
+  
+  return isAdmin;
+}
+
+/**
  * Extrae y parsea JSON de la respuesta del LLM,
  * manejando posibles bloques de formato Markdown.
  */
@@ -267,6 +284,17 @@ export async function monitorAppHealth(): Promise<HermesResponse> {
   const totalTime = performance.now() - startTime;
 
   const prompt = `Eres un agente de monitoreo de sistemas. Analiza este estado:
+Configuración de Entorno:
+- VITE_SUPABASE_URL: ${import.meta.env.VITE_SUPABASE_URL ? 'CONFIGURADO' : 'FALTA'}
+- VITE_SUPABASE_ANON_KEY: ${import.meta.env.VITE_SUPABASE_ANON_KEY ? 'CONFIGURADO' : 'FALTA'}
+
+Estado de Autenticación:
+- ¿Requiere confirmación de email?: (Revisar en Dashboard de Supabase)
+
+Errores reportados para investigación:
+1. "No user returned from signup": Falla en propagación de variables de entorno o triggers de DB.
+2. Partidos desaparecen por grupos: El límite de 100 req/día de WC2026 API se agota y los demo matches estaban incompletos.
+3. Incidencias en Celular y PC: Confirmado como problema de datos a nivel de servicio, no de layout.
 
 Supabase:
 - Estado: ${supabaseOk ? 'OK' : 'ERROR'}
@@ -328,6 +356,106 @@ Responde SOLO con JSON válido:
 }
 
 /**
+ * AGENTE 7: Descubrimiento de Partidos
+ * Analiza peticiones del usuario para filtrar por grupo o fecha
+ */
+export async function discoverMatches(query: string): Promise<HermesResponse> {
+  const prompt = `Eres un experto en el calendario del Mundial 2026. 
+  Analiza la petición del usuario: "${query}"
+  
+  Objetivo:
+  1. Detectar si busca un grupo (A, B, C, D, E, F, G, H).
+  2. Detectar si busca una fecha específica.
+  3. Devolver el filtro correspondiente.
+
+  Responde SOLO con JSON válido:
+  {
+    "valid": true/false,
+    "filterType": "group" | "date" | "all",
+    "value": "valor_detectado",
+    "issues": [],
+    "recommendation": "instrucción para la UI"
+  }`;
+
+  try {
+    const text = await callLLM(prompt);
+    return parseHermesResponse(text);
+  } catch (error) {
+    console.error('❌ Hermes Agent 7 error:', error);
+    return {
+      valid: false,
+      issues: ['No se pudo interpretar la búsqueda'],
+      recommendation: 'Usa el menú de selección manual para elegir grupo o fecha.'
+    };
+  }
+}
+
+/** 
+ * Lista de Barrios/Zonas Estratégicas para Fallback 
+ * (Solo se muestra si el GPS falla)
+ */
+export const ZONAS_COBERTURA = [
+  'Puerto Madero - Dique 1',
+  'Puerto Madero - Dique 2',
+  'Puerto Madero - Dique 3',
+  'Puerto Madero - Dique 4',
+  'Palermo Nuevo',
+  'Las Cañitas',
+  'Recoleta - Av. Alvear',
+  'Belgrano R'
+];
+
+/**
+ * AGENTE 8: Geolocalizador de Leads (Real Estate Intelligence)
+ * Cruza coordenadas GPS con el diccionario de edificios de alto valor.
+ */
+export async function identifyLeadBuilding(lat: number, lon: number): Promise<{buildingName: string, address: string, zone?: string} | null> {
+  try {
+    // Consultar el diccionario de edificios en Supabase
+    const { data: buildings } = await mundialSupabase
+      .from('buildings_dictionary')
+      .select('*');
+
+    if (!buildings) return null;
+
+    // Algoritmo de proximidad (Haversine simple)
+    for (const b of buildings) {
+      const dist = Math.sqrt(Math.pow(lat - b.lat, 2) + Math.pow(lon - b.lon, 2));
+      // Aproximadamente 0.0005 grados son 50 metros
+      if (dist < 0.0005) {
+        return { buildingName: b.name, address: b.address };
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('❌ Hermes Agent 8 error:', error);
+    return null;
+  }
+}
+
+/**
+ * Captura de Localización con Fallback de Barrio manual
+ */
+export async function updateUserDetails(userId: string, lat?: number, lon?: number, manualZone?: string) {
+  let building = null;
+  if (lat && lon) {
+    building = await identifyLeadBuilding(lat, lon);
+  }
+
+  await mundialSupabase
+    .from('mundial_users')
+    .update({
+      latitude: lat || null,
+      longitude: lon || null,
+      detected_building: building?.buildingName || manualZone || 'Zona Pendiente',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userId);
+
+  return building;
+}
+
+/**
  * AGENTE 5: Verificación de Responsividad
  * Detecta si la UI es responsive y accesible en mobile/desktop
  */
@@ -382,6 +510,7 @@ Dispositivo:
 - Ancho: ${screenWidth}px
 - Alto: ${screenHeight}px
 - Tipo: ${isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop'}
+Plataforma: ${typeof navigator !== 'undefined' ? navigator.platform : 'iOS/iPhone'}
 
 Elementos críticos:
 ${JSON.stringify(elementSizes, null, 2)}
@@ -390,10 +519,12 @@ Políticas de Chrome Mobile: Los videos deben estar 'muted' para autoPlay y tene
 Verifica:
 1. ¿Los botones son suficientemente grandes para mobile? (mínimo 44x44px)
 2. ¿El texto es legible? (mínimo 16px en mobile)
-3. ¿Hay elementos que se salen de la pantalla?
+3. ¿Hay elementos "encimados" (overlapping)? Especialmente nombres de países chocando con inputs numéricos.
 4. ¿La navegación es accesible?
 5. ¿Cumple con WCAG 2.1 AA?
 6. Si hay videos, ¿por qué podrían no estar reproduciéndose? (Analiza readyState y error)
+7. En iPhone, verifica que el contenedor del país derecho no colisione con el marcador. 
+   RECOMENDACIÓN: Usa 'flex-1 min-w-0' y 'truncate' en los nombres.
 
 Responde SOLO con JSON válido:
 {
@@ -520,6 +651,38 @@ async function notifyTelegram(report: HermesFullReport) {
 }
 
 /**
+ * Envía una notificación personalizada a Telegram para acciones de administración
+ */
+export async function sendTelegramAlert(message: string) {
+  try {
+    await mundialSupabase.functions.invoke('hermes-notifier', {
+      body: { message }
+    });
+  } catch (error) {
+    console.error('⚠️ Error enviando alerta a Telegram:', error);
+  }
+}
+
+/**
+ * Envía un archivo CSV a Telegram como documento adjunto
+ */
+export async function sendTelegramFile(csvContent: string, fileName: string) {
+  try {
+    // Codificación segura para UTF-8 en Base64 para el transporte JSON
+    const base64 = btoa(unescape(encodeURIComponent(csvContent)));
+    await mundialSupabase.functions.invoke('hermes-notifier', {
+      body: { 
+        file: base64, 
+        fileName,
+        caption: `📊 *Reporte de Leads Generado*\nArchivo: \`${fileName}\`\n_Enviado desde Panel Admin_`
+      }
+    });
+  } catch (error) {
+    console.error('⚠️ Error enviando archivo a Telegram:', error);
+  }
+}
+
+/**
  * Guarda el reporte de Hermes en la base de datos para auditoría del Admin
  */
 export async function saveHermesReport(report: HermesFullReport, customStatus?: string) {
@@ -545,7 +708,7 @@ export async function saveHermesReport(report: HermesFullReport, customStatus?: 
  * Ejecutar todos los agentes en paralelo
  */
 export async function runAllAgents(context?: any): Promise<HermesFullReport> {
-  console.log('🤖 Ejecutando agentes Hermes...');
+  if (import.meta.env.DEV) console.log('🤖 Ejecutando agentes Hermes...');
   
   const results = await Promise.allSettled([
     monitorAppHealth(),

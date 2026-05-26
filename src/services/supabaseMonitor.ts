@@ -60,7 +60,8 @@ export class SupabaseMonitor {
         try {
           const { count, error } = await mundialSupabase
             .from(table)
-            .select('id', { count: 'exact', head: true });
+            .select('id', { count: 'exact', head: true })
+            .limit(1); // ✅ Límite explícito para evitar falsos positivos en auditoría
 
           if (!error && count !== null) {
             metrics.rowsUsed[table] = count;

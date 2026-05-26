@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 
 /**
  * Página de administración
- * Acceso abierto para testing (sin verificación de permisos)
+ * Protegida: solo usuarios con admin válido pueden ver el dashboard.
  */
 export const AdminPage: React.FC = () => {
     const { user } = useMundialAuth();
@@ -34,13 +34,13 @@ export const AdminPage: React.FC = () => {
         );
     }
 
-    // Usuario no autenticado
-    if (!user) {
+    // Usuario no autenticado o no es admin autorizado
+    if (!user || !isAdmin) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-[#0B0F19] text-white">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold mb-4">Acceso Denegado</h1>
-                    <p className="text-gray-400 mb-6">Debes iniciar sesión para acceder al panel de administración.</p>
+                    <p className="text-gray-400 mb-6">No tienes permisos para acceder al panel de administración.</p>
                     <a href="/" className="text-blue-400 hover:text-blue-300 underline">
                         Volver al inicio
                     </a>
@@ -50,19 +50,11 @@ export const AdminPage: React.FC = () => {
     }
 
     // Usuario autenticado - mostrar dashboard
-    // (Sin verificación de admin para testing)
     return (
         <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
-            {isAdmin && (
-                <div className="bg-green-500/10 border-b border-green-500/30 px-6 py-2 text-green-400 text-sm">
-                    ✅ Acceso de Admin verificado
-                </div>
-            )}
-            {!isAdmin && (
-                <div className="bg-yellow-500/10 border-b border-yellow-500/30 px-6 py-2 text-yellow-400 text-sm">
-                    ⚠️ Acceso de prueba (no eres admin registrado)
-                </div>
-            )}
+            <div className="bg-green-500/10 border-b border-green-500/30 px-6 py-2 text-green-400 text-sm">
+                ✅ Sesión administrativa activa: {user.email}
+            </div>
             <AdminDashboard />
         </div>
     );

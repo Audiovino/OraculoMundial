@@ -197,7 +197,7 @@ const AdminDashboard: React.FC = () => {
         while (hasMore && isMounted) {
           const { data, error: err } = await mundialSupabase
             .from('mundial_users')
-            .select('id, username, email, created_at')
+            .select('id, username, email, created_at, latitude, longitude, location_address, detected_building, location_city, location_region, location_country, location_source, last_location_at')
             .order('created_at', { ascending: false })
             .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -288,6 +288,11 @@ const AdminDashboard: React.FC = () => {
   const filteredUsers = userList.filter(u =>
     (u.username || u.email || u.id || '').toLowerCase().includes(searchUser.toLowerCase())
   );
+
+  const recentLocations = userList
+    .filter(u => u.last_location_at)
+    .sort((a, b) => new Date(b.last_location_at || 0).getTime() - new Date(a.last_location_at || 0).getTime())
+    .slice(0, 5);
 
   if (loading) {
     return (
@@ -438,6 +443,48 @@ const AdminDashboard: React.FC = () => {
                       <div className="rounded-xl bg-white/5 p-3 border border-white/10 break-all">
                         <code className="text-[12px] leading-tight text-slate-100">{googleMapsAddress}</code>
                       </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {isAdmin && (
+                <div className={`${cardBg} ${cardStyle} mb-6`}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="w-5 h-5 text-fuchsia-400" />
+                    <div>
+                      <h3 className="text-base font-black">Últimos accesos con ubicación</h3>
+                      <p className="text-xs text-slate-500">Los últimos usuarios que se registraron o jugaron desde una ubicación detectada.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {recentLocations.length === 0 ? (
+                      <p className="text-sm text-slate-400">No hay accesos con ubicación registrada todavía.</p>
+                    ) : (
+                      recentLocations.map((user, index) => (
+                        <div key={user.id || index} className="rounded-2xl bg-white/5 p-4 border border-white/10">
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <p className="font-semibold text-slate-100">{user.username || user.email || 'Usuario'}</p>
+                              <p className="text-xs text-slate-500">{user.email}</p>
+                            </div>
+                            <span className="text-[11px] text-slate-400">{new Date(user.last_location_at).toLocaleString()}</span>
+                          </div>
+                          <div className="mt-3 text-sm text-slate-300 space-y-1">
+                            <p><span className="font-semibold">Edificio:</span> {user.detected_building || 'Sin detectar'}</p>
+                            <p><span className="font-semibold">Dirección:</span> {user.location_address || 'No disponible'}</p>
+                            <p><span className="font-semibold">Ciudad:</span> {user.location_city || user.location_region || user.location_country || 'No disponible'}</p>
+                            {user.latitude && user.longitude && (
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${user.latitude},${user.longitude}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-blue-400 hover:text-blue-300 text-xs font-semibold"
+                              >Ver en Google Maps</a>
+                            )}
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>

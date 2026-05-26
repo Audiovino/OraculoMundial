@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { mundialSupabase, MundialUser } from '../services/mundialSupabaseClient';
+import { captureUserLocation } from '../services/locationService';
 
 interface MundialAuthContextType {
     user: MundialUser | null;
@@ -139,6 +140,10 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 // No bloquear el registro — el perfil se puede recuperar en el próximo login
                 console.warn('⚠️ Perfil no creado en mundial_users (RLS o error):', upsertError.message);
             }
+
+            await captureUserLocation(authData.user.id, true).catch((err) => {
+                console.warn('[Ubicación] No se pudo capturar la ubicación en el registro:', err);
+            });
 
             // NO setear user aquí — dejar que onAuthStateChange lo maneje
 

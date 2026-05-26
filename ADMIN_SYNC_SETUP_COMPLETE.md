@@ -4,13 +4,13 @@
 
 ### 1. **Sincronización Automática de Resultados**
 - ✅ Los resultados se descargan **automáticamente cada 15 minutos** (configurable)
-- ✅ **Fallback inteligente**: Si API-Football falla → usa GLM-4 Flash
+- ✅ **Fallback inteligente**: Si API-Football falla → usa **Groq (Llama 3)** en la nube u **Ollama** en local.
 - ✅ Los puntos se calculan automáticamente cuando se carga un resultado
 - ✅ Panel de control para activar/desactivar y ajustar intervalo
 
 ### 2. **Dos Fuentes de Datos**
 - **API-Football** (primaria): Datos oficiales del Mundial 2026
-- **GLM-4 Flash** (fallback): Scraping inteligente si API falla
+- **Groq / Ollama** (fallback): Scraping con IA si la API falla o no tiene datos.
 
 ### 3. **Dashboard Mejorado para Admin**
 - Estado de sincronización en tiempo real

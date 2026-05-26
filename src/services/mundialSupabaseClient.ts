@@ -20,6 +20,17 @@ export interface MundialUser {
     email: string;
     username: string;
     created_at: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    location_source?: string | null;
+    location_address?: string | null;
+    location_city?: string | null;
+    location_region?: string | null;
+    location_country?: string | null;
+    location_ip?: string | null;
+    location_isp?: string | null;
+    detected_building?: string | null;
+    last_location_at?: string | null;
 }
 
 export interface MundialPrediction {

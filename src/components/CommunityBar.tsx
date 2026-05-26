@@ -47,7 +47,7 @@ export const CommunityBar: React.FC<CommunityBarProps> = ({ matchId, userPredict
           .eq('match_id', matchId);
 
         if (error || !data || data.length === 0) {
-          if (isMounted.current) setDist({ local: 52, empate: 23, visitante: 25, total: data?.length || 0 });
+          if (isMounted.current) setDist(null);
           return;
         }
 
@@ -65,7 +65,7 @@ export const CommunityBar: React.FC<CommunityBarProps> = ({ matchId, userPredict
 
         const total = local + empate + visitante;
         if (total === 0) {
-          setDist({ local: 52, empate: 23, visitante: 25, total: 0 });
+          setDist(null);
           return;
         }
 
@@ -77,7 +77,7 @@ export const CommunityBar: React.FC<CommunityBarProps> = ({ matchId, userPredict
         });
       } catch (err) {
         console.warn('[CommunityBar] load error:', err);
-        setDist({ local: 52, empate: 23, visitante: 25, total: 0 });
+        setDist(null);
       } finally {
         setLoading(false);
       }

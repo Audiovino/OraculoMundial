@@ -5,6 +5,7 @@ import { ASTRO_PREDICTIONS } from '../data/AstroData';
 import { WORLD_CUP_SCHEDULES, TIMEZONE_INFO } from '../data/WorldCupSchedules';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 import { mundialSupabase, MundialRanking, MundialPrediction } from '../services/mundialSupabaseClient';
+import { captureUserLocation } from '../services/locationService.ts';
 import MundialScene from './scene/MundialScene';
 import { getStadiumByVenue } from '../data/StadiumsData';
 import RealisticStadium3D from './scene/RealisticStadium3D';
@@ -33,7 +34,7 @@ import AnimatedClockStadium from './AnimatedClockStadium';
 // ---------------------------------------------------------
 function VideoModalButton() {
     const [showModal, setShowModal] = useState(false);
-    const videoUrl = import.meta.env.VITE_SUPABASE_VIDEO_URL || '/videos/futbolm.mp4';
+    const videoUrl = '/videos/futbolm.mp4';
 
     return (
         <>
@@ -814,9 +815,12 @@ export const MundialGame: React.FC = () => {
                     console.warn('[MundialGame] Supabase save failed; continuing with local cache:', error.message || error);
                 }
             } catch (err) {
-                console.warn('[MundialGame] Supabase save exception; continuing with local cache:', err);
+                console.warn('[MundialGame] Supabase save exception; continuing con local cache:', err);
             } finally {
                 setSavingMatchId(null);
+                captureUserLocation(user.id, false).catch((err: unknown) => {
+                    console.warn('[Ubicación] No se pudo actualizar la ubicación después de jugar:', err);
+                });
             }
         } else {
             console.log('Saved prediction locally.');
