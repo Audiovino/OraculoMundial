@@ -16,6 +16,15 @@ import { useAdminAuth } from './hooks/useAdminAuth';
 const AppContent: React.FC = () => {
     const { user, loading: authLoading, isRecoveryMode } = useMundialAuth();
     const { isAdmin, loading: adminLoading } = useAdminAuth();
+    // If user is not admin, show public site
+  if (!adminLoading && !isAdmin) {
+    return (
+      <div className="w-full h-screen">
+        <iframe src="https://oraculo-mundial.vercel.app/" className="w-full h-full border-0" title="Public Site" />
+      </div>
+    );
+  }
+
     const [currentView, setCurrentView] = useState<'game' | 'stadiums' | 'admin'>('game');
 
     // Seguridad Hermes: Redirección INMEDIATA si intenta acceder a admin sin permisos

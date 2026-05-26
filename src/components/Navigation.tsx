@@ -66,6 +66,9 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
         >
           ⚽ Oráculo Mundial
         </div>
+        <a href="https://oraculo-mundial.vercel.app/" target="_blank" rel="noopener noreferrer" className="ml-2 text-sm text-indigo-300 hover:text-indigo-100">
+  Ver sitio público
+</a>
 
         {/* Right side: username + logout */}
         <div
