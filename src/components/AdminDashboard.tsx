@@ -166,7 +166,7 @@ const AdminDashboard: React.FC = () => {
     generateWhatsAppMessage
   } = useAdminDashboard(); // Asegúrate de que useAdminDashboard no esté en conflicto con HermesMonitorPanel
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'api-matches' | 'ranking' | 'standings' | 'analytics' | 'settings' | 'hermes'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'api-matches' | 'ranking' | 'standings' | 'analytics' | 'users' | 'settings' | 'hermes'>('overview');
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [homeGoals, setHomeGoals] = useState('');
   const [awayGoals, setAwayGoals] = useState('');
@@ -179,6 +179,9 @@ const AdminDashboard: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [dmMessage, setDmMessage] = useState('');
   const [copied, setCopied] = useState('');
+  // Estados para la pestaña detallada de usuarios
+  const [userSearchText, setUserSearchText] = useState('');
+  const [userActivityFilter, setUserActivityFilter] = useState<'all' | 'high' | 'mid' | 'low' | 'inactive'>('all');
   const { isAdmin } = useAdminAuth();
   const { status: locationStatus, ipLocation, browserLocation, error: locationError } = useLocation(isAdmin, false);
   const googleMapsAddress = getGoogleMapsAddress(browserLocation || ipLocation);
@@ -266,6 +269,81 @@ const AdminDashboard: React.FC = () => {
     if (!result.success) alert(`Error: ${result.error}`);
   };
 
+  const handleExportUsersCSV = () => {
+    try {
+      const headers = [
+        'ID Usuario',
+        'Nombre de Usuario',
+        'Email',
+        'Edificio Detectado',
+        'Direccion Fisica',
+        'Ciudad',
+        'Region',
+        'Pais',
+        'Fuente Ubicacion',
+        'Latitud',
+        'Longitud',
+        '¿Juega?',
+        'Cantidad Predicciones',
+        'Puntaje Total',
+        'Racha Aciertos',
+        'Fecha Registro',
+        'Ultimo Acceso Ubicacion'
+      ];
+
+      const rows = userList.map(u => {
+        const p = ranking.find(player => player.id === u.id);
+        const predictionsCount = p ? p.predictions : 0;
+        const totalScore = p ? p.totalScore : 0;
+        const streak = p ? p.streak : 0;
+
+        let juegoStatus = 'Inactivo';
+        if (predictionsCount > 10) juegoStatus = 'Mucho (Alto)';
+        else if (predictionsCount > 3) juegoStatus = 'Medio';
+        else if (predictionsCount > 0) juegoStatus = 'Poco (Bajo)';
+
+        const formatCSVCell = (val: any) => {
+          if (val === undefined || val === null) return '""';
+          const clean = String(val).replace(/"/g, '""');
+          return `"${clean}"`;
+        };
+
+        return [
+          formatCSVCell(u.id),
+          formatCSVCell(u.username || 'Sin nombre'),
+          formatCSVCell(u.email),
+          formatCSVCell(u.detected_building || 'Sin detectar'),
+          formatCSVCell(u.location_address || 'No disponible'),
+          formatCSVCell(u.location_city || 'N/A'),
+          formatCSVCell(u.location_region || 'N/A'),
+          formatCSVCell(u.location_country || 'N/A'),
+          formatCSVCell(u.location_source || 'N/A'),
+          formatCSVCell(u.latitude),
+          formatCSVCell(u.longitude),
+          formatCSVCell(juegoStatus),
+          formatCSVCell(predictionsCount),
+          formatCSVCell(totalScore),
+          formatCSVCell(streak),
+          formatCSVCell(u.created_at ? new Date(u.created_at).toLocaleString() : 'N/A'),
+          formatCSVCell(u.last_location_at ? new Date(u.last_location_at).toLocaleString() : 'N/A')
+        ].join(',');
+      });
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `usuarios_oraculo_mundial_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error al exportar CSV:', err);
+      alert('Error al exportar los usuarios a CSV');
+    }
+  };
+
   const handleGenerateWhatsAppMessage = async () => {
     const message = await generateWhatsAppMessage();
     if (message) {
@@ -348,6 +426,7 @@ const AdminDashboard: React.FC = () => {
             { id: 'ranking', label: 'Ranking', icon: Trophy, tip: 'Tabla de posiciones de todos los jugadores ordenados por puntos acumulados' },
             { id: 'standings', label: 'Grupos', icon: TrendingUp, tip: 'Tabla de posiciones del Mundial real (datos de API en vivo)' },
             { id: 'analytics', label: 'Análisis', icon: Zap, tip: 'Gráficos y estadísticas avanzadas: burbujas, mapas de calor y tendencias de participación' },
+            { id: 'users', label: 'Usuarios (Dirección & Juego)', icon: Users, tip: 'Lista de registrados, direcciones físicas, edificios, actividad de juego y exportación a Excel / Google Sheets' },
             { id: 'settings', label: 'Gestión', icon: Settings, tip: 'Gestión de usuarios, mensajes, notificaciones, datos de contacto y exportación' },
             { id: 'hermes', label: 'Monitor Hermes', icon: Shield, tip: 'Monitoreo en tiempo real de seguridad, rendimiento y responsividad de la aplicación con los Agentes Hermes.' }
           ].map(tab => (
@@ -827,6 +906,170 @@ const AdminDashboard: React.FC = () => {
                     <div key={i} className="w-3 h-3 rounded-sm" style={{ background: `rgba(59,130,246,${v})` }} />
                   ))}
                   <span>Más</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══════ USERS DETAILED TAB ═══════ */}
+          {activeTab === 'users' && (
+            <motion.div key="users" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              {/* Header Info Banner */}
+              <div className="mb-6 p-4 rounded-xl flex items-start gap-3" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
+                <Users className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-bold text-blue-400 text-sm">Base de Datos Detallada de Usuarios</p>
+                  <p className="text-xs text-blue-300/70 mt-1">
+                    Aquí podés monitorear a los encargados inscriptos, ver su racha, puntaje y el volumen de juego. También podés descargar todo como planilla de Google Sheets o Excel para logística o análisis.
+                  </p>
+                </div>
+              </div>
+
+              {/* Controls and CSV Export */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-wrap items-center gap-3 flex-1 max-w-2xl">
+                  {/* Search box */}
+                  <div className="relative flex-1 min-w-[240px]">
+                    <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Buscar por usuario, email, edificio o dirección..."
+                      value={userSearchText}
+                      onChange={e => setUserSearchText(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-white/10"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    />
+                  </div>
+
+                  {/* Activity Filter */}
+                  <div className="relative min-w-[180px]">
+                    <Filter className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <select
+                      value={userActivityFilter}
+                      onChange={e => setUserActivityFilter(e.target.value as any)}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs text-white bg-slate-950 appearance-none focus:outline-none"
+                      style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }}
+                    >
+                      <option value="all">Todos los niveles de juego</option>
+                      <option value="high">Juegan Mucho (&gt;10 pred.)</option>
+                      <option value="mid">Juegan Medio (4-10 pred.)</option>
+                      <option value="low">Juegan Poco (1-3 pred.)</option>
+                      <option value="inactive">No Juegan (0 pred.)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleExportUsersCSV}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
+                  style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}
+                >
+                  <Download className="w-4 h-4" /> Exportar Google Sheets (CSV)
+                </button>
+              </div>
+
+              {/* Users Table */}
+              <div className={`${cardBg} rounded-2xl overflow-hidden`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[1000px] border-collapse">
+                    <thead>
+                      <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <th className="px-5 py-3.5 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Usuario</th>
+                        <th className="px-5 py-3.5 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Email</th>
+                        <th className="px-5 py-3.5 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Edificio / Dirección</th>
+                        <th className="px-5 py-3.5 text-center text-xs font-black text-slate-400 uppercase tracking-wider">¿Juega?</th>
+                        <th className="px-5 py-3.5 text-center text-xs font-black text-slate-400 uppercase tracking-wider">Predicciones</th>
+                        <th className="px-5 py-3.5 text-center text-xs font-black text-slate-400 uppercase tracking-wider">Puntaje</th>
+                        <th className="px-5 py-3.5 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Registro</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userList
+                        .map(u => {
+                          const p = ranking.find(player => player.id === u.id);
+                          const predictionsCount = p ? p.predictions : 0;
+                          const totalScore = p ? p.totalScore : 0;
+                          const streak = p ? p.streak : 0;
+
+                          let juegoLevel: 'high' | 'mid' | 'low' | 'inactive' = 'inactive';
+                          if (predictionsCount > 10) juegoLevel = 'high';
+                          else if (predictionsCount > 3) juegoLevel = 'mid';
+                          else if (predictionsCount > 0) juegoLevel = 'low';
+
+                          return { ...u, predictionsCount, totalScore, streak, juegoLevel };
+                        })
+                        .filter(u => {
+                          const text = (u.username || u.email || u.detected_building || u.location_address || '').toLowerCase();
+                          const matchesText = text.includes(userSearchText.toLowerCase());
+                          const matchesActivity = userActivityFilter === 'all' || u.juegoLevel === userActivityFilter;
+                          return matchesText && matchesActivity;
+                        })
+                        .map((u, i) => (
+                          <tr
+                            key={u.id || i}
+                            className="transition-colors hover:bg-white/5 cursor-pointer"
+                            style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                            onClick={() => {
+                              setSelectedUser(u);
+                              setActiveTab('settings');
+                            }}
+                          >
+                            <td className="px-5 py-3 font-bold text-sm">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(124,58,237,0.3))' }}>
+                                  {(u.username || u.email || '?')[0]?.toUpperCase()}
+                                </div>
+                                <span className="truncate max-w-[150px]">{u.username || 'Sin nombre'}</span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3 text-xs text-slate-400">
+                              {u.email}
+                            </td>
+                            <td className="px-5 py-3 text-xs">
+                              <div>
+                                <p className="font-bold text-slate-200 flex items-center gap-1">
+                                  🏢 <span className="truncate max-w-[180px]">{u.detected_building || 'Sin detectar'}</span>
+                                </p>
+                                <p className="text-[10px] text-slate-500 truncate max-w-[280px]">
+                                  📍 {u.location_address || 'Sin dirección registrada'}
+                                </p>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3 text-center">
+                              {u.juegoLevel === 'high' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                  🔥 Mucho
+                                </span>
+                              )}
+                              {u.juegoLevel === 'mid' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                  ⚡ Medio
+                                </span>
+                              )}
+                              {u.juegoLevel === 'low' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                  📋 Poco
+                                </span>
+                              )}
+                              {u.juegoLevel === 'inactive' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                                  💤 Inactivo
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-5 py-3 text-center font-bold text-xs text-slate-300">
+                              {u.predictionsCount}
+                            </td>
+                            <td className="px-5 py-3 text-center font-black text-sm text-emerald-400">
+                              {u.totalScore} pts
+                            </td>
+                            <td className="px-5 py-3 text-[10px] text-slate-500">
+                              {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </motion.div>
