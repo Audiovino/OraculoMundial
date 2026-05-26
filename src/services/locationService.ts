@@ -41,6 +41,7 @@ export async function captureUserLocation(userId: string, useBrowserGeolocation:
   const lastLocationAt = new Date().toISOString();
   const updatePayload = {
     id: userId,
+    user_id: userId,
     latitude,
     longitude,
     location_source: location.source,

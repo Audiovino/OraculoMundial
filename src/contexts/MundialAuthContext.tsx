@@ -131,6 +131,7 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 .from('mundial_users')
                 .upsert([{
                     id: authData.user.id,
+                    user_id: authData.user.id,
                     email,
                     username,
                     created_at: new Date().toISOString()
