@@ -1,0 +1,13 @@
+# Ignorar carpetas pesadas locales en Vercel
+node_modules
+build
+dist
+demos
+demos_raw
+hyperframes-mini-video
+.git
+.vscode
+.codex
+.kiro
+*.mp4
+!public/videos/futbolm.mp4

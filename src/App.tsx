@@ -9,6 +9,7 @@ import AdminPage from './components/AdminPage';
 import { HermesSecurityWrapper } from './components/HermesSecurityWrapper';
 import { ResetPassword } from './components/ResetPassword';
 import { motion } from 'framer-motion';
+import { VideoDemo } from './components/VideoDemo';
 import './App.css';
 import { useAdminAuth } from './hooks/useAdminAuth';
 
@@ -77,7 +78,12 @@ const AppContent: React.FC = () => {
                     <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
                         <Navigation currentView={currentView} onViewChange={setCurrentView} />
                         <div className="pt-[110px] md:pt-[70px]">
-                            {currentView === 'game' && <MundialGame />}
+                            {currentView === 'game' && (
+  <>
+    <MundialGame />
+    <VideoDemo />
+  </>
+)}
                             {currentView === 'stadiums' && <StadiumsGrid filter="all" />}
                             {/* Protección: Solo renderizar AdminPage si el usuario es admin autorizado */}
                             {currentView === 'admin' && isAdmin && !adminLoading && <AdminPage />}
