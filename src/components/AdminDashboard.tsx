@@ -1171,6 +1171,52 @@ const AdminDashboard: React.FC = () => {
                         <p className="text-[10px] text-slate-600 mt-1">Registrado: {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : 'N/A'}</p>
                       </div>
 
+                      {/* Ubicación y Geografía */}
+                      <div className="space-y-2 mb-5">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Ubicación y Geografía</p>
+                        {(selectedUser.location_city || selectedUser.location_country || selectedUser.location_region) && (
+                          <div className="flex items-center justify-between p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                            <div className="flex items-start gap-2">
+                              <MapPin className="w-4 h-4 text-fuchsia-400 mt-0.5" />
+                              <div>
+                                <span className="text-sm font-bold block">Ciudad / Región</span>
+                                <span className="text-xs text-slate-300">
+                                  {[selectedUser.location_city, selectedUser.location_region, selectedUser.location_country].filter(Boolean).join(', ')}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {selectedUser.latitude && selectedUser.longitude && (
+                          <div className="flex items-center justify-between p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                            <div className="flex items-start gap-2">
+                              <Database className="w-4 h-4 text-emerald-400 mt-0.5" />
+                              <div>
+                                <span className="text-sm font-bold block">Coordenadas (Lat, Lng)</span>
+                                <span className="text-xs text-slate-300 font-mono">{selectedUser.latitude}, {selectedUser.longitude}</span>
+                              </div>
+                            </div>
+                            <a href={`https://www.google.com/maps/search/?api=1&query=${selectedUser.latitude},${selectedUser.longitude}`} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 flex items-center gap-1 transition-all">
+                              <ExternalLink className="w-3.5 h-3.5" /> <span className="text-[10px] font-bold">Ver Mapa</span>
+                            </a>
+                          </div>
+                        )}
+                        {selectedUser.detected_building && selectedUser.detected_building !== 'Zona Pendiente' && (
+                          <div className="flex items-center justify-between p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                            <div className="flex items-start gap-2">
+                              <Shield className="w-4 h-4 text-amber-400 mt-0.5" />
+                              <div>
+                                <span className="text-sm font-bold block">Edificio / Referencia</span>
+                                <span className="text-xs text-slate-300">{selectedUser.detected_building}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {!selectedUser.latitude && !selectedUser.location_city && (
+                          <p className="text-xs text-slate-500 italic p-2.5">No hay datos de ubicación registrados.</p>
+                        )}
+                      </div>
+
                       {/* Direct Message */}
                       <div className="space-y-2">
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Enviar Mensaje Directo</p>
