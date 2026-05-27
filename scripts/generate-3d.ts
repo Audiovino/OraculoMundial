@@ -107,20 +107,36 @@ async function generateModelForStadium(stadium: typeof WORLD_CUP_2026_STADIUMS[0
     console.log(`[Skip] Modelo ya existe para ${stadium.id}`);
     return `${stadium.id}.glb`;
   }
-  
-  try {
-    console.log(`--- Iniciando generación para: ${stadium.name} ---`);
-    const imageBuffer = await downloadImageToBuffer(stadium.imageUrl);
-    const taskId = await createTripoTask(imageBuffer, `${stadium.id}.jpg`);
-    const modelUrl = await pollTripoTask(taskId);
-    console.log(`[Descargando GLB] Guardando en ${modelPath}`);
-    await downloadModel(modelUrl, modelPath);
-    console.log(`[Éxito] Modelo 3D guardado para ${stadium.name}`);
-    return `${stadium.id}.glb`;
-  } catch (err: any) {
-    console.error(`[Error] Fallo la generación para ${stadium.name}: ${err.message}`);
-    return null;
-  }
+    try {
+      console.log(`--- Iniciando generación para: ${stadium.name} ---`);
+      const imageBuffer = await downloadImageToBuffer(stadium.imageUrl);
+      // Intentamos crear la tarea, con 2 reintentos en caso de 400
+      let taskId: string | null = null;
+      for (let attempt = 1; attempt <= 2 && !taskId; attempt++) {
+        try {
+          taskId = await createTripoTask(imageBuffer, `${stadium.id}.jpg`);
+        } catch (e: any) {
+          console.warn(`[Advertencia] Intento ${attempt} falló al crear tarea para ${stadium.name}: ${e.message}`);
+          if (attempt === 2) throw e; // último intento, rethrow
+        }
+      }
+      const modelUrl = await pollTripoTask(taskId!);
+      console.log(`[Descargando GLB] Guardando en ${modelPath}`);
+      await downloadModel(modelUrl, modelPath);
+      console.log(`[Éxito] Modelo 3D guardado para ${stadium.name}`);
+      return `${stadium.id}.glb`;
+    } catch (err: any) {
+      console.error(`[Error] Fallo la generación para ${stadium.name}: ${err.message}`);
+      // Si disponemos de un modelo placeholder, lo usamos
+      const placeholderPath = path.join(__dirname, '../public/models/placeholder.glb');
+      if (fs.existsSync(placeholderPath)) {
+        const destPath = path.join(PUBLIC_MODELS_DIR, `${stadium.id}.glb`);
+        fs.copyFileSync(placeholderPath, destPath);
+        console.log(`[Info] Usando placeholder para ${stadium.name}`);
+        return `${stadium.id}.glb`;
+      }
+      return null;
+    }
 }
 
 async function main() {

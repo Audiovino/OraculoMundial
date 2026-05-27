@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "generate-3d": "tsx scripts/generate-3d.ts",
-    "build": "npm run generate-3d && tsc && vite build",
+    "build": "tsc && vite build",
+    "build:ci": "tsc && vite build",
     "preview": "vite preview",
     "build-video": "node scripts/build_promo_video.js"
   },
