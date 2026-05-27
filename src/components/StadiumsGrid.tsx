@@ -20,7 +20,7 @@ import {
 import { WORLD_CUP_2026_STADIUMS, Stadium } from '../data/StadiumsData';
 import { useVisibleElement } from '../hooks/useVisibleElement';
 
-// Lazy load RealisticStadium3D para optimización en móvil
+import TripoModelViewer from './TripoModelViewer';
 const RealisticStadium3D = React.lazy(() => import('./scene/RealisticStadium3D'));
 
 interface StadiumCardProps {
@@ -205,15 +205,11 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
                 <div className="w-full h-full flex items-center justify-center bg-slate-900">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-8 h-8 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin" />
-                    <span className="text-xs text-slate-500">Cargando modelo 3D...</span>
+                    <span className="text-xs text-slate-500">Cargando modelo 3D oficial...</span>
                   </div>
                 </div>
               }>
-                <RealisticStadium3D
-                  stadium={stadium}
-                  currentTime={localTime}
-                  interactive={true}
-                />
+                <TripoModelViewer modelUrl={`/models/${stadium.id}.glb`} />
               </Suspense>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-slate-900">
