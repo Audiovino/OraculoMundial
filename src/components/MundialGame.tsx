@@ -1175,22 +1175,7 @@ export const MundialGame: React.FC = () => {
                                         <div className="relative z-10 flex flex-col gap-6">
                                             {/* Mobile Layout: Both Teams Visible - Improved Proportions */}
                                             <div className="lg:hidden flex flex-col gap-4 w-full px-3">
-                                                {/* Mobile Header: Group + Date + Venue - Better Spacing */}
-                                                <div className="flex items-center justify-between gap-3 mb-3">
-                                                    <div className="flex items-center justify-center w-16 h-16 bg-blue-500/10 border border-blue-500/30 rounded-full flex-shrink-0">
-                                                        <span className="text-[12px] font-black text-blue-400 uppercase tracking-widest text-center leading-tight">GRUPO<br/>{match.group}</span>
-                                                    </div>
-                                                    <div className="flex flex-col items-end gap-1 min-w-0 flex-1">
-                                                        <div className="flex items-center gap-2 text-white/80">
-                                                            <Calendar className="w-4 h-4 flex-shrink-0" />
-                                                            <span className="text-[12px] font-bold uppercase tracking-wide">{match.date}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-gray-300 min-w-0 w-full">
-                                                            <MapPin className="w-4 h-4 flex-shrink-0" />
-                                                            <span className="text-[11px] font-medium uppercase leading-tight break-words text-right">{match.venue}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+
 
                                                 {/* Main Scoreboard Row - Better Proportions */}
                                                 <div className="flex items-center gap-4 w-full">
