@@ -15,16 +15,9 @@ import { useAdminAuth } from './hooks/useAdminAuth';
 
 const AppContent: React.FC = () => {
     const { user, loading: authLoading, isRecoveryMode } = useMundialAuth();
-    const { isAdmin, loading: adminLoading } = useAdminAuth();
-    // If user is not admin, show public site
-  if (!adminLoading && !isAdmin) {
-    return (
-      <div className="w-full h-screen">
-        <iframe src="https://oraculo-mundial.vercel.app/" className="w-full h-full border-0" title="Public Site" />
-      </div>
-    );
-  }
-
+    const { isAdmin, loading: adminLoading, error: adminError } = useAdminAuth();
+    // Show loading spinner while admin status is being determined
+    // State and effect moved here to satisfy Rules of Hooks
     const [currentView, setCurrentView] = useState<'game' | 'stadiums' | 'admin'>('game');
 
     // Seguridad Hermes: Redirección INMEDIATA si intenta acceder a admin sin permisos
@@ -34,6 +27,15 @@ const AppContent: React.FC = () => {
             setCurrentView('game');
         }
     }, [currentView, isAdmin, adminLoading]);
+
+
+    // If the user is not an admin, still show the main application (game, stadiums, etc.)
+    // The admin dashboard will be inaccessible, but the rest of the site works.
+    // This restores the previous behavior where the app is visible to all users.
+    // Continue to render the normal UI below.
+    // (No early return here, fall through to the rest of the component.)
+
+
 
     // Seguridad adicional: nunca renderizar AdminPage si no es admin
     const canAccessAdmin = !adminLoading && isAdmin && user?.id;

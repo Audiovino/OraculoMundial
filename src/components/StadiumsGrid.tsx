@@ -106,11 +106,10 @@ const getCountryEmoji = (code: string): string => {
 
 const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showPhoto, setShowPhoto] = useState(true);
+  const [modelUrl, setModelUrl] = useState<string>('');
   const [localTime, setLocalTime] = useState<Date>(getLocalTime(stadium.timezone));
-  const [weather] = useState<'clear' | 'cloudy' | 'rainy' | 'stormy'>(
-    getWeatherForStadium(stadium)
-  );
+  const [weather, setWeather] = useState<'clear' | 'cloudy' | 'rainy' | 'stormy'>(getWeatherForStadium(stadium));
+  const [showPhoto, setShowPhoto] = useState(true);
   
   // Intersection Observer para lazy load del modelo 3D
   const { ref: containerRef, isVisible } = useVisibleElement({ threshold: 0.1, rootMargin: '100px' });
