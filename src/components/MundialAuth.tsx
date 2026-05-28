@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
-import { Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Loader2, Building2, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { PUERTO_MADERO_BUILDINGS, USER_ROLES, type UserRole } from '../constants/buildings';
+import { LEGAL_SIGNUP_SUMMARY, LEGAL_TERMS_VERSION } from '../content/legalTexts';
+import { LegalFooter } from './LegalFooter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { validateFormData, sanitizeInput, detectInjectionAttempt } from '../services/securityValidator';
 import { ValidationAlert } from './SecurityAlert';
@@ -21,6 +25,9 @@ export const MundialAuth: React.FC<{ isRecovery?: boolean }> = ({ isRecovery }) 
     const [localError, setLocalError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [resetSent, setResetSent] = useState(false);
+    const [buildingName, setBuildingName] = useState<string>(PUERTO_MADERO_BUILDINGS[0]);
+    const [userRole, setUserRole] = useState<UserRole>('vecino');
+    const [legalAccepted, setLegalAccepted] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,7 +78,18 @@ export const MundialAuth: React.FC<{ isRecovery?: boolean }> = ({ isRecovery }) 
                     setLoading(false);
                     return;
                 }
-                await signUp(sanitized.email, sanitized.password, sanitized.username);
+                if (!legalAccepted) {
+                    setLocalError('Debés aceptar los términos legales para crear tu cuenta.');
+                    setLoading(false);
+                    return;
+                }
+                await signUp(sanitized.email, sanitized.password, {
+                    username: sanitized.username,
+                    buildingName,
+                    userRole,
+                    legalAccepted: true,
+                    termsVersion: LEGAL_TERMS_VERSION,
+                });
             }
         } catch (err: any) {
             setLocalError(err.message || 'Error en autenticación');
@@ -222,13 +240,83 @@ export const MundialAuth: React.FC<{ isRecovery?: boolean }> = ({ isRecovery }) 
                                                 required
                                             />
                                         </div>
-                                        {/* Privacy Notice */}
-                                        <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                                            <p className="text-xs text-blue-300 leading-relaxed">
-                                                💡 <strong>Privacidad:</strong> Si prefieres no mostrar tu edificio real por razones de privacidad, puedes usar un nombre de usuario de fantasía. Todos los datos se mantienen confidenciales.
-                                            </p>
-                                        </div>
                                     </div>
+                                </motion.div>
+                            )}
+
+                            {mode === 'signup' && (
+                                <motion.div key="building" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                        Edificio o zona (para la Copa)
+                                    </label>
+                                    <div className="relative group">
+                                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                        <select
+                                            value={buildingName}
+                                            onChange={(e) => setBuildingName(e.target.value)}
+                                            className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500/50 appearance-none"
+                                            required
+                                        >
+                                            {PUERTO_MADERO_BUILDINGS.map((b) => (
+                                                <option key={b} value={b} className="bg-[#0B0F19]">
+                                                    {b}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-4">
+                                        Tu rol en el edificio
+                                    </label>
+                                    <select
+                                        value={userRole}
+                                        onChange={(e) => setUserRole(e.target.value as UserRole)}
+                                        className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                        required
+                                    >
+                                        {USER_ROLES.map((r) => (
+                                            <option key={r.value} value={r.value} className="bg-[#0B0F19]">
+                                                {r.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </motion.div>
+                            )}
+
+                            {mode === 'signup' && (
+                                <motion.div key="legal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                                    <div className="p-3 rounded-xl bg-slate-800/50 border border-white/10">
+                                        <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2 flex items-center gap-1">
+                                            <Shield size={12} /> Aviso legal del juego
+                                        </p>
+                                        <ul className="text-xs text-slate-300 space-y-1.5 list-disc pl-4">
+                                            {LEGAL_SIGNUP_SUMMARY.map((line) => (
+                                                <li key={line}>{line}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <label className="flex items-start gap-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={legalAccepted}
+                                            onChange={(e) => setLegalAccepted(e.target.checked)}
+                                            className="mt-1"
+                                        />
+                                        <span className="text-xs text-slate-300 leading-relaxed">
+                                            Acepto los{' '}
+                                            <Link to="/terminos" target="_blank" className="text-blue-400 underline">
+                                                Términos
+                                            </Link>
+                                            , la{' '}
+                                            <Link to="/privacidad" target="_blank" className="text-blue-400 underline">
+                                                Privacidad
+                                            </Link>{' '}
+                                            y las{' '}
+                                            <Link to="/reglas" target="_blank" className="text-blue-400 underline">
+                                                Reglas
+                                            </Link>
+                                            . Entiendo que es solo entretenimiento sin premios.
+                                        </span>
+                                    </label>
                                 </motion.div>
                             )}
 
@@ -310,13 +398,7 @@ export const MundialAuth: React.FC<{ isRecovery?: boolean }> = ({ isRecovery }) 
                     </AnimatePresence>
                 </div>
 
-                {/* Footer */}
-                <p className="text-center text-xs font-medium text-slate-500 mt-8">
-                    Al registrarte, aceptas nuestros{' '}
-                    <a href="/terms" className="text-blue-400 hover:text-blue-300 transition-colors">
-                        Términos de Uso
-                    </a>
-                </p>
+                <LegalFooter />
             </motion.div>
         </div>
     );

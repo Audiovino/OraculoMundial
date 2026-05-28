@@ -8,6 +8,9 @@ import Navigation from './components/Navigation';
 import AdminPage from './components/AdminPage';
 import { HermesSecurityWrapper } from './components/HermesSecurityWrapper';
 import { ResetPassword } from './components/ResetPassword';
+import { LegalPage } from './components/LegalPage';
+import { LegalAcceptanceGate } from './components/LegalAcceptanceGate';
+import { LegalFooter } from './components/LegalFooter';
 import { motion } from 'framer-motion';
 import { VideoDemo } from './components/VideoDemo';
 import './App.css';
@@ -79,14 +82,9 @@ const AppContent: React.FC = () => {
     }
 
     return (
+        <LegalAcceptanceGate>
         <HermesSecurityWrapper>
-            <Routes>
-                {/* Ruta pública para restablecer contraseña */}
-                <Route path="/reset-password" element={<ResetPassword />} />
-                
-                {/* Captura de todas las demás rutas bajo el esquema de navegación actual */}
-                <Route path="*" element={
-                    <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
+                <div style={{ backgroundColor: '#0f0f1e', minHeight: '100vh' }}>
                         <Navigation currentView={currentView} onViewChange={setCurrentView} />
                         <div className="pt-[110px] md:pt-[70px]">
                             {currentView === 'game' && (
@@ -104,18 +102,28 @@ const AppContent: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
-                } />
-            </Routes>
+                    <LegalFooter compact />
+                </div>
         </HermesSecurityWrapper>
+        </LegalAcceptanceGate>
     );
 };
+
+const AppRoutes: React.FC = () => (
+    <Routes>
+        <Route path="/terminos" element={<LegalPage type="terms" />} />
+        <Route path="/privacidad" element={<LegalPage type="privacy" />} />
+        <Route path="/reglas" element={<LegalPage type="rules" />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<AppContent />} />
+    </Routes>
+);
 
 function App() {
     return (
         <MundialAuthProvider>
             <Router>
-                <AppContent />
+                <AppRoutes />
             </Router>
         </MundialAuthProvider>
     );

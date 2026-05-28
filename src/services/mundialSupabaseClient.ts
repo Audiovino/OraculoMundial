@@ -4,22 +4,44 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Validación
+let supabaseClient: any;
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.error(
-        '❌ [Supabase] CREDENCIALES FALTANTES. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local'
-    );
+    console.error('❌ [Supabase] CREDENCIALES FALTANTES. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local');
+    // Dummy client that always returns an error for queries
+    supabaseClient = {
+        from: () => ({
+            select: () => ({
+                eq: () => ({
+                    single: async () => ({ data: null, error: { code: 'MISSING_CREDS', message: 'Supabase credentials missing' } })
+                })
+            })
+        })
+    } as any;
+} else {
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 }
 
-// Crear cliente
-export const mundialSupabase = createClient(supabaseUrl, supabaseAnonKey);
+// Export the client (will be a real client or dummy depending on env)
+export const mundialSupabase = supabaseClient;
 
 // Tipos para Mundial
+export interface SignUpProfile {
+    username: string;
+    buildingName: string;
+    userRole: string;
+    legalAccepted: boolean;
+    termsVersion: string;
+}
+
 export interface MundialUser {
     id: string;
     email: string;
     username: string;
     created_at: string;
+    building_name?: string | null;
+    user_role?: string | null;
+    legal_accepted_at?: string | null;
+    legal_terms_version?: string | null;
     latitude?: number | null;
     longitude?: number | null;
     location_source?: string | null;

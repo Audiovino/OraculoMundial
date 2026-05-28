@@ -641,7 +641,7 @@ export async function runDailyQACheck() {
 
 /**
  * Envía una notificación a Telegram cuando se detecta un problema
- * Formateado como Alerta Mundial para el bot Assistente Inmobiliario
+ * Formateado como alerta del sistema Oráculo Mundial
  */
 async function notifyTelegram(report: HermesFullReport) {
   // Solo enviar si el estado no es 'secure'

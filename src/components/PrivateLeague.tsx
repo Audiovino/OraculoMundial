@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown, PlayCircle, MessageCircle } from 'lucide-react';
+import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown, PlayCircle, MessageCircle, MessageSquare } from 'lucide-react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
+import { LeagueChat } from './LeagueChat';
+import { BuildingCup } from './BuildingCup';
 
 interface League {
   id: string;
@@ -56,6 +58,7 @@ export const PrivateLeague: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
+  const [leagueModalTab, setLeagueModalTab] = useState<'ranking' | 'chat'>('ranking');
 
   // Cargar ligas del usuario
   useEffect(() => {
@@ -136,6 +139,8 @@ export const PrivateLeague: React.FC = () => {
         .insert([leagueToRow(newLeague)]);
 
       if (error) throw error;
+
+      await mundialSupabase.from('league_members').upsert([{ liga_id: leagueId, user_id: user.id }]);
     } catch (supabaseError: any) {
       console.warn('[PrivateLeague] Supabase createLeague error:', supabaseError);
       setError('No se pudo crear la liga en Supabase; se guardará localmente.');
@@ -231,6 +236,7 @@ export const PrivateLeague: React.FC = () => {
 
   const loadLeagueRanking = async (league: League) => {
     setSelectedLeague(league);
+    setLeagueModalTab('ranking');
     // Ranking simulado mientras se implementa el backend completo
     setMembers([
       { username: user?.username || 'Vos', total_points: 45, position: 1 },
@@ -293,6 +299,8 @@ export const PrivateLeague: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <BuildingCup />
 
       {/* Tutorial steps */}
       <AnimatePresence>
@@ -524,6 +532,28 @@ export const PrivateLeague: React.FC = () => {
                 </button>
               </div>
 
+              <div className="px-5 flex gap-2 border-b border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setLeagueModalTab('ranking')}
+                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider ${leagueModalTab === 'ranking' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500'}`}
+                >
+                  Tabla
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLeagueModalTab('chat')}
+                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 ${leagueModalTab === 'chat' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500'}`}
+                >
+                  <MessageSquare size={12} /> Chat
+                </button>
+              </div>
+
+              {leagueModalTab === 'chat' ? (
+                <div className="p-4">
+                  <LeagueChat ligaId={selectedLeague.id} />
+                </div>
+              ) : (
               <div className="p-5 space-y-2">
                 {members.map((m, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
@@ -542,6 +572,7 @@ export const PrivateLeague: React.FC = () => {
                   </div>
                 ))}
               </div>
+              )}
 
               <div className="px-5 pb-5 space-y-2">
                 <button
