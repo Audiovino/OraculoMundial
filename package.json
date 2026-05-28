@@ -9,7 +9,9 @@
     "build": "tsc && vite build",
     "build:ci": "tsc && vite build",
     "preview": "vite preview",
-    "build-video": "node scripts/build_promo_video.js"
+    "build-video": "node scripts/build_promo_video.js",
+    "hermes:infra": "node scripts/hermes-infra-agent.mjs",
+    "hermes:infra:verify": "node scripts/hermes-infra-agent.mjs --skip-push"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

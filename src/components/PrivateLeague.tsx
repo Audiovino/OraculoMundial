@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown, PlayCircle } from 'lucide-react';
+import { Users, Plus, LogIn, Copy, Check, Trophy, X, Crown, PlayCircle, MessageCircle } from 'lucide-react';
 import { mundialSupabase } from '../services/mundialSupabaseClient';
 import { useMundialAuth } from '../contexts/MundialAuthContext';
 
@@ -11,6 +11,29 @@ interface League {
   creador_id: string;
   memberCount?: number;
 }
+
+/** Fila real en Supabase (columnas en inglés) */
+interface LeagueRow {
+  id: string;
+  name: string;
+  invite_code: string;
+  creador_id: string;
+  created_at?: string;
+}
+
+const rowToLeague = (row: LeagueRow): League => ({
+  id: row.id,
+  nombre: row.name,
+  codigo_invitacion: row.invite_code,
+  creador_id: row.creador_id,
+});
+
+const leagueToRow = (league: League) => ({
+  id: league.id,
+  name: league.nombre,
+  invite_code: league.codigo_invitacion,
+  creador_id: league.creador_id,
+});
 
 interface LeagueMember {
   username: string;
@@ -29,7 +52,7 @@ export const PrivateLeague: React.FC = () => {
   const [mode, setMode] = useState<'list' | 'create' | 'join'>('list');
   const [newName, setNewName] = useState('');
   const [joinCode, setJoinCode] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTutorial, setShowTutorial] = useState(false);
@@ -44,17 +67,35 @@ export const PrivateLeague: React.FC = () => {
     if (!user?.id) return;
     try {
       // Intentar cargar desde Supabase
-      const { data, error } = await mundialSupabase
+      const { data: created, error: createdErr } = await mundialSupabase
         .from('private_leagues')
-        .select('*')
+        .select('id, name, invite_code, creador_id')
         .eq('creador_id', user.id);
 
-      if (!error && data) {
-        setLeagues(data);
-      } else {
-        console.warn('[PrivateLeague] loadLeagues Supabase error:', error);
+      const { data: memberships, error: memberErr } = await mundialSupabase
+        .from('league_members')
+        .select('liga_id')
+        .eq('user_id', user.id);
+
+      let joined: LeagueRow[] = [];
+      if (!memberErr && memberships?.length) {
+        const ids = memberships.map((m: { liga_id: string }) => m.liga_id);
+        const { data: joinedRows } = await mundialSupabase
+          .from('private_leagues')
+          .select('id, name, invite_code, creador_id')
+          .in('id', ids);
+        joined = (joinedRows as LeagueRow[]) || [];
+      }
+
+      const merged = [...(created as LeagueRow[] || []), ...joined];
+      const unique = Array.from(new Map(merged.map(r => [r.id, r])).values());
+
+      if (createdErr) {
+        console.warn('[PrivateLeague] loadLeagues Supabase error:', createdErr);
         const local = localStorage.getItem(`leagues_${user.id}`);
         if (local) setLeagues(JSON.parse(local));
+      } else {
+        setLeagues(unique.map(rowToLeague));
       }
     } catch (supabaseError) {
       console.warn('[PrivateLeague] loadLeagues caught error:', supabaseError);
@@ -92,7 +133,7 @@ export const PrivateLeague: React.FC = () => {
     try {
       const { error } = await mundialSupabase
         .from('private_leagues')
-        .insert([newLeague]);
+        .insert([leagueToRow(newLeague)]);
 
       if (error) throw error;
     } catch (supabaseError: any) {
@@ -124,8 +165,8 @@ export const PrivateLeague: React.FC = () => {
     try {
       const { data, error } = await mundialSupabase
         .from('private_leagues')
-        .select('*')
-        .eq('codigo_invitacion', joinCode.toUpperCase())
+        .select('id, name, invite_code, creador_id')
+        .eq('invite_code', joinCode.toUpperCase())
         .single();
 
       if (error || !data) {
@@ -146,7 +187,8 @@ export const PrivateLeague: React.FC = () => {
         return;
       }
 
-      const updated = [...leagues, data];
+      const league = rowToLeague(data as LeagueRow);
+      const updated = [...leagues.filter(l => l.id !== league.id), league];
       setLeagues(updated);
       localStorage.setItem(`leagues_${user.id}`, JSON.stringify(updated));
       setJoinCode('');
@@ -158,10 +200,33 @@ export const PrivateLeague: React.FC = () => {
     setLoading(false);
   };
 
+  const buildInviteMessage = (league: League) => {
+    const inviter = user?.username || user?.email?.split('@')[0] || 'Un amigo';
+    const appUrl = window.location.origin;
+    return (
+      `⚽ *Oráculo Mundial 2026*\n\n` +
+      `🏆 ${inviter} te invita a su liga privada: *${league.nombre}*\n\n` +
+      `📋 Código de invitación: *${league.codigo_invitacion}*\n\n` +
+      `1️⃣ Entrá a ${appUrl}\n` +
+      `2️⃣ Registrate o iniciá sesión\n` +
+      `3️⃣ En *Tus Grupos* → *Unirse* → pegá el código\n\n` +
+      `¡Nos vemos en la tabla! 🔮`
+    );
+  };
+
+  const openWhatsAppShare = (league: League) => {
+    const shareText = buildInviteMessage(league);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const whatsappUrl = isMobile
+      ? `https://wa.me/?text=${encodeURIComponent(shareText)}`
+      : `https://web.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
   const loadLeagueRanking = async (league: League) => {
@@ -405,13 +470,24 @@ export const PrivateLeague: React.FC = () => {
                   <p className="text-gray-500 text-xs font-mono">{league.codigo_invitacion}</p>
                 </div>
               </div>
-              <button
-                onClick={e => { e.stopPropagation(); copyCode(league.codigo_invitacion); }}
-                className="p-1.5 rounded-lg transition-all hover:bg-white/10"
-                title="Copiar código"
-              >
-                {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} className="text-gray-400" />}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={e => { e.stopPropagation(); openWhatsAppShare(league); }}
+                  className="p-1.5 rounded-lg transition-all hover:bg-[#25D366]/20"
+                  title="Compartir por WhatsApp"
+                >
+                  <MessageCircle size={14} className="text-[#25D366]" />
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); copyCode(league.codigo_invitacion); }}
+                  className="p-1.5 rounded-lg transition-all hover:bg-white/10"
+                  title="Copiar código"
+                >
+                  {copiedCode === league.codigo_invitacion
+                    ? <Check size={14} className="text-emerald-400" />
+                    : <Copy size={14} className="text-gray-400" />}
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -467,14 +543,21 @@ export const PrivateLeague: React.FC = () => {
                 ))}
               </div>
 
-              <div className="px-5 pb-5">
+              <div className="px-5 pb-5 space-y-2">
+                <button
+                  onClick={() => openWhatsAppShare(selectedLeague)}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all bg-[#25D366] text-white hover:brightness-110 active:scale-[0.98]"
+                >
+                  <MessageCircle size={14} />
+                  Compartir por WhatsApp
+                </button>
                 <button
                   onClick={() => copyCode(selectedLeague.codigo_invitacion)}
                   className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
                   style={{ background: 'rgba(168,85,247,0.2)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.3)' }}
                 >
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? 'Copiado!' : 'Copiar código de invitación'}
+                  {copiedCode === selectedLeague.codigo_invitacion ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedCode === selectedLeague.codigo_invitacion ? '¡Copiado!' : 'Copiar código de invitación'}
                 </button>
               </div>
             </motion.div>

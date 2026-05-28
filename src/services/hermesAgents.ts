@@ -406,6 +406,12 @@ export const ZONAS_COBERTURA = [
 ];
 
 /**
+ * AGENTE 9: Infraestructura Supabase (CLI)
+ * Script: `npm run hermes:infra` → scripts/hermes-infra-agent.mjs
+ * Aplica migraciones, verifica private_leagues / league_members y sincroniza aprendizaje a Obsidian.
+ */
+
+/**
  * AGENTE 8: Geolocalizador de Leads (Real Estate Intelligence)
  * Cruza coordenadas GPS con el diccionario de edificios de alto valor.
  */
