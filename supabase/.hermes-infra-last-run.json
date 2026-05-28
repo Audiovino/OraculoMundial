@@ -1,0 +1,57 @@
+{
+  "agent": "Hermes Agent 9 — Infraestructura",
+  "timestamp": "2026-05-28T22:53:07.941Z",
+  "projectRef": "rthdnwkwocojijyfcrtr",
+  "projectName": "PropelVideo",
+  "app": "Oráculo Mundial",
+  "steps": [
+    {
+      "name": "supabase db push",
+      "ok": true,
+      "detail": "omitido (--skip-push)"
+    },
+    {
+      "name": "INSERT private_leagues (name, invite_code)",
+      "ok": true,
+      "detail": "H88544"
+    },
+    {
+      "name": "UPSERT league_members",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "SELECT por invite_code",
+      "ok": true,
+      "detail": "H88544"
+    },
+    {
+      "name": "Sincronizar Obsidian",
+      "ok": true,
+      "detail": "C:\\Proyectos\\Propgear-AI\\Propgear-Notas\\Sesiones-Kiro\\Hermes-Infra\\Hermes-Infra-2026-05-28-OraculoMundial-Ligas.md"
+    }
+  ],
+  "schema": {
+    "private_leagues_columns": [
+      "id",
+      "name",
+      "invite_code",
+      "creador_id",
+      "created_at"
+    ],
+    "league_members_columns": [
+      "id",
+      "liga_id",
+      "user_id",
+      "joined_at"
+    ],
+    "app_mapping": {
+      "UI_nombre": "DB name",
+      "UI_codigo_invitacion": "DB invite_code"
+    },
+    "test_invite_code": "H88544"
+  },
+  "recommendations": [
+    "Infra OK. Desplegar front a Vercel."
+  ]
+}

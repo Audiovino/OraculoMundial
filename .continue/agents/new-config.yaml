@@ -1,0 +1,20 @@
+name: Pioneer
+version: 1.0.0
+schema: v1
+
+models:
+  - name: Pioneer GPT-5.5
+    provider: openai
+    model: gpt-5.5
+    apiKey: pio_sk_38f618f4-20c5-4cc8-854b-8fe9f1719b8e_j4gu4r_1_B1A9XtGMyB7f8z
+    apiBase: https://api.pioneer.ai/v1
+
+  - name: Pioneer Claude
+    provider: openai
+    model: claude-sonnet-4-6
+    apiKey: pio_sk_38f618f4-20c5-4cc8-854b-8fe9f1719b8e_j4gu4r_1_B1A9XtGMyB7f8z
+    apiBase: https://api.pioneer.ai/v1
+
+context:
+  - provider: code
+  - provider: docs

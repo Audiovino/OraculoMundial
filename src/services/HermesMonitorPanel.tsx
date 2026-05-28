@@ -128,9 +128,9 @@ export const HermesMonitorPanel: React.FC = () => {
 
       // 2. Construir contenido CSV
       const headers = ['ID', 'Email', 'Alias', 'Edificio/Zona', 'Fecha Registro', 'Notas CRM'].join(',');
-      const rows = users.map(user => {
-        const userNotes = notes?.filter(n => n.user_id === user.user_id)
-          .map(n => n.note.replace(/[,\n\r]/g, ' ')) // Sanitizar para CSV
+      const rows = users.map((user: any) => {
+        const userNotes = notes?.filter((n: any) => n.user_id === user.user_id)
+          .map((n: any) => n.note.replace(/[,\n\r]/g, ' ')) // Sanitizar para CSV
           .join(' | ') || 'Sin notas';
         
         return [

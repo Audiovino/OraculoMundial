@@ -32,6 +32,7 @@ async function downloadImageToBuffer(url: string): Promise<Buffer> {
   console.log(`[Descargando imagen] ${url}`);
   const response = await axios.get(url, {
     responseType: 'arraybuffer',
+    timeout: 15000, // 15 segundos de timeout
     headers: { 
       'User-Agent': WIKIMEDIA_USER_AGENT,
       'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
@@ -42,14 +43,34 @@ async function downloadImageToBuffer(url: string): Promise<Buffer> {
   return Buffer.from(response.data);
 }
 
-async function createTripoTask(imageBuffer: Buffer, filename: string): Promise<string> {
+async function uploadImageToTripo(imageBuffer: Buffer, filename: string): Promise<string> {
   const form = new FormData();
-  form.append('type', 'image_to_model');
   form.append('file', imageBuffer, { filename });
   
-  const res = await axios.post('https://api.tripo3d.ai/v2/openapi/task', form, {
+  const res = await axios.post('https://api.tripo3d.ai/v2/openapi/upload', form, {
     headers: {
       ...form.getHeaders(),
+      Authorization: `Bearer ${API_KEY}`
+    }
+  });
+
+  if (res.data.code === 0 && res.data.data && res.data.data.image_token) {
+    return res.data.data.image_token;
+  }
+  
+  throw new Error(`Error al subir imagen a Tripo: ${JSON.stringify(res.data)}`);
+}
+
+async function createTripoTask(imageToken: string): Promise<string> {
+  const res = await axios.post('https://api.tripo3d.ai/v2/openapi/task', {
+    type: 'image_to_model',
+    file: {
+      type: 'jpg',
+      file_token: imageToken
+    }
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${API_KEY}`
     }
   });
@@ -114,7 +135,8 @@ async function generateModelForStadium(stadium: typeof WORLD_CUP_2026_STADIUMS[0
       let taskId: string | null = null;
       for (let attempt = 1; attempt <= 2 && !taskId; attempt++) {
         try {
-          taskId = await createTripoTask(imageBuffer, `${stadium.id}.jpg`);
+          const imageToken = await uploadImageToTripo(imageBuffer, `${stadium.id}.jpg`);
+          taskId = await createTripoTask(imageToken);
         } catch (e: any) {
           console.warn(`[Advertencia] Intento ${attempt} falló al crear tarea para ${stadium.name}: ${e.message}`);
           if (attempt === 2) throw e; // último intento, rethrow

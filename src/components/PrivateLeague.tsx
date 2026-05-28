@@ -46,6 +46,39 @@ interface LeagueMember {
 const generateCode = () =>
   Math.random().toString(36).substring(2, 8).toUpperCase();
 
+type LeagueActionButtonProps = {
+  label: string;
+  tooltip: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+};
+
+const LeagueActionButton: React.FC<LeagueActionButtonProps> = ({
+  label,
+  tooltip,
+  onClick,
+  children,
+  className = '',
+}) => (
+  <button
+    type="button"
+    onClick={e => {
+      e.stopPropagation();
+      onClick();
+    }}
+    aria-label={tooltip}
+    title={tooltip}
+    className={`group relative inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-3 text-xs font-black transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/40 ${className}`}
+  >
+    {children}
+    <span className="hidden sm:inline">{label}</span>
+    <span className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-56 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-left text-[11px] font-semibold leading-4 text-white opacity-0 shadow-2xl transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+      {tooltip}
+    </span>
+  </button>
+);
+
 export const PrivateLeague: React.FC = () => {
   const { user } = useMundialAuth();
   const [leagues, setLeagues] = useState<League[]>([]);
@@ -478,23 +511,25 @@ export const PrivateLeague: React.FC = () => {
                   <p className="text-gray-500 text-xs font-mono">{league.codigo_invitacion}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={e => { e.stopPropagation(); openWhatsAppShare(league); }}
-                  className="p-1.5 rounded-lg transition-all hover:bg-[#25D366]/20"
-                  title="Compartir por WhatsApp"
+                            <div className="flex shrink-0 items-center gap-2">
+                <LeagueActionButton
+                  label="Invitar"
+                  tooltip="Invitar por WhatsApp: abre un mensaje listo para compartir esta liga y su código con tus amigos."
+                  onClick={() => openWhatsAppShare(league)}
+                  className="bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
                 >
-                  <MessageCircle size={14} className="text-[#25D366]" />
-                </button>
-                <button
-                  onClick={e => { e.stopPropagation(); copyCode(league.codigo_invitacion); }}
-                  className="p-1.5 rounded-lg transition-all hover:bg-white/10"
-                  title="Copiar código"
+                  <MessageCircle size={20} />
+                </LeagueActionButton>
+                <LeagueActionButton
+                  label={copiedCode === league.codigo_invitacion ? 'Copiado' : 'Copiar'}
+                  tooltip="Copiar código: guarda el código de invitación para pegarlo en chat, redes o enviarlo manualmente."
+                  onClick={() => copyCode(league.codigo_invitacion)}
+                  className="bg-white/5 text-gray-200 hover:bg-white/10"
                 >
                   {copiedCode === league.codigo_invitacion
-                    ? <Check size={14} className="text-emerald-400" />
-                    : <Copy size={14} className="text-gray-400" />}
-                </button>
+                    ? <Check size={20} className="text-emerald-400" />
+                    : <Copy size={20} className="text-gray-200" />}
+                </LeagueActionButton>
               </div>
             </motion.div>
           ))}

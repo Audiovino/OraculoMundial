@@ -36,9 +36,9 @@ export const getMatchCommunityStats = async (matchId: string) => {
     const total = data?.length || 0;
     if (total === 0) return { home: 33, draw: 34, away: 33 }; // Balanceado si no hay votos
 
-    const home = data.filter(p => p.prediction === 'home_win').length;
-    const draw = data.filter(p => p.prediction === 'draw').length;
-    const away = data.filter(p => p.prediction === 'away_win').length;
+    const home = data.filter((p: any) => p.prediction === 'home_win').length;
+    const draw = data.filter((p: any) => p.prediction === 'draw').length;
+    const away = data.filter((p: any) => p.prediction === 'away_win').length;
 
     return {
       home: Math.round((home / total) * 100),
