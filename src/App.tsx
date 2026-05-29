@@ -12,6 +12,7 @@ import { LegalPage } from './components/LegalPage';
 import { LegalAcceptanceGate } from './components/LegalAcceptanceGate';
 import { LegalFooter } from './components/LegalFooter';
 import { motion } from 'framer-motion';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { VideoDemo } from './components/VideoDemo';
 import './App.css';
 import { useAdminAuth } from './hooks/useAdminAuth';
@@ -93,7 +94,11 @@ const AppContent: React.FC = () => {
     <VideoDemo />
   </>
 )}
-                            {currentView === 'stadiums' && <StadiumsGrid filter="all" />}
+                            {currentView === 'stadiums' && (
+                                <ErrorBoundary>
+                                    <StadiumsGrid filter="all" />
+                                </ErrorBoundary>
+                            )}
                             {/* Protección: Solo renderizar AdminPage si el usuario es admin autorizado */}
                             {currentView === 'admin' && isAdmin && !adminLoading && <AdminPage />}
                             {currentView === 'admin' && (!isAdmin || adminLoading) && (

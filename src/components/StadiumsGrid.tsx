@@ -204,7 +204,7 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
                   frameBorder="0"
                   allowFullScreen
                   allow="autoplay; fullscreen; xr-spatial-tracking"
-                  src={`https://sketchfab.com/models/${stadium.sketchfabId}/embed?autostart=1&ui_theme=dark&dnt=1`}
+                  src={`https://sketchfab.com/models/${stadium.sketchfabId}/embed?autostart=0&ui_theme=dark&dnt=1`}
                 ></iframe>
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-slate-900 flex-col gap-3 px-4 text-center">
