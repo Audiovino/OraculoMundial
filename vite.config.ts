@@ -1,38 +1,29 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   build: {
-    outDir: 'dist',
+    outDir: 'build',
+    sourcemap: false,
     rollupOptions: {
       output: {
-        // Vite automatic code splitting
-        manualChunks: (id) => {
-          // Vendor chunks
-          if (id.includes('node_modules/three')) {
-            return 'vendor-three';
-          }
-          if (id.includes('node_modules/framer-motion')) {
-            return 'vendor-framer';
-          }
-          if (id.includes('node_modules/@supabase')) {
-            return 'vendor-supabase';
-          }
-          if (id.includes('node_modules/lucide-react')) {
-            return 'vendor-lucide';
-          }
-        }
-      }
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          three: ['three'],
+          motion: ['framer-motion'],
+        },
+      },
     },
-    chunkSizeWarningLimit: 600,
-    minify: 'esbuild'
   },
-  // Optimize dependencies
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion', '@supabase/supabase-js', 'lucide-react'],
-    exclude: ['three']
-  }
-})
-
-
+  server: {
+    port: 3000,
+    open: true,
+  },
+});
