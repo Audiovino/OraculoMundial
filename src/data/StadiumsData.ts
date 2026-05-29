@@ -43,7 +43,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 46399,
     color: '#c60c30',
     accentColor: '#ffffff',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Estadio_Omnilife_Chivas.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Estadio_Omnilife_Chivas.jpg',
+    sketchfabId: '91718497a838442a8cd312c448f687e6'
   },
   {
     id: 'monterrey',
@@ -57,7 +58,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 53000,
     color: '#003da5',
     accentColor: '#ffd700',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Estadio_BBVA_Bancomer_%281%29.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Estadio_BBVA_Bancomer_%281%29.jpg',
+    sketchfabId: 'b3df2dd0520c42a18beb6cd23f8102a5'
   },
   // USA
   {
@@ -72,7 +74,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 76416,
     color: '#e31937',
     accentColor: '#ffb81c',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Chiefs-Raiders_2021_at_Arrowhead_Stadium.png'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Chiefs-Raiders_2021_at_Arrowhead_Stadium.png',
+    sketchfabId: '8aa4ad611c594fc28a2017a50c52f5fd'
   },
   {
     id: 'atlanta',
@@ -86,7 +89,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 71000,
     color: '#a71930',
     accentColor: '#000000',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/10/Mercedes_Benz_Stadium_time_lapse_capture_2017-08-13.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/10/Mercedes_Benz_Stadium_time_lapse_capture_2017-08-13.jpg',
+    sketchfabId: '01ae2f2bc88c4588b532fadf86ba017a'
   },
   {
     id: 'dallas',
@@ -100,7 +104,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 80000,
     color: '#003594',
     accentColor: '#b0b7bc',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Cowboys_Stadium_full_view.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Cowboys_Stadium_full_view.jpg',
+    sketchfabId: 'c8d40da56c53466e96268597464f6e09'
   },
   {
     id: 'houston',
@@ -114,7 +119,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 72220,
     color: '#eb6e1f',
     accentColor: '#003da5',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Nrg_stadium.jpg/1280px-Nrg_stadium.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Nrg_stadium.jpg/1280px-Nrg_stadium.jpg',
+    sketchfabId: '5ca7a08bb23942829a74f3c736b8167f'
   },
   {
     id: 'miami',
@@ -128,7 +134,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 65326,
     color: '#008687',
     accentColor: '#f26522',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg/1280px-Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg/1280px-Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg',
+    sketchfabId: 'f6e36e2007c6446985b545e013b6104c'
   },
   {
     id: 'san_francisco',
@@ -156,7 +163,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 70240,
     color: '#0066cc',
     accentColor: '#ffb81c',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/SoFi_Stadium_2023.jpg/1280px-SoFi_Stadium_2023.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/SoFi_Stadium_2023.jpg/1280px-SoFi_Stadium_2023.jpg',
+    sketchfabId: '05cbd1ca51f2447db23bbc031c93be2f'
   },
   {
     id: 'seattle',
@@ -170,7 +178,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 69000,
     color: '#002244',
     accentColor: '#69be28',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Qwest_Field_North.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Qwest_Field_North.jpg',
+    sketchfabId: '403a31928a024f4bba49d881f3e60bdf'
   },
   {
     id: 'denver',
@@ -184,7 +193,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 76125,
     color: '#fb4f14',
     accentColor: '#002244',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Empower_Field_at_Mile_High_20241001.jpg/1280px-Empower_Field_at_Mile_High_20241001.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Empower_Field_at_Mile_High_20241001.jpg/1280px-Empower_Field_at_Mile_High_20241001.jpg',
+    sketchfabId: '1a53cf72490f4556bab966ce15cb6ed9'
   },
   // CANADÁ
   {
@@ -199,7 +209,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 45371,
     color: '#cc0000',
     accentColor: '#ffffff',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d2/BMO_Field_in_2016.png'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d2/BMO_Field_in_2016.png',
+    sketchfabId: '015e0f1f2e8146b5a39910324a68b2fb'
   },
   {
     id: 'vancouver',
@@ -213,7 +224,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 54500,
     color: '#00205b',
     accentColor: '#ffffff',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BC_Place_2015_Women%27s_FIFA_World_Cup.jpg/1280px-BC_Place_2015_Women%27s_FIFA_World_Cup.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BC_Place_2015_Women%27s_FIFA_World_Cup.jpg/1280px-BC_Place_2015_Women%27s_FIFA_World_Cup.jpg',
+    sketchfabId: '85a7617895ca446fb2ef360773e3d451'
   },
   {
     id: 'metlife',
@@ -227,7 +239,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 82500,
     color: '#0f2d1e',
     accentColor: '#ffffff',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Metlife_stadium_%28Aerial_view%29.jpg/1280px-Metlife_stadium_%28Aerial_view%29.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Metlife_stadium_%28Aerial_view%29.jpg/1280px-Metlife_stadium_%28Aerial_view%29.jpg',
+    sketchfabId: 'd186beca276347e3ab2223fe47d9b25b'
   },
   {
     id: 'rose_bowl',
@@ -241,7 +254,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 89702,
     color: '#0b3c2a',
     accentColor: '#ffb81c',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/2018.06.17_Over_the_Rose_Bowl%2C_Pasadena%2C_CA_USA_0039_%2842855669451%29_%28cropped%29.jpg/1280px-2018.06.17_Over_the_Rose_Bowl%2C_Pasadena%2C_CA_USA_0039_%2842855669451%29_%28cropped%29.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/2018.06.17_Over_the_Rose_Bowl%2C_Pasadena%2C_CA_USA_0039_%2842855669451%29_%28cropped%29.jpg/1280px-2018.06.17_Over_the_Rose_Bowl%2C_Pasadena%2C_CA_USA_0039_%2842855669451%29_%28cropped%29.jpg',
+    sketchfabId: '9c829976ab26454a8c5c3183baf6f948'
   },
   {
     id: 'gillette',
@@ -255,7 +269,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 65878,
     color: '#0a2342',
     accentColor: '#c8102e',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Gillette_Stadium%2C_Chicago_Fire_vs._New_England_Revolution_2003.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Gillette_Stadium%2C_Chicago_Fire_vs._New_England_Revolution_2003.jpg',
+    sketchfabId: 'a63d411b60a0486c88f8c4fc0af04594'
   },
   {
     id: 'lincoln',
@@ -269,7 +284,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 69796,
     color: '#004c54',
     accentColor: '#a5acaf',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Lincoln_Financial_Field_%28Aerial_view%29.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Lincoln_Financial_Field_%28Aerial_view%29.jpg',
+    sketchfabId: '29d501110a6d493cae582a0bce56558b'
   }
 ];
 

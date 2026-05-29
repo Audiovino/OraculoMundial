@@ -10,11 +10,12 @@ export const LegalAcceptanceGate: React.FC<{ children: React.ReactNode }> = ({ c
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [sessionAccepted, setSessionAccepted] = useState(() => sessionStorage.getItem('legal_accepted') === 'true');
 
   if (loading || !user) return <>{children}</>;
 
   const needsAcceptance =
-    !user.legal_accepted_at || user.legal_terms_version !== LEGAL_TERMS_VERSION;
+    !sessionAccepted && (!user.legal_accepted_at || user.legal_terms_version !== LEGAL_TERMS_VERSION);
 
   if (!needsAcceptance) return <>{children}</>;
 
@@ -27,6 +28,8 @@ export const LegalAcceptanceGate: React.FC<{ children: React.ReactNode }> = ({ c
     setError('');
     try {
       await acceptLegalTerms();
+      sessionStorage.setItem('legal_accepted', 'true');
+      setSessionAccepted(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar la aceptación.');
     } finally {
