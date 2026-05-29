@@ -20,7 +20,6 @@ import {
 import { WORLD_CUP_2026_STADIUMS, Stadium } from '../data/StadiumsData';
 import { useVisibleElement } from '../hooks/useVisibleElement';
 
-import TripoModelViewer from './TripoModelViewer';
 const RealisticStadium3D = React.lazy(() => import('./scene/RealisticStadium3D'));
 
 interface StadiumCardProps {
@@ -106,7 +105,6 @@ const getCountryEmoji = (code: string): string => {
 
 const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [modelUrl, setModelUrl] = useState<string>('');
   const [localTime, setLocalTime] = useState<Date>(getLocalTime(stadium.timezone));
   const [weather, setWeather] = useState<'clear' | 'cloudy' | 'rainy' | 'stormy'>(getWeatherForStadium(stadium));
   const [showPhoto, setShowPhoto] = useState(true);
@@ -209,7 +207,7 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
                   </div>
                 </div>
               }>
-                <TripoModelViewer modelUrl={`/models/${stadium.id}.glb`} />
+                <RealisticStadium3D stadium={stadium} currentTime={localTime} interactive={true} />
               </Suspense>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-slate-900">
