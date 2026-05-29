@@ -81,6 +81,15 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                         }
                         return mapped;
                     });
+
+                    // Si pasaron más de 12 horas, actualizamos la ubicación en segundo plano
+                    const lastLocTime = mapped.last_location_at ? new Date(mapped.last_location_at).getTime() : 0;
+                    if (Date.now() - lastLocTime > 12 * 60 * 60 * 1000) {
+                        captureUserLocation(mapped.id, false).catch(err => {
+                            console.warn('[Ubicación] Falló actualización de fondo:', err);
+                        });
+                    }
+
                     return;
                 }
             } catch (err) {
@@ -256,6 +265,11 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
             if (signInError) throw signInError;
             if (!data.user) throw new Error('No user returned from signin');
+
+            // Capturar ubicación explícitamente en el login (sin bloquear el flujo)
+            captureUserLocation(data.user.id, false).catch((err) => {
+                console.warn('[Ubicación] No se pudo capturar en el login:', err);
+            });
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Error en inicio de sesión';
             setError(message);

@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
   const [copied, setCopied] = useState('');
   // Estados para la pestaña detallada de usuarios
   const [userSearchText, setUserSearchText] = useState('');
-  const [userActivityFilter, setUserActivityFilter] = useState<'all' | 'high' | 'mid' | 'low' | 'inactive'>('all');
+  const [userActivityFilter, setUserActivityFilter] = useState<'all' | 'high' | 'mid' | 'low' | 'sin-jugar'>('all');
   const { isAdmin } = useAdminAuth();
   const { status: locationStatus, ipLocation, browserLocation, error: locationError } = useLocation(isAdmin, false);
   const googleMapsAddress = getGoogleMapsAddress(browserLocation || ipLocation);
@@ -297,7 +297,7 @@ const AdminDashboard: React.FC = () => {
         const totalScore = p ? p.totalScore : 0;
         const streak = p ? p.streak : 0;
 
-        let juegoStatus = 'Inactivo';
+        let juegoStatus = 'Sin jugar';
         if (predictionsCount > 10) juegoStatus = 'Mucho (Alto)';
         else if (predictionsCount > 3) juegoStatus = 'Medio';
         else if (predictionsCount > 0) juegoStatus = 'Poco (Bajo)';
@@ -954,7 +954,7 @@ const AdminDashboard: React.FC = () => {
                       <option value="high">Juegan Mucho (&gt;10 pred.)</option>
                       <option value="mid">Juegan Medio (4-10 pred.)</option>
                       <option value="low">Juegan Poco (1-3 pred.)</option>
-                      <option value="inactive">No Juegan (0 pred.)</option>
+                      <option value="sin-jugar">No Juegan (0 pred.)</option>
                     </select>
                   </div>
                 </div>
@@ -991,7 +991,7 @@ const AdminDashboard: React.FC = () => {
                           const totalScore = p ? p.totalScore : 0;
                           const streak = p ? p.streak : 0;
 
-                          let juegoLevel: 'high' | 'mid' | 'low' | 'inactive' = 'inactive';
+                          let juegoLevel: 'high' | 'mid' | 'low' | 'sin-jugar' = 'sin-jugar';
                           if (predictionsCount > 10) juegoLevel = 'high';
                           else if (predictionsCount > 3) juegoLevel = 'mid';
                           else if (predictionsCount > 0) juegoLevel = 'low';
@@ -1051,9 +1051,9 @@ const AdminDashboard: React.FC = () => {
                                   📋 Poco
                                 </span>
                               )}
-                              {u.juegoLevel === 'inactive' && (
+                              {u.juegoLevel === 'sin-jugar' && (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-500/10 text-slate-400 border border-slate-500/20">
-                                  💤 Inactivo
+                                  💤 Sin jugar
                                 </span>
                               )}
                             </td>
