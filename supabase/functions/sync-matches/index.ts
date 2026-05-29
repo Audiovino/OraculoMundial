@@ -5,7 +5,19 @@ const API_SPORTS_KEY = Deno.env.get('API_SPORTS_KEY') || ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || ''
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 
+// CORS headers — required for browser fetch from Vercel
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+}
+
 serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
     // 1. Fetch matches from API-Football
     const response = await fetch('https://v3.football.api-sports.io/fixtures?league=1&season=2026', {
@@ -78,16 +90,17 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Synced ${successCount} matches successfully.` 
+      message: `Synced ${successCount} matches successfully.`,
+      matchesCount: successCount
     }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error: any) {
     console.error('Function error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });

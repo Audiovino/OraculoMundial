@@ -120,7 +120,7 @@ export const AdminMatchManager: React.FC = () => {
   };
 
   /**
-   * FUNCIÓN MAESTRA DE SCRAPING HÍBRIDO (Ollama / Groq)
+   * FUNCIÓN MAESTRA DE SCRAPING HÍBRIDO (Ollama local / Edge Function en producción)
    */
   const performAIScraping = async () => {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -132,38 +132,39 @@ export const AdminMatchManager: React.FC = () => {
     let rawResponse = '';
 
     if (isLocal) {
+      // En local: usar Ollama directamente
       console.log('[Hermes AI] Entorno Local detectado. Llamando a Ollama...');
-      const res = await fetch('http://localhost:11434/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'hermes3', prompt, stream: false })
-      });
-      const data = await res.json();
+      let ollamaRes: Response;
+      try {
+        ollamaRes = await fetch('http://localhost:11434/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'hermes3', prompt, stream: false })
+        });
+      } catch {
+        throw new Error('Ollama no está corriendo en localhost:11434. Iniciá Ollama primero.');
+      }
+      if (!ollamaRes.ok) throw new Error(`Ollama respondió con status ${ollamaRes.status}`);
+      const data = await ollamaRes.json();
       rawResponse = data.response;
     } else {
-      console.log('[Hermes AI] Entorno Cloud detectado. Llamando a Groq API...');
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'llama3-8b-8192',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.1
-        })
+      // En producción: usar la Edge Function hermes-scraper como proxy
+      console.log('[Hermes AI] Entorno Cloud detectado. Llamando a Edge Function hermes-scraper...');
+      const { data, error } = await mundialSupabase.functions.invoke('hermes-scraper', {
+        body: { prompt }
       });
-      const data = await res.json();
-      rawResponse = data.choices[0].message.content;
+      if (error) {
+        throw new Error(`Edge Function hermes-scraper no disponible: ${error.message}. Configurá GROQ_API_KEY en Supabase Dashboard > Edge Functions > Secrets.`);
+      }
+      rawResponse = data?.response || '';
     }
 
     // Sanitización resiliente de JSON para evitar errores de caracteres de control
     const cleanJsonString = rawResponse
       .replace(/[\x00-\x1F\x7F]/g, ' ') // Elimina caracteres no imprimibles
-      .match(/\{[\s\S]*\}/)?.[0];     // Extrae solo lo que está entre llaves
+      .match(/\{[\s\S]*\}/)?.[0];        // Extrae solo lo que está entre llaves
 
-    if (!cleanJsonString) throw new Error("La IA no devolvió un JSON válido.");
+    if (!cleanJsonString) throw new Error('La IA no devolvió un JSON válido. Intentá de nuevo.');
     
     const parsed = JSON.parse(cleanJsonString);
 
@@ -171,7 +172,7 @@ export const AdminMatchManager: React.FC = () => {
       const { error } = await mundialSupabase
         .from('mundial_matches')
         .upsert(parsed.matches.map((m: any) => ({
-          id: `${m.home_team.toLowerCase()}-${m.away_team.toLowerCase()}-${new Date(m.date).getTime()}`,
+          id: `${m.home_team.toLowerCase().replace(/\s+/g, '-')}-${m.away_team.toLowerCase().replace(/\s+/g, '-')}-${new Date(m.date).getTime()}`,
           home_team: m.home_team,
           away_team: m.away_team,
           home_goals: m.home_goals,

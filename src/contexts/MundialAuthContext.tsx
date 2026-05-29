@@ -63,7 +63,24 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 const { data: profile } = (await Promise.race([dbPromise, timeoutPromise])) as { data: Record<string, unknown> | null };
 
                 if (profile) {
-                    setUser(mapProfile(profile, session));
+                    const mapped = mapProfile(profile, session);
+                    // Preserve in-memory legal acceptance if DB hasn't been updated yet
+                    // (avoids modal reappearing after acceptance when DB update is slow/blocked)
+                    setUser(prev => {
+                        if (
+                            prev?.id === mapped.id &&
+                            prev.legal_terms_version === LEGAL_TERMS_VERSION &&
+                            mapped.legal_terms_version !== LEGAL_TERMS_VERSION
+                        ) {
+                            // Keep the accepted state from memory
+                            return {
+                                ...mapped,
+                                legal_accepted_at: prev.legal_accepted_at,
+                                legal_terms_version: prev.legal_terms_version,
+                            };
+                        }
+                        return mapped;
+                    });
                     return;
                 }
             } catch (err) {
@@ -187,6 +204,15 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const acceptLegalTerms = async () => {
         if (!user?.id) throw new Error('Sin sesión activa');
         const now = new Date().toISOString();
+
+        // Update local state FIRST so the modal closes immediately regardless of DB result
+        setUser({
+            ...user,
+            legal_accepted_at: now,
+            legal_terms_version: LEGAL_TERMS_VERSION,
+        });
+
+        // Then persist to DB (non-blocking for UX — errors are logged but don't re-show the modal)
         const { error: updateError } = await mundialSupabase
             .from('mundial_users')
             .update({
@@ -195,13 +221,27 @@ export const MundialAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
             })
             .eq('id', user.id);
 
-        if (updateError) throw updateError;
-
-        setUser({
-            ...user,
-            legal_accepted_at: now,
-            legal_terms_version: LEGAL_TERMS_VERSION,
-        });
+        if (updateError) {
+            // Log but don't throw — the local state is already updated so the modal won't reappear
+            // in this session. On next login it may reappear if DB wasn't updated (RLS issue).
+            console.error('[Legal] Failed to persist acceptance to DB:', updateError.message);
+            // Try upsert as fallback in case the row doesn't exist yet
+            await mundialSupabase
+                .from('mundial_users')
+                .upsert({
+                    id: user.id,
+                    email: user.email,
+                    legal_accepted_at: now,
+                    legal_terms_version: LEGAL_TERMS_VERSION,
+                }, { onConflict: 'id' })
+                .then(({ error: upsertErr }: { error: { message: string } | null }) => {
+                    if (upsertErr) {
+                        console.error('[Legal] Upsert fallback also failed:', upsertErr.message);
+                    } else {
+                        console.log('[Legal] Acceptance saved via upsert fallback.');
+                    }
+                });
+        }
     };
 
     const signIn = async (email: string, password: string) => {
