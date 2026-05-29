@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   RotateCw, 
@@ -19,8 +19,6 @@ import {
 } from 'lucide-react';
 import { WORLD_CUP_2026_STADIUMS, Stadium } from '../data/StadiumsData';
 import { useVisibleElement } from '../hooks/useVisibleElement';
-
-const RealisticStadium3D = React.lazy(() => import('./scene/RealisticStadium3D'));
 
 interface StadiumCardProps {
   stadium: Stadium;
@@ -199,16 +197,21 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
                 <div className="absolute inset-0 bg-black/10" />
               </div>
             ) : isVisible ? (
-              <Suspense fallback={
-                <div className="w-full h-full flex items-center justify-center bg-slate-900">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin" />
-                    <span className="text-xs text-slate-500">Cargando modelo 3D oficial...</span>
-                  </div>
+              stadium.sketchfabId ? (
+                <iframe
+                  title={`Modelo 3D de ${stadium.name}`}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allowFullScreen
+                  allow="autoplay; fullscreen; xr-spatial-tracking"
+                  src={`https://sketchfab.com/models/${stadium.sketchfabId}/embed?autostart=1&ui_theme=dark&dnt=1`}
+                ></iframe>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-900 flex-col gap-3 px-4 text-center">
+                  <div className="text-4xl text-slate-700">🏟️</div>
+                  <div className="text-xs text-slate-400 font-medium">Modelo 3D real de este estadio<br/>próximamente disponible.</div>
                 </div>
-              }>
-                <RealisticStadium3D stadium={stadium} currentTime={localTime} interactive={true} />
-              </Suspense>
+              )
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-slate-900">
                 <div className="text-center">

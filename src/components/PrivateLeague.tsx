@@ -185,6 +185,9 @@ export const PrivateLeague: React.FC = () => {
     setNewName('');
     setMode('list');
     setLoading(false);
+    
+    // Automatically open the modal for the newly created league so the user can easily share it
+    loadLeagueRanking(newLeague);
   };
 
   const joinLeague = async () => {

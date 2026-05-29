@@ -11,6 +11,7 @@ export interface Stadium {
   color: string; // Primary color for stadium
   accentColor: string; // Secondary color
   imageUrl: string; // Official Wikimedia Commons image URL
+  sketchfabId?: string; // Optional Sketchfab model ID for real 3D viewing
 }
 
 export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
@@ -27,7 +28,8 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     capacity: 87523,
     color: '#1a472a',
     accentColor: '#ffd700',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Estadio_Azteca1706p2.jpg'
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Estadio_Azteca1706p2.jpg',
+    sketchfabId: '813fd48eb6cf47cea87246be5bd4461f'
   },
   {
     id: 'guadalajara',
