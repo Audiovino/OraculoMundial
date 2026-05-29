@@ -409,7 +409,7 @@ const StadiumsGrid: React.FC<StadiumsGridProps> = ({ filter = 'all' }) => {
   });
 
   return (
-    <div className="min-h-screen bg-[#0A0D18] text-white py-6 px-3 sm:py-12 sm:px-6">
+    <div className="min-h-screen bg-[#0A0D18] text-white py-6 px-3 sm:py-12 sm:px-6 overflow-x-hidden relative">
       {/* Glow Effects */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-40 right-1/4 w-[600px] h-[600px] bg-red-500/3 rounded-full blur-[150px] pointer-events-none" />
