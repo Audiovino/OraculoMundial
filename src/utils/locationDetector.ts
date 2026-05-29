@@ -50,6 +50,31 @@ function parseIpApiResponse(body: any): IpLocationResult {
 }
 
 export async function getIpLocation(): Promise<IpLocationResult | null> {
+  // 1. Intentar nuestro proxy serverless (sin CORS en mobile)
+  try {
+    const response = await fetch('/api/location', { cache: 'no-store' });
+    if (response.ok) {
+      const body = await response.json();
+      if (body.source !== 'unknown' && body.latitude != null) {
+        return {
+          source: body.source === 'ipapi' ? 'ipapi' : 'ip-api',
+          country: body.country ?? undefined,
+          region: body.region ?? undefined,
+          city: body.city ?? undefined,
+          latitude: body.latitude,
+          longitude: body.longitude,
+          ip: body.ip ?? undefined,
+          isp: body.isp ?? undefined,
+          accuracy: 'medium',
+          raw: body
+        };
+      }
+    }
+  } catch (_) {
+    // Si el proxy falla, continuar con los fallbacks directos
+  }
+
+  // 2. Fallback directo (funciona en dev local)
   const endpoints = [
     {
       url: 'https://ipapi.co/json/',
@@ -73,7 +98,6 @@ export async function getIpLocation(): Promise<IpLocationResult | null> {
 
       return endpoint.parser(body);
     } catch (error) {
-      // Continúa al siguiente proveedor si falla.
       continue;
     }
   }
