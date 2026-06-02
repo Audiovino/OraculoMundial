@@ -199,24 +199,16 @@ const StadiumCard: React.FC<StadiumCardProps> = ({ stadium }) => {
                 <div className="absolute inset-0 bg-black/10" />
               </div>
             ) : isVisible ? (
-              stadium.sketchfabId ? (
-                <iframe
-                  title={`Modelo 3D de ${stadium.name}`}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allowFullScreen
-                  allow="autoplay; fullscreen; xr-spatial-tracking"
-                  src={`https://sketchfab.com/models/${stadium.sketchfabId}/embed?autostart=0&ui_theme=dark&dnt=1`}
-                ></iframe>
-              ) : (
-                <Suspense fallback={
-                  <div className="w-full h-full flex items-center justify-center bg-slate-900">
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                  <div className="flex flex-col items-center gap-2">
                     <div className="w-8 h-8 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin" />
+                    <span className="text-xs text-slate-500">Cargando modelo 3D...</span>
                   </div>
-                }>
-                  <RealisticStadium3D stadium={stadium} currentTime={localTime} interactive={true} />
-                </Suspense>
-              )
+                </div>
+              }>
+                <RealisticStadium3D stadium={stadium} currentTime={localTime} interactive={true} />
+              </Suspense>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-slate-900">
                 <div className="text-center">
