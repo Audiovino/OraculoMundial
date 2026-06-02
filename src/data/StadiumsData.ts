@@ -135,7 +135,6 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     color: '#008687',
     accentColor: '#f26522',
     imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg/1280px-Hard_Rock_Stadium_for_Super_Bowl_LIV_%2849606710103%29.jpg',
-    sketchfabId: '7098e5cec3a641338c75bf371b18d482'
   },
   {
     id: 'san_francisco',
@@ -225,7 +224,6 @@ export const WORLD_CUP_2026_STADIUMS: Stadium[] = [
     color: '#00205b',
     accentColor: '#ffffff',
     imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BC_Place_2015_Women%27s_FIFA_World_Cup.jpg/1280px-BC_Place_2015_Women%27s_FIFA_World_Cup.jpg',
-    sketchfabId: '212e24d9c1fa4458a263e2de9fb0db05'
   },
   {
     id: 'metlife',
